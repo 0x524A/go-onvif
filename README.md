@@ -4,9 +4,11 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/0x524A/go-onvif)](https://goreportcard.com/report/github.com/0x524A/go-onvif)
 [![License](https://img.shields.io/github/license/0x524A/go-onvif)](LICENSE)
 
-A modern, performant, and easy-to-use Go library for communicating with ONVIF-compliant IP cameras and devices.
+A modern, performant, and easy-to-use Go library for communicating with ONVIF-compliant IP cameras and devices. Includes both **ONVIF client** and **ONVIF server** implementations.
 
 ## Features
+
+### 📡 ONVIF Client
 
 ✨ **Modern Go Design**
 - Context support for cancellation and timeouts
@@ -20,6 +22,16 @@ A modern, performant, and easy-to-use Go library for communicating with ONVIF-co
 - **PTZ Control**: Continuous, absolute, and relative movement, presets, status
 - **Imaging**: Get/set brightness, contrast, exposure, focus, white balance, WDR
 - **Discovery**: Automatic camera detection via WS-Discovery multicast
+
+### 🎬 ONVIF Server (NEW!)
+
+🎥 **Virtual IP Camera Simulator**
+- **Multi-Lens Camera Support**: Simulate up to 10 independent camera profiles
+- **Complete ONVIF Implementation**: Device, Media, PTZ, and Imaging services
+- **Flexible Configuration**: CLI and library interfaces for easy setup
+- **PTZ Simulation**: Full pan-tilt-zoom control with preset positions
+- **Imaging Control**: Brightness, contrast, exposure, focus, and more
+- **Testing & Development**: Perfect for testing ONVIF clients without physical cameras
 
 🔐 **Security**
 - WS-Security with UsernameToken authentication
@@ -230,14 +242,81 @@ client, err := onvif.NewClient(
 |--------|-------------|
 | `Discover()` | Discover ONVIF devices on network |
 
+## ONVIF Server
+
+The library now includes a complete ONVIF server implementation that simulates multi-lens IP cameras!
+
+### Quick Start
+
+```bash
+# Install the server CLI
+go install ./cmd/onvif-server
+
+# Run with default settings (3 camera profiles)
+onvif-server
+
+# Or customize
+onvif-server -profiles 5 -username admin -password mypass -port 9000
+```
+
+### Using the Server Library
+
+```go
+package main
+
+import (
+    "context"
+    "log"
+
+    "github.com/0x524A/go-onvif/server"
+)
+
+func main() {
+    // Create server with default multi-lens camera configuration
+    srv, err := server.New(server.DefaultConfig())
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // Start server
+    ctx := context.Background()
+    if err := srv.Start(ctx); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### Server Features
+
+- 🎥 **Multi-Lens Simulation**: Support for up to 10 independent camera profiles
+- 🎮 **Full PTZ Control**: Pan, tilt, zoom with preset positions
+- 📷 **Imaging Settings**: Brightness, contrast, exposure, focus, white balance
+- 🌐 **Complete ONVIF Services**: Device, Media, PTZ, and Imaging services
+- 🔐 **WS-Security**: Digest authentication support
+- ⚙️ **Flexible Configuration**: CLI and library interfaces
+
+### Use Cases
+
+- Testing ONVIF client implementations
+- Developing video management systems
+- CI/CD integration testing
+- Demonstrations without physical cameras
+- Learning ONVIF protocol
+
+For complete documentation, see [server/README.md](server/README.md).
+
 ## Examples
 
 The [examples](examples/) directory contains complete working examples:
 
+### Client Examples
 - **[discovery](examples/discovery/)**: Discover cameras on the network
 - **[device-info](examples/device-info/)**: Get device information and media profiles
 - **[ptz-control](examples/ptz-control/)**: Control camera PTZ (pan, tilt, zoom)
 - **[imaging-settings](examples/imaging-settings/)**: Adjust imaging settings
+
+### Server Examples
+- **[onvif-server](examples/onvif-server/)**: Multi-lens camera server with custom configuration
 
 To run an example:
 
@@ -261,7 +340,24 @@ go-onvif/
 │   └── soap.go
 ├── discovery/          # WS-Discovery implementation
 │   └── discovery.go
+├── server/             # ONVIF server implementation
+│   ├── server.go       # Main server
+│   ├── types.go        # Server types and configuration
+│   ├── device.go       # Device service handlers
+│   ├── media.go        # Media service handlers
+│   ├── ptz.go          # PTZ service handlers
+│   ├── imaging.go      # Imaging service handlers
+│   └── soap/           # SOAP server handler
+│       └── handler.go
+├── cmd/
+│   ├── onvif-cli/      # Client CLI tool
+│   └── onvif-server/   # Server CLI tool
 └── examples/           # Usage examples
+    ├── discovery/
+    ├── device-info/
+    ├── ptz-control/
+    ├── imaging-settings/
+    └── onvif-server/   # Multi-lens camera server example
 ```
 
 ## Design Principles
