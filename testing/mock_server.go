@@ -37,13 +37,13 @@ func LoadCaptureFromArchive(archivePath string) (*CameraCapture, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open archive: %w", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	gzr, err := gzip.NewReader(file)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gzip reader: %w", err)
 	}
-	defer gzr.Close()
+	defer func() { _ = gzr.Close() }()
 
 	tr := tar.NewReader(gzr)
 
@@ -150,7 +150,7 @@ func (m *MockSOAPServer) handleRequest(w http.ResponseWriter, r *http.Request) {
 	// Return the captured response
 	w.Header().Set("Content-Type", "application/soap+xml; charset=utf-8")
 	w.WriteHeader(exchange.StatusCode)
-	w.Write([]byte(exchange.ResponseBody))
+	_, _ = w.Write([]byte(exchange.ResponseBody))
 }
 
 // Close shuts down the mock server
