@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/0x524A/go-onvif/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📖 Documentation
+    url: https://pkg.go.dev/github.com/0x524A/go-onvif
+    about: Read the API documentation
+  - name: 📚 Examples
+    url: https://github.com/0x524A/go-onvif/tree/main/examples
+    about: Browse code examples

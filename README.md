@@ -1,10 +1,35 @@
-# go-onvif
+# go-onvif - ONVIF Client and Server Library for Go
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/0x524A/go-onvif.svg)](https://pkg.go.dev/github.com/0x524A/go-onvif)
 [![Go Report Card](https://goreportcard.com/badge/github.com/0x524A/go-onvif)](https://goreportcard.com/report/github.com/0x524A/go-onvif)
 [![License](https://img.shields.io/github/license/0x524A/go-onvif)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/0x524A/go-onvif)](https://github.com/0x524A/go-onvif/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/0x524A/go-onvif)](https://github.com/0x524A/go-onvif/issues)
 
-A modern, performant, and easy-to-use Go library for communicating with ONVIF-compliant IP cameras and devices. Includes both **ONVIF client** and **ONVIF server** implementations.
+> **Modern, high-performance Go library for ONVIF IP camera integration** - Control surveillance cameras, NVRs, and video devices with comprehensive ONVIF Profile S/T/G support. Includes both client and server implementations for complete ONVIF camera simulation and testing.
+
+A production-ready, feature-rich Go (Golang) library for communicating with ONVIF-compliant IP cameras, network video recorders (NVR), and surveillance devices. Perfect for building video management systems (VMS), security camera applications, IoT projects, and camera testing frameworks.
+
+## 🎯 Key Features at a Glance
+
+- ✅ **ONVIF Client & Server** - Both client library and virtual camera server
+- ✅ **Production Ready** - Battle-tested with multiple camera brands
+- ✅ **Full Protocol Support** - Device, Media, PTZ, Imaging, Discovery services
+- ✅ **Type Safe** - Comprehensive Go types for all ONVIF operations
+- ✅ **Well Documented** - Extensive examples and API documentation
+- ✅ **Camera Tested** - Verified with Hikvision, Axis, Dahua, Bosch cameras
+- ✅ **Testing Framework** - Built-in mock server and testing utilities
+
+## 🔑 What is ONVIF?
+
+ONVIF (Open Network Video Interface Forum) is an open industry standard for IP-based security products. This library allows you to:
+
+- 🎥 Control IP cameras from any manufacturer (Bosch, Hikvision, Axis, Dahua, etc.)
+- 📹 Get RTSP video streams and snapshots
+- 🎮 Pan, tilt, and zoom cameras remotely
+- 🔧 Configure camera settings (exposure, focus, white balance)
+- 🔍 Discover cameras on your network automatically
+- 🧪 Test ONVIF implementations without physical hardware
 
 ## Features
 
@@ -497,6 +522,19 @@ go test -v ./testdata/captures/
 
 **See**: `testdata/captures/README.md` for complete testing guide
 
+## 🌟 Star History
+
+If you find this project useful, please consider giving it a star! ⭐
+
+[![Star History Chart](https://api.star-history.com/svg?repos=0x524A/go-onvif&type=Date)](https://star-history.com/#0x524A/go-onvif&Date)
+
+## 📊 Project Stats
+
+![GitHub repo size](https://img.shields.io/github/repo-size/0x524A/go-onvif)
+![GitHub code size](https://img.shields.io/github/languages/code-size/0x524A/go-onvif)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/0x524A/go-onvif)
+![GitHub last commit](https://img.shields.io/github/last-commit/0x524A/go-onvif)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -512,6 +550,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📖 [Documentation](https://pkg.go.dev/github.com/0x524A/go-onvif)
 - 🐛 [Issue Tracker](https://github.com/0x524A/go-onvif/issues)
 - 💬 [Discussions](https://github.com/0x524A/go-onvif/discussions)
+- 🔒 [Security Policy](.github/SECURITY.md)
+
+## Keywords
+
+`onvif` `ip-camera` `surveillance` `golang` `rtsp` `ptz` `camera-control` `video-streaming` `security-camera` `nvr` `vms` `iot` `cctv` `hikvision` `axis` `dahua` `bosch` `camera-sdk` `golang-library` `soap` `ws-discovery`
 
 ## Related Projects
 
