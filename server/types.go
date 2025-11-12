@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/0x524A/go-onvif"
+	"github.com/0x524A/onvif-go"
 )
 
 // Config represents the ONVIF server configuration

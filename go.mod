@@ -1,3 +1,3 @@
-module github.com/0x524A/go-onvif
+module github.com/0x524A/onvif-go
 
 go 1.21

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/0x524A/go-onvif"
+	"github.com/0x524A/onvif-go"
 )
 
 // TestEnhancedDeviceFeatures tests new Device service methods with real camera data

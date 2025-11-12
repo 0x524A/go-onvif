@@ -1,0 +1,250 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Release Binaries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Linux
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: linux
+            goarch: arm
+            goarm: 7
+          
+          # Windows
+          - goos: windows
+            goarch: amd64
+          - goos: windows
+            goarch: arm64
+          
+          # macOS
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Get version
+        id: version
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build binaries
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          GOARM: ${{ matrix.goarm }}
+          CGO_ENABLED: 0
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          LDFLAGS="-s -w -X main.Version=${VERSION} -X main.Commit=${{ steps.version.outputs.SHORT_SHA }}"
+          
+          # Set file extension for Windows
+          EXT=""
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            EXT=".exe"
+          fi
+          
+          # Build all CLI tools
+          mkdir -p dist
+          
+          echo "Building onvif-cli..."
+          go build -ldflags="${LDFLAGS}" -o "dist/onvif-cli-${{ matrix.goos }}-${{ matrix.goarch }}${EXT}" ./cmd/onvif-cli
+          
+          echo "Building onvif-quick..."
+          go build -ldflags="${LDFLAGS}" -o "dist/onvif-quick-${{ matrix.goos }}-${{ matrix.goarch }}${EXT}" ./cmd/onvif-quick
+          
+          echo "Building onvif-server..."
+          go build -ldflags="${LDFLAGS}" -o "dist/onvif-server-${{ matrix.goos }}-${{ matrix.goarch }}${EXT}" ./cmd/onvif-server
+          
+          echo "Building onvif-diagnostics..."
+          go build -ldflags="${LDFLAGS}" -o "dist/onvif-diagnostics-${{ matrix.goos }}-${{ matrix.goarch }}${EXT}" ./cmd/onvif-diagnostics
+
+      - name: Create archive
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          PLATFORM="${{ matrix.goos }}-${{ matrix.goarch }}"
+          ARCHIVE_NAME="go-onvif-${VERSION}-${PLATFORM}"
+          
+          mkdir -p releases
+          
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            # Create ZIP for Windows
+            cd dist
+            zip -j "../releases/${ARCHIVE_NAME}.zip" *-${{ matrix.goos }}-${{ matrix.goarch }}.exe ../README.md ../LICENSE
+            cd ..
+          else
+            # Create tar.gz for Unix-like systems
+            cd dist
+            tar czf "../releases/${ARCHIVE_NAME}.tar.gz" *-${{ matrix.goos }}-${{ matrix.goarch }} -C .. README.md LICENSE
+            cd ..
+          fi
+
+      - name: Generate checksums
+        run: |
+          cd releases
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum * > checksums-${{ matrix.goos }}-${{ matrix.goarch }}.txt
+          else
+            shasum -a 256 * > checksums-${{ matrix.goos }}-${{ matrix.goarch }}.txt
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: releases/*
+          retention-days: 5
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-releases
+          pattern: release-*
+          merge-multiple: true
+
+      - name: Generate combined checksums
+        run: |
+          cd all-releases
+          # Combine all checksum files
+          cat checksums-*.txt > checksums.txt
+          # Remove individual checksum files
+          rm checksums-*.txt
+
+      - name: Get version and changelog
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          
+          # Generate changelog from commits since last tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+            git log --pretty=format:"- %s (%h)" ${PREV_TAG}..HEAD >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: all-releases/*
+          draft: false
+          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
+          generate_release_notes: true
+          body: |
+            ## Release ${{ steps.version.outputs.VERSION }}
+            
+            ### Installation
+            
+            Download the appropriate binary for your platform below.
+            
+            #### Linux/macOS
+            ```bash
+            # Download and extract
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.VERSION }}/go-onvif-${{ steps.version.outputs.VERSION }}-linux-amd64.tar.gz
+            tar xzf go-onvif-${{ steps.version.outputs.VERSION }}-linux-amd64.tar.gz
+            
+            # Make executable and move to PATH
+            chmod +x onvif-cli-linux-amd64
+            sudo mv onvif-cli-linux-amd64 /usr/local/bin/onvif-cli
+            ```
+            
+            #### Windows
+            Download the `.zip` file for your architecture and extract it.
+            
+            #### Go Library
+            ```bash
+            go get github.com/${{ github.repository }}@${{ steps.version.outputs.VERSION }}
+            ```
+            
+            ### Checksums
+            
+            SHA256 checksums are available in `checksums.txt`
+            
+            ### Changes
+            
+            ${{ steps.version.outputs.CHANGELOG }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker:
+    name: Build and Push Docker Image
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,4 +1,4 @@
-# Go ONVIF Library Makefile
+# ONVIF GO Library Makefile
 
 .PHONY: all build test clean install deps lint fmt vet check examples cli docker
 
@@ -96,34 +96,92 @@ examples:
 	go build -o $(BINARY_DIR)/examples/ptz ./examples/ptz
 
 # Build for multiple platforms
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+LDFLAGS := -ldflags "-s -w -X main.Version=$(VERSION)"
+
 build-all:
-	@echo "🌍 Building for multiple platforms..."
+	@echo "🌍 Building for multiple platforms (version: $(VERSION))..."
 	@mkdir -p $(BINARY_DIR)
 	
 	# Linux AMD64
-	GOOS=linux GOARCH=amd64 go build -o $(BINARY_DIR)/onvif-cli-linux-amd64 ./cmd/onvif-cli
-	GOOS=linux GOARCH=amd64 go build -o $(BINARY_DIR)/onvif-quick-linux-amd64 ./cmd/onvif-quick
+	@echo "Building Linux AMD64..."
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-cli-linux-amd64 ./cmd/onvif-cli
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-quick-linux-amd64 ./cmd/onvif-quick
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-server-linux-amd64 ./cmd/onvif-server
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-diagnostics-linux-amd64 ./cmd/onvif-diagnostics
 	
 	# Linux ARM64
-	GOOS=linux GOARCH=arm64 go build -o $(BINARY_DIR)/onvif-cli-linux-arm64 ./cmd/onvif-cli
-	GOOS=linux GOARCH=arm64 go build -o $(BINARY_DIR)/onvif-quick-linux-arm64 ./cmd/onvif-quick
+	@echo "Building Linux ARM64..."
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-cli-linux-arm64 ./cmd/onvif-cli
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-quick-linux-arm64 ./cmd/onvif-quick
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-server-linux-arm64 ./cmd/onvif-server
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-diagnostics-linux-arm64 ./cmd/onvif-diagnostics
+	
+	# Linux ARM (32-bit)
+	@echo "Building Linux ARM..."
+	GOOS=linux GOARCH=arm CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-cli-linux-arm ./cmd/onvif-cli
+	GOOS=linux GOARCH=arm CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-quick-linux-arm ./cmd/onvif-quick
 	
 	# Windows AMD64
-	GOOS=windows GOARCH=amd64 go build -o $(BINARY_DIR)/onvif-cli-windows-amd64.exe ./cmd/onvif-cli
-	GOOS=windows GOARCH=amd64 go build -o $(BINARY_DIR)/onvif-quick-windows-amd64.exe ./cmd/onvif-quick
+	@echo "Building Windows AMD64..."
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-cli-windows-amd64.exe ./cmd/onvif-cli
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-quick-windows-amd64.exe ./cmd/onvif-quick
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-server-windows-amd64.exe ./cmd/onvif-server
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-diagnostics-windows-amd64.exe ./cmd/onvif-diagnostics
 	
-	# macOS AMD64
-	GOOS=darwin GOARCH=amd64 go build -o $(BINARY_DIR)/onvif-cli-darwin-amd64 ./cmd/onvif-cli
-	GOOS=darwin GOARCH=amd64 go build -o $(BINARY_DIR)/onvif-quick-darwin-amd64 ./cmd/onvif-quick
+	# Windows ARM64
+	@echo "Building Windows ARM64..."
+	GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-cli-windows-arm64.exe ./cmd/onvif-cli
+	GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-quick-windows-arm64.exe ./cmd/onvif-quick
+	
+	# macOS AMD64 (Intel)
+	@echo "Building macOS AMD64..."
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-cli-darwin-amd64 ./cmd/onvif-cli
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-quick-darwin-amd64 ./cmd/onvif-quick
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-server-darwin-amd64 ./cmd/onvif-server
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-diagnostics-darwin-amd64 ./cmd/onvif-diagnostics
 	
 	# macOS ARM64 (Apple Silicon)
-	GOOS=darwin GOARCH=arm64 go build -o $(BINARY_DIR)/onvif-cli-darwin-arm64 ./cmd/onvif-cli
-	GOOS=darwin GOARCH=arm64 go build -o $(BINARY_DIR)/onvif-quick-darwin-arm64 ./cmd/onvif-quick
+	@echo "Building macOS ARM64..."
+	GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-cli-darwin-arm64 ./cmd/onvif-cli
+	GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-quick-darwin-arm64 ./cmd/onvif-quick
+	GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-server-darwin-arm64 ./cmd/onvif-server
+	GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY_DIR)/onvif-diagnostics-darwin-arm64 ./cmd/onvif-diagnostics
+	
+	@echo "✅ All binaries built successfully in $(BINARY_DIR)/"
+	@echo ""
+	@ls -lh $(BINARY_DIR)/
+
+# Create release archives with checksums
+release: build-all
+	@echo "📦 Creating release archives..."
+	@mkdir -p releases
+	
+	# Create archives for each platform
+	@cd $(BINARY_DIR) && \
+	for os in linux darwin windows; do \
+		for arch in amd64 arm64 arm; do \
+			if [ "$$os" = "windows" ] && [ "$$arch" != "arm" ]; then \
+				if [ -f onvif-cli-$$os-$$arch.exe ]; then \
+					zip -j ../releases/go-onvif-$(VERSION)-$$os-$$arch.zip onvif-*-$$os-$$arch.exe ../README.md ../LICENSE 2>/dev/null || true; \
+				fi; \
+			elif [ "$$os" != "windows" ]; then \
+				if [ -f onvif-cli-$$os-$$arch ]; then \
+					tar czf ../releases/go-onvif-$(VERSION)-$$os-$$arch.tar.gz onvif-*-$$os-$$arch ../README.md ../LICENSE 2>/dev/null || true; \
+				fi; \
+			fi; \
+		done; \
+	done
+	
+	# Generate checksums
+	@cd releases && sha256sum * > checksums.txt 2>/dev/null || shasum -a 256 * > checksums.txt
+	@echo "✅ Release archives created in releases/"
+	@ls -lh releases/
 
 # Create Docker image
 docker:
 	@echo "🐳 Building Docker image..."
-	docker build -t go-onvif:latest .
+	docker build -t onvif-go:latest .
 
 # Development setup
 dev-setup:

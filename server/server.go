@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/0x524A/go-onvif/server/soap"
+	"github.com/0x524A/onvif-go/server/soap"
 )
 
 // New creates a new ONVIF server with the given configuration

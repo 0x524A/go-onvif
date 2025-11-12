@@ -191,7 +191,7 @@ Tested/compatible with major brands:
 ## Usage Example
 
 ```go
-import "github.com/0x524A/go-onvif"
+import "github.com/0x524A/onvif-go"
 
 // Create client
 client, _ := onvif.NewClient(
@@ -255,7 +255,7 @@ go-onvif/
 
 ```bash
 # Install
-go get github.com/0x524A/go-onvif
+go get github.com/0x524A/onvif-go
 
 # Run discovery example
 cd examples/discovery

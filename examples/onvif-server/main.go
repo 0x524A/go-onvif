@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/0x524A/go-onvif/server"
+	"github.com/0x524A/onvif-go/server"
 )
 
 func main() {

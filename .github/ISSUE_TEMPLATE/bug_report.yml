@@ -47,7 +47,7 @@ body:
       placeholder: |
         package main
         
-        import "github.com/0x524A/go-onvif"
+        import "github.com/0x524A/onvif-go"
         
         func main() {
             // Your code here
