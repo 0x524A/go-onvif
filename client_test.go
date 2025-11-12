@@ -10,6 +10,163 @@ import (
 	"time"
 )
 
+func TestNormalizeEndpoint(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+		wantErr  bool
+	}{
+		{
+			name:     "full URL with path",
+			input:    "http://192.168.1.100/onvif/device_service",
+			expected: "http://192.168.1.100/onvif/device_service",
+			wantErr:  false,
+		},
+		{
+			name:     "full URL with port and path",
+			input:    "http://192.168.1.100:8080/onvif/device_service",
+			expected: "http://192.168.1.100:8080/onvif/device_service",
+			wantErr:  false,
+		},
+		{
+			name:     "full URL without path",
+			input:    "http://192.168.1.100",
+			expected: "http://192.168.1.100/onvif/device_service",
+			wantErr:  false,
+		},
+		{
+			name:     "full URL with just slash",
+			input:    "http://192.168.1.100/",
+			expected: "http://192.168.1.100/onvif/device_service",
+			wantErr:  false,
+		},
+		{
+			name:     "IP address only",
+			input:    "192.168.1.100",
+			expected: "http://192.168.1.100/onvif/device_service",
+			wantErr:  false,
+		},
+		{
+			name:     "IP with port",
+			input:    "192.168.1.100:8080",
+			expected: "http://192.168.1.100:8080/onvif/device_service",
+			wantErr:  false,
+		},
+		{
+			name:     "IP with default HTTP port",
+			input:    "192.168.1.100:80",
+			expected: "http://192.168.1.100:80/onvif/device_service",
+			wantErr:  false,
+		},
+		{
+			name:     "hostname only",
+			input:    "camera.local",
+			expected: "http://camera.local/onvif/device_service",
+			wantErr:  false,
+		},
+		{
+			name:     "hostname with port",
+			input:    "camera.local:8080",
+			expected: "http://camera.local:8080/onvif/device_service",
+			wantErr:  false,
+		},
+		{
+			name:     "HTTPS URL",
+			input:    "https://192.168.1.100/onvif/device_service",
+			expected: "https://192.168.1.100/onvif/device_service",
+			wantErr:  false,
+		},
+		{
+			name:     "HTTPS with custom port",
+			input:    "https://192.168.1.100:8443/onvif/device_service",
+			expected: "https://192.168.1.100:8443/onvif/device_service",
+			wantErr:  false,
+		},
+		{
+			name:     "URL with custom path",
+			input:    "http://192.168.1.100/custom/path",
+			expected: "http://192.168.1.100/custom/path",
+			wantErr:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := normalizeEndpoint(tt.input)
+			
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("normalizeEndpoint() expected error but got none")
+				}
+				return
+			}
+			
+			if err != nil {
+				t.Errorf("normalizeEndpoint() unexpected error: %v", err)
+				return
+			}
+			
+			if result != tt.expected {
+				t.Errorf("normalizeEndpoint() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestNewClientWithVariousEndpoints(t *testing.T) {
+	tests := []struct {
+		name         string
+		endpoint     string
+		expectScheme string
+		expectHost   string
+		expectPath   string
+	}{
+		{
+			name:         "IP only",
+			endpoint:     "192.168.1.100",
+			expectScheme: "http",
+			expectHost:   "192.168.1.100",
+			expectPath:   "/onvif/device_service",
+		},
+		{
+			name:         "IP with port",
+			endpoint:     "192.168.1.100:8080",
+			expectScheme: "http",
+			expectHost:   "192.168.1.100:8080",
+			expectPath:   "/onvif/device_service",
+		},
+		{
+			name:         "Full URL",
+			endpoint:     "http://192.168.1.100/onvif/device_service",
+			expectScheme: "http",
+			expectHost:   "192.168.1.100",
+			expectPath:   "/onvif/device_service",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client, err := NewClient(tt.endpoint)
+			if err != nil {
+				t.Fatalf("NewClient() error = %v", err)
+			}
+
+			if !strings.HasPrefix(client.endpoint, tt.expectScheme+"://") {
+				t.Errorf("Expected scheme %s, got endpoint %s", tt.expectScheme, client.endpoint)
+			}
+
+			if !strings.Contains(client.endpoint, tt.expectHost) {
+				t.Errorf("Expected host %s in endpoint %s", tt.expectHost, client.endpoint)
+			}
+
+			if !strings.HasSuffix(client.endpoint, tt.expectPath) {
+				t.Errorf("Expected path %s in endpoint %s", tt.expectPath, client.endpoint)
+			}
+		})
+	}
+}
+
 // Mock ONVIF server for comprehensive testing
 type MockONVIFServer struct {
 	server     *httptest.Server

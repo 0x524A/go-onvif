@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Simplified Endpoint API**: `NewClient()` now accepts multiple endpoint formats
+  - Simple IP address: `"192.168.1.100"`
+  - IP with port: `"192.168.1.100:8080"`
+  - Full URL: `"http://192.168.1.100/onvif/device_service"` (backward compatible)
+  - Automatically adds `http://` scheme and `/onvif/device_service` path when needed
+  - See `docs/SIMPLIFIED_ENDPOINT.md` for details
+- Comprehensive test coverage for endpoint normalization (12 test cases)
+- New example: `examples/simplified-endpoint/` demonstrating all endpoint formats
 - Initial release of go-onvif library
 - ONVIF Client with context support
 - Device service implementation

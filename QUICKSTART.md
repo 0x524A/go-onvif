@@ -42,7 +42,7 @@ func main() {
 
 ## Step 2: Connect to Camera
 
-Create a client and get basic information:
+Create a client and get basic information. The endpoint can be specified in multiple formats:
 
 ```go
 package main
@@ -56,9 +56,12 @@ import (
 )
 
 func main() {
-    // Create client
+    // Create client - endpoint accepts multiple formats:
+    //   - Simple IP: "192.168.1.100"
+    //   - IP with port: "192.168.1.100:8080"  
+    //   - Full URL: "http://192.168.1.100/onvif/device_service"
     client, err := onvif.NewClient(
-        "http://192.168.1.100/onvif/device_service",
+        "192.168.1.100",  // Simple IP address works!
         onvif.WithCredentials("admin", "password"),
         onvif.WithTimeout(30*time.Second),
     )

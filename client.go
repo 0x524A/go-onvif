@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 )
@@ -50,18 +51,19 @@ func WithCredentials(username, password string) ClientOption {
 }
 
 // NewClient creates a new ONVIF client
+// The endpoint can be provided in multiple formats:
+//   - Full URL: "http://192.168.1.100/onvif/device_service"
+//   - IP with port: "192.168.1.100:80" (http assumed, /onvif/device_service added)
+//   - IP only: "192.168.1.100" (http://IP:80/onvif/device_service used)
 func NewClient(endpoint string, opts ...ClientOption) (*Client, error) {
-	// Validate endpoint
-	parsedURL, err := url.Parse(endpoint)
+	// Normalize endpoint to full URL
+	normalizedEndpoint, err := normalizeEndpoint(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("invalid endpoint: %w", err)
 	}
-	if parsedURL.Scheme == "" || parsedURL.Host == "" {
-		return nil, fmt.Errorf("invalid endpoint: must include scheme and host")
-	}
 
 	client := &Client{
-		endpoint: endpoint,
+		endpoint: normalizedEndpoint,
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 			Transport: &http.Transport{
@@ -78,6 +80,40 @@ func NewClient(endpoint string, opts ...ClientOption) (*Client, error) {
 	}
 
 	return client, nil
+}
+
+// normalizeEndpoint converts various endpoint formats to a full ONVIF URL
+func normalizeEndpoint(endpoint string) (string, error) {
+	// Check if endpoint starts with a scheme
+	if strings.HasPrefix(endpoint, "http://") || strings.HasPrefix(endpoint, "https://") {
+		// Parse as full URL
+		parsedURL, err := url.Parse(endpoint)
+		if err != nil {
+			return "", err
+		}
+		if parsedURL.Host == "" {
+			return "", fmt.Errorf("URL missing host")
+		}
+		// If path is empty or just "/", add default ONVIF path
+		if parsedURL.Path == "" || parsedURL.Path == "/" {
+			parsedURL.Path = "/onvif/device_service"
+		}
+		return parsedURL.String(), nil
+	}
+
+	// No scheme - treat as IP, IP:port, hostname, or hostname:port
+	// Add http:// scheme and validate
+	fullURL := "http://" + endpoint + "/onvif/device_service"
+	parsedURL, err := url.Parse(fullURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid IP address or hostname: %w", err)
+	}
+	
+	if parsedURL.Host == "" {
+		return "", fmt.Errorf("invalid endpoint format")
+	}
+
+	return fullURL, nil
 }
 
 // Initialize discovers and initializes service endpoints
