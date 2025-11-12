@@ -122,9 +122,12 @@ import (
 )
 
 func main() {
-    // Create client
+    // Create client - endpoint can be:
+    //   - Full URL: "http://192.168.1.100/onvif/device_service"
+    //   - IP with port: "192.168.1.100:8080"
+    //   - IP only: "192.168.1.100" (automatically adds http:// and path)
     client, err := onvif.NewClient(
-        "http://192.168.1.100/onvif/device_service",
+        "192.168.1.100",  // Simple IP address
         onvif.WithCredentials("admin", "password"),
         onvif.WithTimeout(30*time.Second),
     )
@@ -379,7 +382,7 @@ go run main.go
 ## Architecture
 
 ```
-go-onvif/
+onvif-go/
 ├── client.go           # Main ONVIF client
 ├── types.go            # ONVIF data types
 ├── errors.go           # Error definitions
