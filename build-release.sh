@@ -62,7 +62,7 @@ cd bin
 for platform in "${PLATFORMS[@]}"; do
     OS="${platform%/*}"
     ARCH="${platform#*/}"
-    ARCHIVE_NAME="go-onvif-${VERSION}-${OS}-${ARCH}"
+    ARCHIVE_NAME="onvif-go-${VERSION}-${OS}-${ARCH}"
     
     # Check if any binary exists for this platform
     if [ "$OS" = "windows" ]; then

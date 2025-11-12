@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 
-	"github.com/0x524A/go-onvif/soap"
+	"github.com/0x524A/onvif-go/soap"
 )
 
 // Device service namespace

@@ -1,10 +1,10 @@
-# go-onvif - ONVIF Client and Server Library for Go
+# onvif-go - ONVIF Client and Server Library for Go
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/0x524A/go-onvif.svg)](https://pkg.go.dev/github.com/0x524A/go-onvif)
-[![Go Report Card](https://goreportcard.com/badge/github.com/0x524A/go-onvif)](https://goreportcard.com/report/github.com/0x524A/go-onvif)
-[![License](https://img.shields.io/github/license/0x524A/go-onvif)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/0x524A/go-onvif)](https://github.com/0x524A/go-onvif/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/0x524A/go-onvif)](https://github.com/0x524A/go-onvif/issues)
+[![Go Reference](https://pkg.go.dev/badge/github.com/0x524A/onvif-go.svg)](https://pkg.go.dev/github.com/0x524A/onvif-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/0x524A/onvif-go)](https://goreportcard.com/report/github.com/0x524A/onvif-go)
+[![License](https://img.shields.io/github/license/0x524A/onvif-go)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/0x524A/onvif-go)](https://github.com/0x524A/onvif-go/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/0x524A/onvif-go)](https://github.com/0x524A/onvif-go/issues)
 
 > **Modern, high-performance Go library for ONVIF IP camera integration** - Control surveillance cameras, NVRs, and video devices with comprehensive ONVIF Profile S/T/G support. Includes both client and server implementations for complete ONVIF camera simulation and testing.
 
@@ -71,7 +71,7 @@ ONVIF (Open Network Video Interface Forum) is an open industry standard for IP-b
 ## Installation
 
 ```bash
-go get github.com/0x524A/go-onvif
+go get github.com/0x524A/onvif-go
 ```
 
 ## Quick Start
@@ -87,7 +87,7 @@ import (
     "log"
     "time"
 
-    "github.com/0x524A/go-onvif/discovery"
+    "github.com/0x524A/onvif-go/discovery"
 )
 
 func main() {
@@ -118,7 +118,7 @@ import (
     "log"
     "time"
 
-    "github.com/0x524A/go-onvif"
+    "github.com/0x524A/onvif-go"
 )
 
 func main() {
@@ -319,7 +319,7 @@ import (
     "context"
     "log"
 
-    "github.com/0x524A/go-onvif/server"
+    "github.com/0x524A/onvif-go/server"
 )
 
 func main() {
@@ -547,9 +547,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- 📖 [Documentation](https://pkg.go.dev/github.com/0x524A/go-onvif)
-- 🐛 [Issue Tracker](https://github.com/0x524A/go-onvif/issues)
-- 💬 [Discussions](https://github.com/0x524A/go-onvif/discussions)
+- 📖 [Documentation](https://pkg.go.dev/github.com/0x524A/onvif-go)
+- 🐛 [Issue Tracker](https://github.com/0x524A/onvif-go/issues)
+- 💬 [Discussions](https://github.com/0x524A/onvif-go/discussions)
 - 🔒 [Security Policy](.github/SECURITY.md)
 
 ## Keywords

@@ -1,4 +1,4 @@
-# Go ONVIF Library Makefile
+# ONVIF GO Library Makefile
 
 .PHONY: all build test clean install deps lint fmt vet check examples cli docker
 
@@ -181,7 +181,7 @@ release: build-all
 # Create Docker image
 docker:
 	@echo "🐳 Building Docker image..."
-	docker build -t go-onvif:latest .
+	docker build -t onvif-go:latest .
 
 # Development setup
 dev-setup:

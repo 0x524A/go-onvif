@@ -5,7 +5,7 @@ Get up and running with go-onvif in 5 minutes!
 ## Installation
 
 ```bash
-go get github.com/0x524A/go-onvif
+go get github.com/0x524A/onvif-go
 ```
 
 ## Step 1: Discover Cameras
@@ -20,7 +20,7 @@ import (
     "fmt"
     "time"
     
-    "github.com/0x524A/go-onvif/discovery"
+    "github.com/0x524A/onvif-go/discovery"
 )
 
 func main() {
@@ -52,7 +52,7 @@ import (
     "fmt"
     "time"
     
-    "github.com/0x524A/go-onvif"
+    "github.com/0x524A/onvif-go"
 )
 
 func main() {
@@ -178,7 +178,7 @@ import (
     "log"
     "time"
     
-    "github.com/0x524A/go-onvif"
+    "github.com/0x524A/onvif-go"
 )
 
 func main() {
@@ -262,9 +262,9 @@ func main() {
 ## Next Steps
 
 1. **Explore Examples**: Check out the `examples/` directory for more detailed use cases
-2. **Read Documentation**: Visit [pkg.go.dev](https://pkg.go.dev/github.com/0x524A/go-onvif)
+2. **Read Documentation**: Visit [pkg.go.dev](https://pkg.go.dev/github.com/0x524A/onvif-go)
 3. **Review Architecture**: See [ARCHITECTURE.md](ARCHITECTURE.md) for design details
-4. **Check Issues**: Look at [GitHub Issues](https://github.com/0x524A/go-onvif/issues) for known issues
+4. **Check Issues**: Look at [GitHub Issues](https://github.com/0x524A/onvif-go/issues) for known issues
 
 ## Common Patterns
 
