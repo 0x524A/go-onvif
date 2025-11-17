@@ -143,7 +143,6 @@ var (
 	timeout    = flag.Int("timeout", 30, "Request timeout in seconds")
 	verbose    = flag.Bool("verbose", false, "Verbose output")
 	captureXML = flag.Bool("capture-xml", false, "Capture raw SOAP XML traffic and create tar.gz archive")
-	includeRaw = flag.Bool("include-raw", false, "Include raw SOAP responses (increases file size)")
 )
 
 func main() {
