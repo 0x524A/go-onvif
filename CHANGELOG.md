@@ -22,11 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Project Structure**: Implemented ideal Go project layout
   - Moved `soap/` to `internal/soap/` (private implementation)
+  - Moved `test/test-server.go` to `examples/test-server/` for clarity
+  - Removed empty `test/` directory
   - Public API remains at root level for clean imports
   - Follows Standard Go Project Layout for libraries
   - Updated all imports throughout codebase
   - See `docs/PROJECT_STRUCTURE.md` and `docs/ARCHITECTURE.md` for details
 - Updated `docs/ARCHITECTURE.md` to reflect new project structure
+- Updated module path from `github.com/0x524A/onvif-go` to `github.com/0x524a/onvif-go` (lowercase)
 - ONVIF Client with context support
 - Device service implementation
   - GetDeviceInformation

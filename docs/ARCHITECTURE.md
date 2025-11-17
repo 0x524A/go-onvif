@@ -20,7 +20,7 @@ onvif-go/
 ├── cmd/                 # Command-line tools
 ├── examples/            # Usage examples
 ├── docs/               # Documentation
-├── test/               # Testing utilities
+├── testing/            # Testing helpers
 └── testdata/           # Test fixtures
 ```
 

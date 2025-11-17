@@ -50,6 +50,7 @@ onvif-go/
 │   ├── imaging-settings/ # Imaging configuration
 │   ├── complete-demo/   # Full feature demo
 │   ├── simplified-endpoint/ # Endpoint format demo
+│   ├── test-server/     # Server testing example
 │   └── .../            # Additional examples
 │
 ├── docs/               # Documentation
@@ -58,7 +59,6 @@ onvif-go/
 │   ├── SIMPLIFIED_ENDPOINT.md # Endpoint API docs
 │   └── .../           # Additional documentation
 │
-├── test/              # Additional test utilities
 ├── testdata/          # Test fixtures and data
 ├── testing/           # Testing helpers
 │
