@@ -529,14 +529,14 @@ go test -v ./testdata/captures/
 
 If you find this project useful, please consider giving it a star! ⭐
 
-[![Star History Chart](https://api.star-history.com/svg?repos=0x524a/go-onvif&type=Date)](https://star-history.com/#0x524a/go-onvif&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=0x524a/onvif-go&type=Date)](https://star-history.com/#0x524a/onvif-go&Date)
 
 ## 📊 Project Stats
 
-![GitHub repo size](https://img.shields.io/github/repo-size/0x524a/go-onvif)
-![GitHub code size](https://img.shields.io/github/languages/code-size/0x524a/go-onvif)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/0x524a/go-onvif)
-![GitHub last commit](https://img.shields.io/github/last-commit/0x524a/go-onvif)
+![GitHub repo size](https://img.shields.io/github/repo-size/0x524a/onvif-go)
+![GitHub code size](https://img.shields.io/github/languages/code-size/0x524a/onvif-go)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/0x524a/onvif-go)
+![GitHub last commit](https://img.shields.io/github/last-commit/0x524a/onvif-go)
 
 ## License
 
