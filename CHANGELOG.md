@@ -14,7 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Full URL: `"http://192.168.1.100/onvif/device_service"` (backward compatible)
   - Automatically adds `http://` scheme and `/onvif/device_service` path when needed
   - See `docs/SIMPLIFIED_ENDPOINT.md` for details
+- **Localhost URL Fix**: Automatic handling of cameras that report localhost addresses
+  - Detects and fixes localhost/127.0.0.1/0.0.0.0/::1 in GetCapabilities response
+  - Replaces with actual camera IP address
+  - Preserves service-specific ports when specified
+  - Handles common camera firmware bugs transparently
 - Comprehensive test coverage for endpoint normalization (12 test cases)
+- Comprehensive test coverage for localhost URL handling (10 test cases)
 - New example: `examples/simplified-endpoint/` demonstrating all endpoint formats
 - Documentation: `docs/PROJECT_STRUCTURE.md` explaining project organization
 - Initial release of go-onvif library

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -638,4 +639,158 @@ func ExampleClient_GetDeviceInformation() {
 	
 	fmt.Printf("Camera: %s %s\n", info.Manufacturer, info.Model)
 	fmt.Printf("Firmware: %s\n", info.FirmwareVersion)
+}
+
+func TestFixLocalhostURL(t *testing.T) {
+	tests := []struct {
+		name         string
+		clientURL    string
+		serviceURL   string
+		expectedURL  string
+	}{
+		{
+			name:        "localhost hostname",
+			clientURL:   "http://192.168.1.100/onvif/device_service",
+			serviceURL:  "http://localhost/onvif/media_service",
+			expectedURL: "http://192.168.1.100/onvif/media_service",
+		},
+		{
+			name:        "127.0.0.1 loopback",
+			clientURL:   "http://192.168.1.100:8080/onvif/device_service",
+			serviceURL:  "http://127.0.0.1/onvif/ptz_service",
+			expectedURL: "http://192.168.1.100:8080/onvif/ptz_service",
+		},
+		{
+			name:        "0.0.0.0 address",
+			clientURL:   "http://192.168.1.100/onvif/device_service",
+			serviceURL:  "http://0.0.0.0/onvif/imaging_service",
+			expectedURL: "http://192.168.1.100/onvif/imaging_service",
+		},
+		{
+			name:        "IPv6 loopback",
+			clientURL:   "http://192.168.1.100/onvif/device_service",
+			serviceURL:  "http://[::1]/onvif/events_service",
+			expectedURL: "http://192.168.1.100/onvif/events_service",
+		},
+		{
+			name:        "localhost with different port",
+			clientURL:   "http://192.168.1.100/onvif/device_service",
+			serviceURL:  "http://localhost:8080/onvif/media_service",
+			expectedURL: "http://192.168.1.100:8080/onvif/media_service",
+		},
+		{
+			name:        "valid IP address unchanged",
+			clientURL:   "http://192.168.1.100/onvif/device_service",
+			serviceURL:  "http://192.168.1.100/onvif/media_service",
+			expectedURL: "http://192.168.1.100/onvif/media_service",
+		},
+		{
+			name:        "different valid IP unchanged",
+			clientURL:   "http://192.168.1.100/onvif/device_service",
+			serviceURL:  "http://192.168.1.50/onvif/media_service",
+			expectedURL: "http://192.168.1.50/onvif/media_service",
+		},
+		{
+			name:        "HTTPS localhost",
+			clientURL:   "https://192.168.1.100/onvif/device_service",
+			serviceURL:  "https://localhost/onvif/media_service",
+			expectedURL: "https://192.168.1.100/onvif/media_service",
+		},
+		{
+			name:        "client with port, service localhost no port",
+			clientURL:   "http://192.168.1.100:80/onvif/device_service",
+			serviceURL:  "http://localhost/onvif/media_service",
+			expectedURL: "http://192.168.1.100:80/onvif/media_service",
+		},
+		{
+			name:        "empty service URL",
+			clientURL:   "http://192.168.1.100/onvif/device_service",
+			serviceURL:  "",
+			expectedURL: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := &Client{
+				endpoint: tt.clientURL,
+			}
+
+			result := client.fixLocalhostURL(tt.serviceURL)
+			if result != tt.expectedURL {
+				t.Errorf("fixLocalhostURL() = %v, want %v", result, tt.expectedURL)
+			}
+		})
+	}
+}
+
+func TestInitializeWithLocalhostURLs(t *testing.T) {
+	// Create a mock server
+	mock := NewMockONVIFServer()
+	defer mock.Close()
+
+	// Set a GetCapabilities response with localhost URLs
+	capabilitiesResponse := `<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope">
+	<SOAP-ENV:Body>
+		<tds:GetCapabilitiesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
+			<tds:Capabilities>
+				<tt:Media xmlns:tt="http://www.onvif.org/ver10/schema">
+					<tt:XAddr>http://localhost:8080/onvif/media_service</tt:XAddr>
+				</tt:Media>
+				<tt:PTZ xmlns:tt="http://www.onvif.org/ver10/schema">
+					<tt:XAddr>http://127.0.0.1/onvif/ptz_service</tt:XAddr>
+				</tt:PTZ>
+				<tt:Imaging xmlns:tt="http://www.onvif.org/ver10/schema">
+					<tt:XAddr>http://0.0.0.0/onvif/imaging_service</tt:XAddr>
+				</tt:Imaging>
+			</tds:Capabilities>
+		</tds:GetCapabilitiesResponse>
+	</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>`
+
+	mock.SetResponse("GetCapabilities", capabilitiesResponse)
+
+	// Create client pointing to mock server
+	client, err := NewClient(
+		mock.URL()+"/onvif/device_service",
+		WithCredentials("admin", "admin"),
+	)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	// Initialize should fix localhost URLs
+	ctx := context.Background()
+	err = client.Initialize(ctx)
+	if err != nil {
+		t.Fatalf("Initialize() failed: %v", err)
+	}
+
+	// Parse the mock server URL to get host
+	mockURL, _ := url.Parse(mock.URL())
+	expectedHost := mockURL.Host
+
+	// Verify media endpoint was fixed (localhost:8080 should be replaced with mock host)
+	if strings.Contains(client.mediaEndpoint, "localhost") {
+		t.Errorf("Media endpoint still contains localhost: %v", client.mediaEndpoint)
+	}
+	if !strings.Contains(client.mediaEndpoint, expectedHost) {
+		t.Logf("Media endpoint: %v, Expected to contain: %v", client.mediaEndpoint, expectedHost)
+		// The port 8080 from service URL should be preserved
+		expectedMediaURL := "http://" + mockURL.Hostname() + ":8080/onvif/media_service"
+		if client.mediaEndpoint != expectedMediaURL {
+			t.Errorf("Media endpoint = %v, want %v", client.mediaEndpoint, expectedMediaURL)
+		}
+	}
+
+	// Verify PTZ endpoint was fixed (127.0.0.1 should be replaced with mock host)
+	if strings.Contains(client.ptzEndpoint, "127.0.0.1") && !strings.Contains(expectedHost, "127.0.0.1") {
+		t.Errorf("PTZ endpoint still contains 127.0.0.1: %v", client.ptzEndpoint)
+	}
+
+	// Verify Imaging endpoint was fixed (0.0.0.0 should be replaced with mock host)
+	if strings.Contains(client.imagingEndpoint, "0.0.0.0") {
+		t.Errorf("Imaging endpoint still contains 0.0.0.0: %v", client.imagingEndpoint)
+	}
 }
