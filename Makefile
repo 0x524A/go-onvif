@@ -163,11 +163,11 @@ release: build-all
 		for arch in amd64 arm64 arm; do \
 			if [ "$$os" = "windows" ] && [ "$$arch" != "arm" ]; then \
 				if [ -f onvif-cli-$$os-$$arch.exe ]; then \
-					zip -j ../releases/go-onvif-$(VERSION)-$$os-$$arch.zip onvif-*-$$os-$$arch.exe ../README.md ../LICENSE 2>/dev/null || true; \
+					zip -j ../releases/onvif-go-$(VERSION)-$$os-$$arch.zip onvif-*-$$os-$$arch.exe ../README.md ../LICENSE 2>/dev/null || true; \
 				fi; \
 			elif [ "$$os" != "windows" ]; then \
 				if [ -f onvif-cli-$$os-$$arch ]; then \
-					tar czf ../releases/go-onvif-$(VERSION)-$$os-$$arch.tar.gz onvif-*-$$os-$$arch ../README.md ../LICENSE 2>/dev/null || true; \
+					tar czf ../releases/onvif-go-$(VERSION)-$$os-$$arch.tar.gz onvif-*-$$os-$$arch ../README.md ../LICENSE 2>/dev/null || true; \
 				fi; \
 			fi; \
 		done; \

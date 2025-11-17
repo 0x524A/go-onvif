@@ -193,12 +193,12 @@ jobs:
             #### Linux/macOS
             ```bash
             # Download and extract
-            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.VERSION }}/go-onvif-${{ steps.version.outputs.VERSION }}-linux-amd64.tar.gz
-            tar xzf go-onvif-${{ steps.version.outputs.VERSION }}-linux-amd64.tar.gz
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.VERSION }}/onvif-go-${{ steps.version.outputs.VERSION }}-linux-amd64.tar.gz
+            tar xzf onvif-go-${{ steps.version.outputs.VERSION }}-linux-amd64.tar.gz
             
             # Make executable and move to PATH
-            chmod +x onvif-cli-linux-amd64
-            sudo mv onvif-cli-linux-amd64 /usr/local/bin/onvif-cli
+            chmod +x onvif-cli
+            sudo mv onvif-cli /usr/local/bin/onvif-cli
             ```
             
             #### Windows
