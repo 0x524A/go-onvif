@@ -118,7 +118,7 @@ make build
 make docker
 
 # Run container
-docker run -it go-onvif:latest
+docker run -it onvif-go:latest
 ```
 
 ## 🎯 Key Improvements from Original

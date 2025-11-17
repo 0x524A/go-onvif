@@ -1,6 +1,6 @@
-# Contributing to go-onvif
+# Contributing to onvif-go
 
-Thank you for your interest in contributing to go-onvif! 🎉
+Thank you for your interest in contributing to onvif-go! 🎉
 
 ## Code of Conduct
 
@@ -97,7 +97,7 @@ Help us maintain compatibility information:
 
 ```bash
 git clone https://github.com/0x524a/onvif-go.git
-cd go-onvif
+cd onvif-go
 go build ./...
 ```
 
@@ -219,7 +219,7 @@ test: add integration tests for Hikvision cameras
 ## Project Structure
 
 ```
-go-onvif/
+onvif-go/
 ├── client.go           # Main ONVIF client
 ├── types.go            # ONVIF type definitions
 ├── device.go           # Device service
@@ -272,4 +272,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-Thank you for contributing to go-onvif! Your efforts help make ONVIF integration better for everyone. 🚀
+Thank you for contributing to onvif-go! Your efforts help make ONVIF integration better for everyone. 🚀

@@ -73,7 +73,7 @@ func main() {
 
 		if resp.StatusCode == 401 {
 			fmt.Println("💡 Authentication required - this is expected!")
-			fmt.Println("💡 Now testing with go-onvif client library...")
+			fmt.Println("💡 Now testing with onvif-go client library...")
 			fmt.Println()
 			testWithClient(username, password)
 		} else {
@@ -91,7 +91,7 @@ func testWithClient(username, password string) {
 	onvif := struct{}{}
 	_ = onvif
 
-	fmt.Println("Note: Would test with go-onvif client here, but keeping this simple.")
+	fmt.Println("Note: Would test with onvif-go client here, but keeping this simple.")
 	fmt.Println("The camera appears to be responding to ONVIF requests.")
 	fmt.Println()
 	fmt.Println("💡 Next step: Check if the credentials are correct")

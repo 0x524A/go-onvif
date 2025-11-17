@@ -42,7 +42,7 @@ A complete ONVIF-compliant server implementation that simulates multi-lens IP ca
 ```bash
 # Clone the repository (if not already done)
 git clone https://github.com/0x524a/onvif-go
-cd go-onvif
+cd onvif-go
 
 # Build the server CLI
 go build -o onvif-server ./cmd/onvif-server
@@ -95,7 +95,7 @@ The server will start on `http://0.0.0.0:8080` with:
   -password string
         Authentication password (default "admin")
   -manufacturer string
-        Device manufacturer (default "go-onvif")
+        Device manufacturer (default "onvif-go")
   -model string
         Device model (default "Virtual Multi-Lens Camera")
   -firmware string
@@ -430,7 +430,7 @@ This project is licensed under the MIT License - see the [LICENSE](../../LICENSE
 
 ## Acknowledgments
 
-- Built on top of the [go-onvif](https://github.com/0x524a/onvif-go) client library
+- Built on top of the [onvif-go](https://github.com/0x524a/onvif-go) client library
 - ONVIF specifications from [ONVIF.org](https://www.onvif.org)
 - Inspired by the need for flexible camera simulation in development workflows
 

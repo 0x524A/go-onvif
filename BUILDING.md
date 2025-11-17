@@ -1,4 +1,4 @@
-# Building and Releasing go-onvif
+# Building and Releasing onvif-go
 
 This document describes how to build binaries for multiple platforms and create releases.
 

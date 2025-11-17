@@ -1,8 +1,8 @@
-# go-onvif Architecture & Design
+# onvif-go Architecture & Design
 
 ## Overview
 
-go-onvif is a modern, performant Go library for communicating with ONVIF-compliant IP cameras and devices. It provides a clean, type-safe API with comprehensive support for device management, media streaming, PTZ control, and imaging settings.
+onvif-go is a modern, performant Go library for communicating with ONVIF-compliant IP cameras and devices. It provides a clean, type-safe API with comprehensive support for device management, media streaming, PTZ control, and imaging settings.
 
 ## Architecture
 
@@ -351,7 +351,7 @@ Minimal external dependencies:
 
 ## Conclusion
 
-go-onvif provides a modern, performant, and easy-to-use Go library for ONVIF camera integration. Its architecture prioritizes:
+onvif-go provides a modern, performant, and easy-to-use Go library for ONVIF camera integration. Its architecture prioritizes:
 - Developer experience (simple, intuitive API)
 - Type safety (compile-time error detection)
 - Performance (connection pooling, efficient operations)

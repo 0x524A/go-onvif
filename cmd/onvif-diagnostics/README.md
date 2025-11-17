@@ -33,7 +33,7 @@ A comprehensive diagnostic tool for collecting detailed information from ONVIF c
 
 ### Option 1: Build from source
 ```bash
-cd /path/to/go-onvif
+cd /path/to/onvif-go
 go build -o onvif-diagnostics ./cmd/onvif-diagnostics/
 ```
 

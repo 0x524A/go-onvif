@@ -10,7 +10,7 @@ import (
 	"github.com/0x524a/onvif-go/discovery"
 )
 
-// This is a comprehensive demonstration of all go-onvif features
+// This is a comprehensive demonstration of all onvif-go features
 func main() {
 	// Step 1: Discover cameras on the network
 	fmt.Println("=== Step 1: Discovering ONVIF Cameras ===")

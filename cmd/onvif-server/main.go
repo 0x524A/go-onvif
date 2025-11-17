@@ -23,7 +23,7 @@ func main() {
 	port := flag.Int("port", 8080, "Server port")
 	username := flag.String("username", "admin", "Authentication username")
 	password := flag.String("password", "admin", "Authentication password")
-	manufacturer := flag.String("manufacturer", "go-onvif", "Device manufacturer")
+	manufacturer := flag.String("manufacturer", "onvif-go", "Device manufacturer")
 	model := flag.String("model", "Virtual Multi-Lens Camera", "Device model")
 	firmware := flag.String("firmware", "1.0.0", "Firmware version")
 	serial := flag.String("serial", "SN-12345678", "Serial number")

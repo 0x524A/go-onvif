@@ -235,7 +235,7 @@ func DefaultConfig() *Config {
 		BasePath: "/onvif",
 		Timeout:  30 * time.Second,
 		DeviceInfo: DeviceInfo{
-			Manufacturer:    "go-onvif",
+			Manufacturer:    "onvif-go",
 			Model:           "Virtual Multi-Lens Camera",
 			FirmwareVersion: "1.0.0",
 			SerialNumber:    "SN-12345678",

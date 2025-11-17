@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive test coverage for localhost URL handling (10 test cases)
 - New example: `examples/simplified-endpoint/` demonstrating all endpoint formats
 - Documentation: `docs/PROJECT_STRUCTURE.md` explaining project organization
-- Initial release of go-onvif library
+- Initial release of onvif-go library
 
 ### Changed
 - **Project Structure**: Implemented ideal Go project layout
