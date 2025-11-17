@@ -26,14 +26,16 @@ go.work
 *~
 .DS_Store
 
-# Binaries
+# Binaries (in root, bin, or dist directories)
 bin/
 dist/
 releases/
-onvif-diagnostics
-onvif-server
-onvif-server-example
-generate-tests
+/onvif-diagnostics
+/onvif-server
+/onvif-server-example
+/generate-tests
+/onvif-cli
+/onvif-quick
 
 # Temporary files
 tmp/
