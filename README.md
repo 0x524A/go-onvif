@@ -525,6 +525,88 @@ go test -v ./testdata/captures/
 
 **See**: `testdata/captures/README.md` for complete testing guide
 
+## 🖥️ CLI Tools
+
+### Interactive CLI Tool
+
+Feature-rich command-line interface for camera management and testing:
+
+```bash
+go build -o onvif-cli ./cmd/onvif-cli/
+
+# Start interactive menu
+./onvif-cli
+```
+
+**Features**:
+- 🔍 Discover cameras on network with interface selection
+- 🌐 View all network interfaces and their capabilities
+- 🔗 Connect to cameras with authentication
+- 📱 Get device info, capabilities, and system settings
+- 📹 Retrieve media profiles and stream URLs
+- 🎮 PTZ control (pan, tilt, zoom, presets)
+- 🎨 Imaging settings (brightness, contrast, exposure, etc.)
+- 📞 Network interface selection for multi-interface systems
+
+**Usage**:
+```
+📋 Main Menu:
+  1. Discover Cameras on Network
+  2. List Network Interfaces
+  3. Connect to Camera
+  4. Device Operations
+  5. Media Operations
+  6. PTZ Operations
+  7. Imaging Operations
+  0. Exit
+```
+
+### Quick Demo Tool
+
+Lightweight tool for quick testing and demonstration:
+
+```bash
+go build -o onvif-quick ./cmd/onvif-quick/
+
+# Start interactive menu
+./onvif-quick
+```
+
+**Features**:
+- ⚡ Quick camera discovery
+- 🌐 List available network interfaces
+- 🔗 Quick connection and camera info
+- 🎮 PTZ demo with movement examples
+- 📡 Stream URL retrieval
+
+### Network Interface Selection
+
+Both CLI tools support explicit network interface selection for systems with multiple active interfaces:
+
+```bash
+# onvif-cli example
+./onvif-cli
+# Select: 2 (List Network Interfaces)
+# Select: 1 (Discover)
+# Choose: y (Use specific interface)
+# Enter: eth0 or 192.168.1.100
+```
+
+Or use the API programmatically:
+
+```go
+opts := &discovery.DiscoverOptions{
+    NetworkInterface: "eth0",  // By interface name
+    // or
+    // NetworkInterface: "192.168.1.100",  // By IP address
+}
+devices, err := discovery.DiscoverWithOptions(ctx, 5*time.Second, opts)
+```
+
+**See**: 
+- `docs/CLI_NETWORK_INTERFACE_USAGE.md` - Detailed CLI guide
+- `discovery/NETWORK_INTERFACE_GUIDE.md` - API usage examples
+
 ## 🌟 Star History
 
 If you find this project useful, please consider giving it a star! ⭐
