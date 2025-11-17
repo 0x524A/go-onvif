@@ -40,6 +40,34 @@ func main() {
 }
 ```
 
+### Discover on Specific Network Interface
+
+If you have multiple network interfaces, specify which one to use:
+
+```go
+import "github.com/0x524a/onvif-go/discovery"
+
+// Option 1: Discover on specific interface by name
+opts := &discovery.DiscoverOptions{
+    NetworkInterface: "eth0",  // Use Ethernet
+}
+devices, err := discovery.DiscoverWithOptions(ctx, 5*time.Second, opts)
+
+// Option 2: Discover using IP address
+opts := &discovery.DiscoverOptions{
+    NetworkInterface: "192.168.1.100",
+}
+devices, err := discovery.DiscoverWithOptions(ctx, 5*time.Second, opts)
+
+// Option 3: List available interfaces
+interfaces, err := discovery.ListNetworkInterfaces()
+for _, iface := range interfaces {
+    fmt.Printf("%s: %v (Multicast: %v)\n", iface.Name, iface.Addresses, iface.Multicast)
+}
+```
+
+For more details, see [NETWORK_INTERFACE_GUIDE.md](discovery/NETWORK_INTERFACE_GUIDE.md).
+
 ## Step 2: Connect to Camera
 
 Create a client and get basic information. The endpoint can be specified in multiple formats:
