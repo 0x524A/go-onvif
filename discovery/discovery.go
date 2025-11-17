@@ -66,15 +66,44 @@ type ProbeMatches struct {
 	ProbeMatch  []ProbeMatch  `xml:"ProbeMatch"`
 }
 
+// DiscoverOptions contains options for device discovery
+type DiscoverOptions struct {
+	// NetworkInterface specifies the network interface to use for multicast.
+	// If empty, the system will choose the default interface.
+	// Examples: "eth0", "wlan0", "192.168.1.100"
+	NetworkInterface string
+	
+	// Context and timeout are handled by the caller
+}
+
 // Discover discovers ONVIF devices on the network
+// For advanced options like specifying a network interface, use DiscoverWithOptions
 func Discover(ctx context.Context, timeout time.Duration) ([]*Device, error) {
+	return DiscoverWithOptions(ctx, timeout, &DiscoverOptions{})
+}
+
+// DiscoverWithOptions discovers ONVIF devices with custom options
+func DiscoverWithOptions(ctx context.Context, timeout time.Duration, opts *DiscoverOptions) ([]*Device, error) {
+	if opts == nil {
+		opts = &DiscoverOptions{}
+	}
+
 	// Create UDP connection for multicast
 	addr, err := net.ResolveUDPAddr("udp", multicastAddr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve multicast address: %w", err)
 	}
 
-	conn, err := net.ListenMulticastUDP("udp", nil, addr)
+	// Get the network interface to use
+	var iface *net.Interface
+	if opts.NetworkInterface != "" {
+		iface, err = resolveNetworkInterface(opts.NetworkInterface)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve network interface: %w", err)
+		}
+	}
+
+	conn, err := net.ListenMulticastUDP("udp", iface, addr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to listen on multicast address: %w", err)
 	}
@@ -184,6 +213,110 @@ func generateUUID() string {
 		time.Now().UnixNano()%1000,
 		time.Now().Unix()%1000,
 		time.Now().UnixNano()%10000)
+}
+
+// resolveNetworkInterface resolves a network interface by name or IP address
+func resolveNetworkInterface(ifaceSpec string) (*net.Interface, error) {
+	// Try to get interface by name (e.g., "eth0", "wlan0")
+	if iface, err := net.InterfaceByName(ifaceSpec); err == nil {
+		return iface, nil
+	}
+
+	// Try to parse as IP address and find the interface
+	if ip := net.ParseIP(ifaceSpec); ip != nil {
+		interfaces, err := net.Interfaces()
+		if err != nil {
+			return nil, fmt.Errorf("failed to list network interfaces: %w", err)
+		}
+
+		for _, iface := range interfaces {
+			addrs, err := iface.Addrs()
+			if err != nil {
+				continue
+			}
+
+			for _, addr := range addrs {
+				switch v := addr.(type) {
+				case *net.IPNet:
+					if v.IP.Equal(ip) {
+						return &iface, nil
+					}
+				case *net.IPAddr:
+					if v.IP.Equal(ip) {
+						return &iface, nil
+					}
+				}
+			}
+		}
+	}
+
+	// List available interfaces for error message
+	interfaces, _ := net.Interfaces()
+	availableInterfaces := make([]string, 0)
+	for _, iface := range interfaces {
+		addrs, _ := iface.Addrs()
+		ifaceInfo := iface.Name
+		if len(addrs) > 0 {
+			var addrStrs []string
+			for _, addr := range addrs {
+				addrStrs = append(addrStrs, addr.String())
+			}
+			ifaceInfo += " [" + strings.Join(addrStrs, ", ") + "]"
+		}
+		availableInterfaces = append(availableInterfaces, ifaceInfo)
+	}
+
+	return nil, fmt.Errorf("network interface %q not found. Available interfaces: %v", ifaceSpec, availableInterfaces)
+}
+
+// ListNetworkInterfaces returns all available network interfaces with their addresses
+func ListNetworkInterfaces() ([]NetworkInterface, error) {
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list network interfaces: %w", err)
+	}
+
+	var result []NetworkInterface
+	for _, iface := range interfaces {
+		addrs, err := iface.Addrs()
+		if err != nil {
+			continue
+		}
+
+		var ipAddrs []string
+		for _, addr := range addrs {
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ipAddrs = append(ipAddrs, v.IP.String())
+			case *net.IPAddr:
+				ipAddrs = append(ipAddrs, v.IP.String())
+			}
+		}
+
+		result = append(result, NetworkInterface{
+			Name:      iface.Name,
+			Addresses: ipAddrs,
+			Up:        iface.Flags&net.FlagUp != 0,
+			Multicast: iface.Flags&net.FlagMulticast != 0,
+		})
+	}
+
+	return result, nil
+}
+
+// NetworkInterface represents a network interface
+type NetworkInterface struct {
+	// Name of the interface (e.g., "eth0", "wlan0")
+	Name string
+	
+	// IP addresses assigned to this interface
+	Addresses []string
+	
+	// Up indicates if the interface is up
+	Up bool
+	
+	// Multicast indicates if the interface supports multicast
+	Multicast bool
 }
 
 // GetDeviceEndpoint extracts the primary device endpoint from XAddrs

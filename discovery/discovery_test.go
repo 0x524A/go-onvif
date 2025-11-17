@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"context"
+	"net"
 	"testing"
 	"time"
 )
@@ -249,5 +250,190 @@ func BenchmarkDeviceGetDeviceEndpoint(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = device.GetDeviceEndpoint()
+	}
+}
+
+// Tests for network interface discovery features
+
+func TestListNetworkInterfaces(t *testing.T) {
+	interfaces, err := ListNetworkInterfaces()
+	if err != nil {
+		t.Fatalf("ListNetworkInterfaces failed: %v", err)
+	}
+
+	if len(interfaces) == 0 {
+		t.Skip("No network interfaces available")
+	}
+
+	// Verify loopback interface exists (if available)
+	for _, iface := range interfaces {
+		if iface.Name == "lo" {
+			if len(iface.Addresses) == 0 {
+				t.Error("Loopback interface should have addresses")
+			}
+			break
+		}
+	}
+
+	// Loopback might not exist on all systems, but there should be at least one interface
+	t.Logf("Found %d network interface(s)", len(interfaces))
+	for _, iface := range interfaces {
+		t.Logf("  - %s: up=%v, multicast=%v, addresses=%v", iface.Name, iface.Up, iface.Multicast, iface.Addresses)
+	}
+}
+
+func TestResolveNetworkInterface(t *testing.T) {
+	tests := []struct {
+		name      string
+		ifaceSpec string
+		shouldErr bool
+	}{
+		{
+			name:      "loopback by name",
+			ifaceSpec: "lo",
+			shouldErr: false,
+		},
+		{
+			name:      "loopback by ip",
+			ifaceSpec: "127.0.0.1",
+			shouldErr: false,
+		},
+		{
+			name:      "invalid interface",
+			ifaceSpec: "nonexistent-interface-12345xyz",
+			shouldErr: true,
+		},
+		{
+			name:      "invalid ip",
+			ifaceSpec: "999.999.999.999",
+			shouldErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			iface, err := resolveNetworkInterface(tt.ifaceSpec)
+
+			if tt.shouldErr {
+				if err == nil {
+					t.Errorf("Expected error for interface %s, but got none", tt.ifaceSpec)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error for interface %s: %v", tt.ifaceSpec, err)
+				}
+				if iface == nil {
+					t.Errorf("Expected interface for %s, but got nil", tt.ifaceSpec)
+				} else {
+					t.Logf("Resolved %s to interface: %s", tt.ifaceSpec, iface.Name)
+				}
+			}
+		})
+	}
+}
+
+func TestDiscoverWithOptions_DefaultOptions(t *testing.T) {
+	// Test with default options (should not error even if no cameras found)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	devices, err := DiscoverWithOptions(ctx, 1*time.Second, &DiscoverOptions{})
+	if err != nil && err != context.DeadlineExceeded {
+		t.Logf("DiscoverWithOptions returned: %v (this is OK if no cameras on network)", err)
+	}
+
+	// Should return a slice (possibly empty)
+	if devices == nil {
+		t.Error("Expected devices slice, got nil")
+	}
+
+	t.Logf("Found %d devices with default options", len(devices))
+}
+
+func TestDiscoverWithOptions_NilOptions(t *testing.T) {
+	// Test with nil options (should work with nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	devices, err := DiscoverWithOptions(ctx, 500*time.Millisecond, nil)
+	if err != nil && err != context.DeadlineExceeded {
+		t.Logf("DiscoverWithOptions with nil returned: %v", err)
+	}
+
+	if devices == nil {
+		t.Error("Expected devices slice, got nil")
+	}
+}
+
+func TestDiscoverWithOptions_LoopbackInterface(t *testing.T) {
+	// Test with loopback interface for testing
+	_, err := net.InterfaceByName("lo")
+	if err != nil {
+		t.Skip("Loopback interface not available on this system")
+	}
+
+	opts := &DiscoverOptions{
+		NetworkInterface: "lo",
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	devices, err := DiscoverWithOptions(ctx, 500*time.Millisecond, opts)
+	if err != nil && err != context.DeadlineExceeded {
+		t.Logf("DiscoverWithOptions with lo interface: %v (timeout is expected)", err)
+	}
+
+	if devices == nil {
+		t.Error("Expected devices slice, got nil")
+	}
+
+	t.Logf("Found %d devices on loopback interface", len(devices))
+}
+
+func TestDiscoverWithOptions_InvalidInterface(t *testing.T) {
+	opts := &DiscoverOptions{
+		NetworkInterface: "nonexistent-interface-xyz",
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	_, err := DiscoverWithOptions(ctx, 500*time.Millisecond, opts)
+	if err == nil {
+		t.Error("Expected error for invalid interface, but got none")
+	}
+
+	t.Logf("Got expected error: %v", err)
+}
+
+func TestDiscover_BackwardCompatibility(t *testing.T) {
+	// Test that old Discover function still works (backward compatibility)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	devices, err := Discover(ctx, 500*time.Millisecond)
+	if err != nil && err != context.DeadlineExceeded {
+		t.Logf("Discover returned: %v", err)
+	}
+
+	if devices == nil {
+		t.Error("Expected devices slice, got nil")
+	}
+
+	t.Logf("Backward compat: found %d devices", len(devices))
+}
+
+func BenchmarkListNetworkInterfaces(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = ListNetworkInterfaces()
+	}
+}
+
+func BenchmarkResolveNetworkInterface(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = resolveNetworkInterface("127.0.0.1")
 	}
 }
