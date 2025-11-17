@@ -116,6 +116,46 @@ func normalizeEndpoint(endpoint string) (string, error) {
 	return fullURL, nil
 }
 
+// fixLocalhostURL replaces localhost/loopback addresses in service URLs with the actual camera host
+// Some cameras incorrectly report localhost (127.0.0.1, 0.0.0.0, localhost) in their capability URLs
+func (c *Client) fixLocalhostURL(serviceURL string) string {
+	if serviceURL == "" {
+		return serviceURL
+	}
+
+	// Parse the service URL
+	parsedService, err := url.Parse(serviceURL)
+	if err != nil {
+		return serviceURL // Return original if parsing fails
+	}
+
+	// Check if the service URL has a localhost/loopback address
+	host := parsedService.Hostname()
+	if host == "localhost" || host == "127.0.0.1" || host == "0.0.0.0" || host == "::1" {
+		// Parse the client's endpoint to get the actual camera address
+		parsedClient, err := url.Parse(c.endpoint)
+		if err != nil {
+			return serviceURL // Return original if parsing fails
+		}
+
+		// Replace the host but keep the port from service URL if specified
+		servicePort := parsedService.Port()
+		if servicePort != "" {
+			parsedService.Host = parsedClient.Hostname() + ":" + servicePort
+		} else {
+			parsedService.Host = parsedClient.Hostname()
+			// Use client's port if service doesn't specify one
+			if clientPort := parsedClient.Port(); clientPort != "" {
+				parsedService.Host = parsedClient.Hostname() + ":" + clientPort
+			}
+		}
+
+		return parsedService.String()
+	}
+
+	return serviceURL
+}
+
 // Initialize discovers and initializes service endpoints
 func (c *Client) Initialize(ctx context.Context) error {
 	// Get device information and capabilities
@@ -124,18 +164,19 @@ func (c *Client) Initialize(ctx context.Context) error {
 		return fmt.Errorf("failed to get capabilities: %w", err)
 	}
 
-	// Extract service endpoints
+	// Extract service endpoints and fix any localhost addresses
+	// Some cameras incorrectly report localhost instead of their actual IP
 	if capabilities.Media != nil && capabilities.Media.XAddr != "" {
-		c.mediaEndpoint = capabilities.Media.XAddr
+		c.mediaEndpoint = c.fixLocalhostURL(capabilities.Media.XAddr)
 	}
 	if capabilities.PTZ != nil && capabilities.PTZ.XAddr != "" {
-		c.ptzEndpoint = capabilities.PTZ.XAddr
+		c.ptzEndpoint = c.fixLocalhostURL(capabilities.PTZ.XAddr)
 	}
 	if capabilities.Imaging != nil && capabilities.Imaging.XAddr != "" {
-		c.imagingEndpoint = capabilities.Imaging.XAddr
+		c.imagingEndpoint = c.fixLocalhostURL(capabilities.Imaging.XAddr)
 	}
 	if capabilities.Events != nil && capabilities.Events.XAddr != "" {
-		c.eventEndpoint = capabilities.Events.XAddr
+		c.eventEndpoint = c.fixLocalhostURL(capabilities.Events.XAddr)
 	}
 
 	return nil
