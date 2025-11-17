@@ -89,7 +89,7 @@ jobs:
         run: |
           VERSION=${{ steps.version.outputs.VERSION }}
           PLATFORM="${{ matrix.goos }}-${{ matrix.goarch }}"
-          ARCHIVE_NAME="go-onvif-${VERSION}-${PLATFORM}"
+          ARCHIVE_NAME="onvif-go-${VERSION}-${PLATFORM}"
           
           mkdir -p releases
           
