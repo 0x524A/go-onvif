@@ -1,8 +1,8 @@
-# Project Summary: go-onvif
+# Project Summary: onvif-go
 
 ## Overview
 
-**go-onvif** is a complete refactoring and modernization of the ONVIF library, providing a comprehensive, performant, and developer-friendly Go library for communicating with ONVIF-compliant IP cameras and video devices.
+**onvif-go** is a complete refactoring and modernization of the ONVIF library, providing a comprehensive, performant, and developer-friendly Go library for communicating with ONVIF-compliant IP cameras and video devices.
 
 ## What's Been Created
 
@@ -220,7 +220,7 @@ client.ContinuousMove(ctx, profiles[0].Token, velocity, nil)
 ## Repository Structure
 
 ```
-go-onvif/
+onvif-go/
 ├── README.md                    # Main documentation
 ├── QUICKSTART.md               # Getting started guide
 ├── ARCHITECTURE.md             # Technical design doc

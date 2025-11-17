@@ -1,6 +1,6 @@
-# Contributing to go-onvif
+# Contributing to onvif-go
 
-First off, thank you for considering contributing to go-onvif! It's people like you that make go-onvif such a great tool.
+First off, thank you for considering contributing to onvif-go! It's people like you that make onvif-go such a great tool.
 
 ## Code of Conduct
 
@@ -41,8 +41,8 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/go-onvif.git
-cd go-onvif
+git clone https://github.com/YOUR_USERNAME/onvif-go.git
+cd onvif-go
 
 # Add upstream remote
 git remote add upstream https://github.com/0x524a/onvif-go.git

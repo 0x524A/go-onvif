@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get up and running with go-onvif in 5 minutes!
+Get up and running with onvif-go in 5 minutes!
 
 ## Installation
 
