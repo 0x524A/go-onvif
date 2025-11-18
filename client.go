@@ -278,7 +278,7 @@ func (c *Client) downloadWithBasicAuth(ctx context.Context, downloadURL string) 
 			errorMsg += fmt.Sprintf("\n  📝 Response: %s", bodyStr)
 		}
 
-		return nil, fmt.Errorf(errorMsg)
+		return nil, fmt.Errorf("%s", errorMsg)
 	}
 
 	data, err := io.ReadAll(resp.Body)
@@ -354,10 +354,10 @@ func (c *Client) downloadWithDigestAuth(ctx context.Context, downloadURL string)
 		}
 
 		if bodyStr != "" {
-			errorMsg += fmt.Sprintf("\n  � Response: %s", bodyStr)
+			errorMsg += fmt.Sprintf("\n  📝 Response: %s", bodyStr)
 		}
 
-		return nil, fmt.Errorf(errorMsg)
+		return nil, fmt.Errorf("%s", errorMsg)
 	}
 
 	data, err := io.ReadAll(resp.Body)
