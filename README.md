@@ -552,14 +552,15 @@ go build -o onvif-cli ./cmd/onvif-cli/
 ```
 📋 Main Menu:
   1. Discover Cameras on Network
-  2. List Network Interfaces
-  3. Connect to Camera
-  4. Device Operations
-  5. Media Operations
-  6. PTZ Operations
-  7. Imaging Operations
+  2. Connect to Camera
+  3. Device Operations
+  4. Media Operations
+  5. PTZ Operations
+  6. Imaging Operations
   0. Exit
 ```
+
+Note: The discovery function now intelligently detects multiple interfaces and shows options only when needed - no separate "List Network Interfaces" menu required.
 
 ### Quick Demo Tool
 
@@ -581,18 +582,12 @@ go build -o onvif-quick ./cmd/onvif-quick/
 
 ### Network Interface Selection
 
-Both CLI tools support explicit network interface selection for systems with multiple active interfaces:
+The CLI intelligently handles network interface selection automatically:
+- **Single interface**: Auto-discovery works seamlessly
+- **Multiple interfaces**: Shows interfaces only if auto-discovery fails
+- **Multiple active interfaces**: Tries each one and aggregates results
 
-```bash
-# onvif-cli example
-./onvif-cli
-# Select: 2 (List Network Interfaces)
-# Select: 1 (Discover)
-# Choose: y (Use specific interface)
-# Enter: eth0 or 192.168.1.100
-```
-
-Or use the API programmatically:
+For programmatic usage:
 
 ```go
 opts := &discovery.DiscoverOptions{
@@ -606,6 +601,7 @@ devices, err := discovery.DiscoverWithOptions(ctx, 5*time.Second, opts)
 **See**: 
 - `docs/CLI_NETWORK_INTERFACE_USAGE.md` - Detailed CLI guide
 - `discovery/NETWORK_INTERFACE_GUIDE.md` - API usage examples
+- `DESIGN_REFACTOR.md` - How smart interface detection works
 
 ## 🌟 Star History
 

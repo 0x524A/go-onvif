@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -36,16 +37,14 @@ func main() {
 		case "1":
 			cli.discoverCameras()
 		case "2":
-			cli.listNetworkInterfaces()
-		case "3":
 			cli.connectToCamera()
-		case "4":
+		case "3":
 			cli.deviceOperations()
-		case "5":
+		case "4":
 			cli.mediaOperations()
-		case "6":
+		case "5":
 			cli.ptzOperations()
-		case "7":
+		case "6":
 			cli.imagingOperations()
 		case "0", "q", "quit", "exit":
 			fmt.Println("Goodbye! 👋")
@@ -60,15 +59,14 @@ func main() {
 func (c *CLI) showMainMenu() {
 	fmt.Println("📋 Main Menu:")
 	fmt.Println("  1. Discover Cameras on Network")
-	fmt.Println("  2. List Network Interfaces")
-	fmt.Println("  3. Connect to Camera")
+	fmt.Println("  2. Connect to Camera")
 	if c.client != nil {
-		fmt.Println("  4. Device Operations")
-		fmt.Println("  5. Media Operations")
-		fmt.Println("  6. PTZ Operations")
-		fmt.Println("  7. Imaging Operations")
+		fmt.Println("  3. Device Operations")
+		fmt.Println("  4. Media Operations")
+		fmt.Println("  5. PTZ Operations")
+		fmt.Println("  6. Imaging Operations")
 	} else {
-		fmt.Println("  4-7. (Connect to camera first)")
+		fmt.Println("  3-6. (Connect to camera first)")
 	}
 	fmt.Println("  0. Exit")
 	fmt.Println()
@@ -90,110 +88,47 @@ func (c *CLI) readInputWithDefault(prompt, defaultValue string) string {
 	return input
 }
 
-func (c *CLI) listNetworkInterfaces() {
-	fmt.Println("🌐 Available Network Interfaces")
-	fmt.Println("================================")
-
-	interfaces, err := discovery.ListNetworkInterfaces()
-	if err != nil {
-		fmt.Printf("❌ Error listing interfaces: %v\n", err)
-		return
-	}
-
-	if len(interfaces) == 0 {
-		fmt.Println("❌ No network interfaces found")
-		return
-	}
-
-	fmt.Printf("✅ Found %d interface(s):\n\n", len(interfaces))
-
-	for _, iface := range interfaces {
-		upStr := "⬆️  Up"
-		if !iface.Up {
-			upStr = "⬇️  Down"
-		}
-
-		multicastStr := "✓"
-		if !iface.Multicast {
-			multicastStr = "✗"
-		}
-
-		fmt.Printf("📡 %s (%s, Multicast: %s)\n", iface.Name, upStr, multicastStr)
-
-		if len(iface.Addresses) == 0 {
-			fmt.Println("   (No addresses assigned)")
-		} else {
-			for _, addr := range iface.Addresses {
-				fmt.Printf("   └─ %s\n", addr)
-			}
-		}
-		fmt.Println()
-	}
-
-	fmt.Println("💡 Use interface name or IP address when discovering cameras")
-	fmt.Println("   Example: eth0 or 192.168.1.100")
-}
-
-
 func (c *CLI) discoverCameras() {
 	fmt.Println("🔍 Discovering ONVIF cameras...")
 	fmt.Println("This may take a few seconds...")
-
-	// Ask user if they want to select a specific network interface
-	useSpecificInterface := c.readInput("Use specific network interface? (y/n) [n]: ")
-	useSpecificInterface = strings.ToLower(useSpecificInterface)
-	
-	var opts *discovery.DiscoverOptions
-	if useSpecificInterface == "y" || useSpecificInterface == "yes" {
-		fmt.Println("\nAvailable network interfaces:")
-		interfaces, err := discovery.ListNetworkInterfaces()
-		if err != nil {
-			fmt.Printf("❌ Error listing interfaces: %v\n", err)
-			return
-		}
-
-		for i, iface := range interfaces {
-			fmt.Printf("  %d. %s\n", i+1, iface.Name)
-			for _, addr := range iface.Addresses {
-				fmt.Printf("     └─ %s\n", addr)
-			}
-			multicastStr := "No"
-			if iface.Multicast {
-				multicastStr = "Yes"
-			}
-			fmt.Printf("     (Up: %v, Multicast: %s)\n", iface.Up, multicastStr)
-		}
-
-		ifaceInput := c.readInput("\nEnter interface name or IP address: ")
-		ifaceInput = strings.TrimSpace(ifaceInput)
-		
-		if ifaceInput != "" {
-			opts = &discovery.DiscoverOptions{
-				NetworkInterface: ifaceInput,
-			}
-			fmt.Printf("🎯 Using interface: %s\n\n", ifaceInput)
-		}
-	}
-
-	if opts == nil {
-		opts = &discovery.DiscoverOptions{}
-	}
+	fmt.Println()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	devices, err := discovery.DiscoverWithOptions(ctx, 5*time.Second, opts)
-	if err != nil {
-		fmt.Printf("❌ Discovery failed: %v\n", err)
-		return
+	// Try auto-discovery first (no specific interface)
+	fmt.Println("⏳ Attempting auto-discovery on default interface...")
+	devices, err := discovery.DiscoverWithOptions(ctx, 5*time.Second, &discovery.DiscoverOptions{})
+	
+	// If auto-discovery fails or finds nothing, offer interface selection
+	if err != nil || len(devices) == 0 {
+		if err != nil {
+			fmt.Printf("⚠️  Auto-discovery failed: %v\n", err)
+		} else {
+			fmt.Println("⚠️  No cameras found on default interface")
+		}
+		
+		fmt.Println()
+		fmt.Println("💡 Trying specific network interfaces...")
+		fmt.Println()
+		
+		// Get available interfaces and let user select
+		devices, err = c.discoverWithInterfaceSelection()
+		if err != nil {
+			fmt.Printf("❌ Discovery failed: %v\n", err)
+			return
+		}
 	}
 
 	if len(devices) == 0 {
 		fmt.Println("❌ No ONVIF cameras found on the network")
-		fmt.Println("💡 Make sure:")
-		fmt.Println("   - Cameras are powered on and connected")
-		fmt.Println("   - ONVIF is enabled on the cameras")
-		fmt.Println("   - You're on the same network segment")
+		fmt.Println()
+		fmt.Println("� Troubleshooting tips:")
+		fmt.Println("   - Make sure cameras are powered on and connected to the network")
+		fmt.Println("   - Verify ONVIF is enabled on the cameras")
+		fmt.Println("   - Ensure you're on the same network segment as the cameras")
+		fmt.Println("   - Note: ONVIF requires multicast support (not available on WiFi)")
+		fmt.Println("   - Try discovering on wired Ethernet interfaces instead")
 		return
 	}
 
@@ -229,6 +164,96 @@ func (c *CLI) discoverCameras() {
 			}
 		}
 	}
+}
+
+// discoverWithInterfaceSelection shows available network interfaces and lets user select one
+func (c *CLI) discoverWithInterfaceSelection() ([]*discovery.Device, error) {
+	// Get list of available interfaces
+	interfaces, err := discovery.ListNetworkInterfaces()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list network interfaces: %w", err)
+	}
+
+	if len(interfaces) == 0 {
+		return nil, fmt.Errorf("no network interfaces found")
+	}
+
+	// Check how many interfaces are usable (UP and with addresses)
+	activeInterfaces := make([]discovery.NetworkInterface, 0)
+	for _, iface := range interfaces {
+		if iface.Up && len(iface.Addresses) > 0 {
+			activeInterfaces = append(activeInterfaces, iface)
+		}
+	}
+
+	// If only one active interface, use it automatically
+	if len(activeInterfaces) == 1 {
+		fmt.Printf("📡 Using only active interface: %s\n", activeInterfaces[0].Name)
+		return c.performDiscoveryOnInterface(activeInterfaces[0].Name)
+	}
+
+	// If multiple interfaces, show list for user selection
+	if len(activeInterfaces) > 1 {
+		fmt.Println("📡 Multiple active network interfaces detected. Trying each one...")
+		fmt.Println()
+
+		// Try each interface and collect results
+		allDevices := make([]*discovery.Device, 0)
+		for _, iface := range activeInterfaces {
+			fmt.Printf("🔄 Scanning interface: %s\n", iface.Name)
+			for _, addr := range iface.Addresses {
+				fmt.Printf("   └─ %s", addr)
+				if !iface.Multicast {
+					fmt.Printf(" (⚠️  No multicast)")
+				}
+				fmt.Println()
+			}
+
+			devices, err := c.performDiscoveryOnInterface(iface.Name)
+			if err == nil && len(devices) > 0 {
+				fmt.Printf("   ✅ Found %d camera(s) on this interface\n", len(devices))
+				allDevices = append(allDevices, devices...)
+			} else {
+				fmt.Println("   ❌ No cameras found")
+			}
+			fmt.Println()
+		}
+
+		if len(allDevices) > 0 {
+			return allDevices, nil
+		}
+		return nil, fmt.Errorf("no cameras found on any interface")
+	}
+
+	// If no active interfaces found
+	fmt.Println("❌ No active network interfaces with assigned addresses")
+	fmt.Println()
+	fmt.Println("📡 All available interfaces:")
+	for _, iface := range interfaces {
+		upStr := "⬆️  Up"
+		if !iface.Up {
+			upStr = "⬇️  Down"
+		}
+		multicastStr := "✓"
+		if !iface.Multicast {
+			multicastStr = "✗"
+		}
+		fmt.Printf("   %s (%s, Multicast: %s)\n", iface.Name, upStr, multicastStr)
+	}
+
+	return nil, fmt.Errorf("no active interfaces available for discovery")
+}
+
+// performDiscoveryOnInterface performs discovery on a specific network interface
+func (c *CLI) performDiscoveryOnInterface(interfaceName string) ([]*discovery.Device, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	opts := &discovery.DiscoverOptions{
+		NetworkInterface: interfaceName,
+	}
+
+	return discovery.DiscoverWithOptions(ctx, 5*time.Second, opts)
 }
 
 func (c *CLI) selectAndConnectCamera(devices []*discovery.Device) {
@@ -908,6 +933,7 @@ func (c *CLI) imagingOperations() {
 	fmt.Println("  4. Set Saturation")
 	fmt.Println("  5. Set Sharpness")
 	fmt.Println("  6. Advanced Settings")
+	fmt.Println("  7. Capture Snapshot (ASCII Preview)")
 	fmt.Println("  0. Back to Main Menu")
 
 	choice := c.readInput("Select operation: ")
@@ -933,6 +959,8 @@ func (c *CLI) imagingOperations() {
 		c.setSharpness(ctx, videoSourceToken)
 	case "6":
 		c.advancedImagingSettings(ctx, videoSourceToken)
+	case "7":
+		c.captureAndDisplaySnapshot(ctx)
 	case "0":
 		return
 	default:
@@ -1193,4 +1221,212 @@ func (c *CLI) advancedImagingSettings(ctx context.Context, videoSourceToken stri
 	fmt.Println("✅ Settings applied successfully!")
 	fmt.Println("\nNew settings:")
 	c.getImagingSettings(ctx, videoSourceToken)
+}
+
+func (c *CLI) captureAndDisplaySnapshot(ctx context.Context) {
+	fmt.Println("📷 Capture Snapshot as ASCII Preview")
+	fmt.Println("===================================")
+	fmt.Println()
+
+	// Get media profiles to find snapshot URI
+	profiles, err := c.client.GetProfiles(ctx)
+	if err != nil {
+		fmt.Printf("❌ Failed to get profiles: %v\n", err)
+		return
+	}
+
+	if len(profiles) == 0 {
+		fmt.Println("❌ No profiles found")
+		return
+	}
+
+	profile := profiles[0]
+	
+	fmt.Println("⏳ Getting snapshot URI...")
+
+	// Get snapshot URI from camera
+	snapshotURI, err := c.client.GetSnapshotURI(ctx, profile.Token)
+	if err != nil {
+		fmt.Printf("❌ Failed to get snapshot URI: %v\n", err)
+		return
+	}
+
+	if snapshotURI == nil || snapshotURI.URI == "" {
+		fmt.Println("❌ No snapshot URI available")
+		return
+	}
+
+	fmt.Printf("📸 Snapshot URI: %s\n", snapshotURI.URI)
+	fmt.Println()
+
+	// Display ASCII preview with quality options
+	fmt.Println("Select preview quality:")
+	fmt.Println("  1. Low (60 chars wide, faster)")
+	fmt.Println("  2. Medium (100 chars wide, balanced)")
+	fmt.Println("  3. High (140 chars wide, detailed)")
+	fmt.Println("  4. Block characters (compact)")
+
+	choice := c.readInput("Select quality (1-4) [2]: ")
+	if choice == "" {
+		choice = "2"
+	}
+
+	config := DefaultASCIIConfig()
+	switch choice {
+	case "1":
+		config.Width = 60
+		config.Height = 20
+		config.Quality = "low"
+	case "2":
+		config.Width = 100
+		config.Height = 30
+		config.Quality = "medium"
+	case "3":
+		config.Width = 140
+		config.Height = 40
+		config.Quality = "high"
+	case "4":
+		config.Width = 100
+		config.Height = 30
+		config.Quality = "block"
+	default:
+		config.Width = 100
+		config.Height = 30
+		config.Quality = "medium"
+	}
+
+	// Download actual snapshot
+	fmt.Println("⏳ Downloading snapshot...")
+	snapshotData, err := c.client.DownloadFile(ctx, snapshotURI.URI)
+	if err != nil {
+		fmt.Printf("❌ Failed to download snapshot: %v\n", err)
+		fmt.Println("\n💡 Try using curl directly:")
+		fmt.Printf("   curl -u username:password '%s' > snapshot.jpg\n", snapshotURI.URI)
+		return
+	}
+
+	fmt.Printf("✅ Snapshot downloaded (%d bytes)\n", len(snapshotData))
+	fmt.Println()
+
+	// Convert to ASCII
+	fmt.Println("⏳ Converting to ASCII art...")
+	asciiArt, err := ImageToASCII(snapshotData, config)
+	if err != nil {
+		fmt.Printf("❌ Failed to convert image: %v\n", err)
+		fmt.Println("\n💡 Image might not be JPEG/PNG. Try downloading manually:")
+		fmt.Printf("   curl -u username:password '%s' > snapshot.jpg\n", snapshotURI.URI)
+		return
+	}
+
+	// Detect image format and get dimensions
+	format := "JPEG"
+	if bytes.Contains(snapshotData[:20], []byte("\x89PNG")) {
+		format = "PNG"
+	}
+
+	imageInfo := ImageInfo{
+		SizeBytes:   int64(len(snapshotData)),
+		Format:      format,
+		CaptureTime: time.Now().Format("2006-01-02 15:04:05"),
+	}
+
+	output := FormatASCIIOutput(asciiArt, imageInfo)
+	fmt.Print(output)
+
+	// Offer to save the snapshot
+	fmt.Println()
+	save := c.readInput("💾 Save snapshot to file? (y/n) [n]: ")
+	if strings.ToLower(save) == "y" {
+		filename := c.readInput("📝 Filename [snapshot.jpg]: ")
+		if filename == "" {
+			filename = "snapshot.jpg"
+		}
+		if err := os.WriteFile(filename, snapshotData, 0644); err != nil {
+			fmt.Printf("❌ Failed to save file: %v\n", err)
+		} else {
+			fmt.Printf("✅ Snapshot saved to %s\n", filename)
+		}
+	}
+}
+
+func generateDemoASCII(quality string) string {
+	low := `
+████████████████████████████████████
+████  SNAPSHOT (ASCII)       ████
+████████████████████████████████████
+@@@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@      @@@@@@@@@@@@@@@@@@@
+@@@   @@   @@@@@@@@@@@@@@@@@@@@
+@@   @@@   @@@@@@@@@@@@@@@@@@@@
+@    @@@   @@@@@@@  @@@@@@@@@@@
+@    @@@   @@@@@@@  @@@@@@@@@@@
+     @@@@@@@@    @@@@@@@@@@@@
+      @@@@@   @@@   @@@@@@@@@
+       @@   @@@@@    @@@@@@@@
+       @ @@@@@ @@   @@@@@@@@
+         @@@ @@@   @@@@@@@@
+        @@@ @    @@@@@@@@@
+        @@@    @@@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@
+`
+	high := `
+████████████████████████████████████████████████████████
+████  SNAPSHOT ASCII DEMO (High Quality)        ████████
+████████████████████████████████████████████████████████
+@@@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@   @@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@   @@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    @@@   @@@@@@@  @@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    @@@   @@@@@@@  @@@@@@@@@@@@@@@@@@@@@@@@@@@
+     @@@@@@@@    @@@@@@@@@@@@@@@@@@@@@@@@@@
+      @@@@@   @@@   @@@@@@@@@@@@@@@@@@@@@
+       @@   @@@@@    @@@@@@@@@@@@@@@@@@
+       @ @@@@@ @@   @@@@@@@@@@@@@@@@
+         @@@ @@@   @@@@@@@@@@@@
+        @@@ @    @@@@@@@@@
+        @@@    @@@@@@@@@@@@
+         @@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@
+`
+	block := `
+███████████████████████████████████
+███ Demo: Block Characters  ███████
+███████████████████████████████████
+▓▓▓░░░░░  ░░░░░░░░▓▓▓▓▓▓▓▓▓▓
+▓▓░░░░░  ░░░░░░░░░░░▓▓▓▓▓▓▓▓
+▓░░░  ░░░░░░░░░░░░░░░░▓▓▓▓▓▓
+░░░░░░░░░░░░░░░░░░░░░░░▓▓▓▓
+░░░░░░░░░░░░░░░░░░░░░░░░▓▓▓
+░░░░░░░░░░░░░░░░░░░░░░░░░▓▓
+`
+	med := `
+████████████████████████████████████████████
+████  SNAPSHOT ASCII PREVIEW       ████████
+████████████████████████████████████████████
+@@@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@      @@@@@@@@@@@@@@@@@@@@@@@
+@@@   @@   @@@@@@@@@@@@@@@@@@@@@@@@
+@@   @@@   @@@@@@@@@@@@@@@@@@@@@@@@
+@    @@@   @@@@@@@  @@@@@@@@@@@@@@@
+     @@@@@@@@    @@@@@@@@@@@@@@
+      @@@@@   @@@   @@@@@@@@@
+       @@   @@@@@    @@@@@@
+       @ @@@@@ @@   @@@@
+         @@@ @@@   @@@
+        @@@ @    @@@@@
+         @@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@
+`
+	switch quality {
+	case "1":
+		return low
+	case "3":
+		return high
+	case "4":
+		return block
+	default:
+		return med
+	}
 }

@@ -3,6 +3,7 @@ package onvif
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -200,4 +201,42 @@ func (c *Client) GetCredentials() (string, string) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.username, c.password
+}
+
+// DownloadFile downloads a file from the given URL with authentication
+// Returns the raw file bytes
+func (c *Client) DownloadFile(ctx context.Context, url string) ([]byte, error) {
+	// Create a new HTTP request with context
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add authentication if credentials are provided
+	if c.username != "" {
+		req.SetBasicAuth(c.username, c.password)
+	}
+
+	// Set User-Agent header
+	req.Header.Set("User-Agent", "onvif-go-client")
+
+	// Execute the request
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("download request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check HTTP status code
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("download failed with status code %d", resp.StatusCode)
+	}
+
+	// Read all data from response body
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	return data, nil
 }
