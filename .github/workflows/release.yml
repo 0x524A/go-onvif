@@ -177,12 +177,14 @@ jobs:
           fi
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: all-releases/*
           draft: false
           prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
           generate_release_notes: true
+          fail_on_unmatched_files: true
+          make_latest: true
           body: |
             ## Release ${{ steps.version.outputs.VERSION }}
             
