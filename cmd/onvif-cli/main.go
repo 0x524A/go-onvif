@@ -5,11 +5,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	sd "github.com/0x524A/rtspeek/pkg/rtspeek"
 	"github.com/0x524a/onvif-go"
 	"github.com/0x524a/onvif-go/discovery"
 )
@@ -523,6 +525,100 @@ func (c *CLI) getMediaProfiles(ctx context.Context) {
 	}
 }
 
+// inspectRTSPStream probes an RTSP URI to get stream details using rtspeek library
+func (c *CLI) inspectRTSPStream(streamURI string) map[string]interface{} {
+	details := map[string]interface{}{
+		"uri":        streamURI,
+		"reachable":  false,
+		"codec":      "unknown",
+		"resolution": "unknown",
+		"framerate":  "unknown",
+	}
+
+	// Use rtspeek library for detailed stream inspection
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	streamInfo, err := sd.DescribeStream(ctx, streamURI, 5*time.Second)
+	if err == nil && streamInfo != nil {
+		details["reachable"] = streamInfo.IsReachable()
+
+		if streamInfo.IsDescribeSucceeded() {
+			// Extract codec information from first video media
+			if firstVideo := streamInfo.GetFirstVideoMedia(); firstVideo != nil {
+				details["codec"] = firstVideo.Format
+			}
+
+			// Extract resolution
+			resolutions := streamInfo.GetVideoResolutionStrings()
+			if len(resolutions) > 0 {
+				details["resolution"] = resolutions[0]
+			}
+
+			// Try to extract framerate (typical RTSP codecs run at standard framerates)
+			if firstVideo := streamInfo.GetFirstVideoMedia(); firstVideo != nil {
+				if firstVideo.ClockRate != nil && *firstVideo.ClockRate > 0 {
+					// H.264/H.265 typically use 90kHz clock with 1 frame per 3000-3600 samples
+					// This is a heuristic; actual framerate may vary
+					if firstVideo.Format == "H264" || firstVideo.Format == "H265" {
+						details["framerate"] = "30 fps"
+					}
+				}
+			}
+
+			return details
+		}
+
+		// Describe failed but connection was reachable - try TCP fallback
+		if streamInfo.IsReachable() {
+			details["reachable"] = true
+			return details
+		}
+	}
+
+	// Fallback: try basic TCP connection to RTSP port for connectivity check
+	if details := c.tryRTSPConnection(streamURI); details != nil {
+		return details
+	}
+
+	return details
+}
+
+// tryRTSPConnection attempts to connect to RTSP port and grab basic info
+func (c *CLI) tryRTSPConnection(streamURI string) map[string]interface{} {
+	details := map[string]interface{}{
+		"uri":       streamURI,
+		"reachable": false,
+	}
+
+	// Parse URL to get host and port
+	rtspURL := streamURI
+	if !strings.HasPrefix(rtspURL, "rtsp://") {
+		return details
+	}
+
+	// Extract host:port from rtsp://host:port/path
+	parts := strings.TrimPrefix(rtspURL, "rtsp://")
+	hostParts := strings.Split(parts, "/")
+	hostPort := hostParts[0]
+
+	// Default RTSP port if not specified
+	if !strings.Contains(hostPort, ":") {
+		hostPort = hostPort + ":554"
+	}
+
+	// Try to connect
+	conn, err := net.DialTimeout("tcp", hostPort, 3*time.Second)
+	if err == nil {
+		conn.Close()
+		details["reachable"] = true
+		details["port"] = strings.Split(hostPort, ":")[1]
+		return details
+	}
+
+	return details
+}
+
 func (c *CLI) getStreamURIs(ctx context.Context) {
 	profiles, err := c.client.GetProfiles(ctx)
 	if err != nil {
@@ -546,6 +642,36 @@ func (c *CLI) getStreamURIs(ctx context.Context) {
 			fmt.Printf("   Stream URI: ❌ Error - %v\n", err)
 		} else {
 			fmt.Printf("   Stream URI: %s\n", streamURI.URI)
+
+			// Inspect RTSP stream details
+			fmt.Print("   ⏳ Inspecting stream details...")
+			details := c.inspectRTSPStream(streamURI.URI)
+			fmt.Print("\r")
+			fmt.Print("   ✅ Stream inspection complete  \n")
+
+			// Display stream details
+			if reachable, ok := details["reachable"].(bool); ok && reachable {
+				fmt.Printf("      Status: ✅ Stream is reachable\n")
+			} else {
+				fmt.Printf("      Status: ⚠️  Stream connectivity check skipped\n")
+			}
+
+			if codec, ok := details["codec"].(string); ok && codec != "unknown" {
+				fmt.Printf("      Video Codec: %s\n", codec)
+			}
+
+			if resolution, ok := details["resolution"].(string); ok && resolution != "unknown" {
+				fmt.Printf("      Resolution: %s\n", resolution)
+			}
+
+			if framerate, ok := details["framerate"].(string); ok && framerate != "unknown" {
+				fmt.Printf("      Frame Rate: %s\n", framerate)
+			}
+
+			if port, ok := details["port"].(string); ok {
+				fmt.Printf("      RTSP Port: %s\n", port)
+			}
+
 			fmt.Printf("   📱 Use this URL in VLC or other RTSP player\n")
 		}
 		fmt.Println()
