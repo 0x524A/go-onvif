@@ -249,7 +249,7 @@ func (c *Client) downloadWithBasicAuth(ctx context.Context, downloadURL string) 
 	if err != nil {
 		return nil, fmt.Errorf("download request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyPreview, _ := io.ReadAll(resp.Body)
@@ -328,7 +328,7 @@ func (c *Client) downloadWithDigestAuth(ctx context.Context, downloadURL string)
 	if err != nil {
 		return nil, fmt.Errorf("digest auth request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyPreview, _ := io.ReadAll(resp.Body)
