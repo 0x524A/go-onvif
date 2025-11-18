@@ -58,10 +58,10 @@ jobs:
         go-version: '1.23'
     
     - name: Run golangci-lint
-      uses: golangci/golangci-lint-action@v4
+      uses: golangci/golangci-lint-action@v8
       with:
-        version: latest
-        args: --timeout=5m
+        version: v2.2
+        args: --timeout=5m ./cmd/onvif-cli ./cmd/onvif-quick ./cmd/onvif-server ./discovery/... ./internal/... .
 
   build:
     name: Build

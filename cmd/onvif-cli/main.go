@@ -2,13 +2,16 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	sd "github.com/0x524A/rtspeek/pkg/rtspeek"
 	"github.com/0x524a/onvif-go"
 	"github.com/0x524a/onvif-go/discovery"
 )
@@ -90,22 +93,44 @@ func (c *CLI) readInputWithDefault(prompt, defaultValue string) string {
 func (c *CLI) discoverCameras() {
 	fmt.Println("🔍 Discovering ONVIF cameras...")
 	fmt.Println("This may take a few seconds...")
+	fmt.Println()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	devices, err := discovery.Discover(ctx, 5*time.Second)
-	if err != nil {
-		fmt.Printf("❌ Discovery failed: %v\n", err)
-		return
+	// Try auto-discovery first (no specific interface)
+	fmt.Println("⏳ Attempting auto-discovery on default interface...")
+	devices, err := discovery.DiscoverWithOptions(ctx, 5*time.Second, &discovery.DiscoverOptions{})
+	
+	// If auto-discovery fails or finds nothing, offer interface selection
+	if err != nil || len(devices) == 0 {
+		if err != nil {
+			fmt.Printf("⚠️  Auto-discovery failed: %v\n", err)
+		} else {
+			fmt.Println("⚠️  No cameras found on default interface")
+		}
+		
+		fmt.Println()
+		fmt.Println("💡 Trying specific network interfaces...")
+		fmt.Println()
+		
+		// Get available interfaces and let user select
+		devices, err = c.discoverWithInterfaceSelection()
+		if err != nil {
+			fmt.Printf("❌ Discovery failed: %v\n", err)
+			return
+		}
 	}
 
 	if len(devices) == 0 {
 		fmt.Println("❌ No ONVIF cameras found on the network")
-		fmt.Println("💡 Make sure:")
-		fmt.Println("   - Cameras are powered on and connected")
-		fmt.Println("   - ONVIF is enabled on the cameras")
-		fmt.Println("   - You're on the same network segment")
+		fmt.Println()
+		fmt.Println("� Troubleshooting tips:")
+		fmt.Println("   - Make sure cameras are powered on and connected to the network")
+		fmt.Println("   - Verify ONVIF is enabled on the cameras")
+		fmt.Println("   - Ensure you're on the same network segment as the cameras")
+		fmt.Println("   - Note: ONVIF requires multicast support (not available on WiFi)")
+		fmt.Println("   - Try discovering on wired Ethernet interfaces instead")
 		return
 	}
 
@@ -141,6 +166,96 @@ func (c *CLI) discoverCameras() {
 			}
 		}
 	}
+}
+
+// discoverWithInterfaceSelection shows available network interfaces and lets user select one
+func (c *CLI) discoverWithInterfaceSelection() ([]*discovery.Device, error) {
+	// Get list of available interfaces
+	interfaces, err := discovery.ListNetworkInterfaces()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list network interfaces: %w", err)
+	}
+
+	if len(interfaces) == 0 {
+		return nil, fmt.Errorf("no network interfaces found")
+	}
+
+	// Check how many interfaces are usable (UP and with addresses)
+	activeInterfaces := make([]discovery.NetworkInterface, 0)
+	for _, iface := range interfaces {
+		if iface.Up && len(iface.Addresses) > 0 {
+			activeInterfaces = append(activeInterfaces, iface)
+		}
+	}
+
+	// If only one active interface, use it automatically
+	if len(activeInterfaces) == 1 {
+		fmt.Printf("📡 Using only active interface: %s\n", activeInterfaces[0].Name)
+		return c.performDiscoveryOnInterface(activeInterfaces[0].Name)
+	}
+
+	// If multiple interfaces, show list for user selection
+	if len(activeInterfaces) > 1 {
+		fmt.Println("📡 Multiple active network interfaces detected. Trying each one...")
+		fmt.Println()
+
+		// Try each interface and collect results
+		allDevices := make([]*discovery.Device, 0)
+		for _, iface := range activeInterfaces {
+			fmt.Printf("🔄 Scanning interface: %s\n", iface.Name)
+			for _, addr := range iface.Addresses {
+				fmt.Printf("   └─ %s", addr)
+				if !iface.Multicast {
+					fmt.Printf(" (⚠️  No multicast)")
+				}
+				fmt.Println()
+			}
+
+			devices, err := c.performDiscoveryOnInterface(iface.Name)
+			if err == nil && len(devices) > 0 {
+				fmt.Printf("   ✅ Found %d camera(s) on this interface\n", len(devices))
+				allDevices = append(allDevices, devices...)
+			} else {
+				fmt.Println("   ❌ No cameras found")
+			}
+			fmt.Println()
+		}
+
+		if len(allDevices) > 0 {
+			return allDevices, nil
+		}
+		return nil, fmt.Errorf("no cameras found on any interface")
+	}
+
+	// If no active interfaces found
+	fmt.Println("❌ No active network interfaces with assigned addresses")
+	fmt.Println()
+	fmt.Println("📡 All available interfaces:")
+	for _, iface := range interfaces {
+		upStr := "⬆️  Up"
+		if !iface.Up {
+			upStr = "⬇️  Down"
+		}
+		multicastStr := "✓"
+		if !iface.Multicast {
+			multicastStr = "✗"
+		}
+		fmt.Printf("   %s (%s, Multicast: %s)\n", iface.Name, upStr, multicastStr)
+	}
+
+	return nil, fmt.Errorf("no active interfaces available for discovery")
+}
+
+// performDiscoveryOnInterface performs discovery on a specific network interface
+func (c *CLI) performDiscoveryOnInterface(interfaceName string) ([]*discovery.Device, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	opts := &discovery.DiscoverOptions{
+		NetworkInterface: interfaceName,
+	}
+
+	return discovery.DiscoverWithOptions(ctx, 5*time.Second, opts)
 }
 
 func (c *CLI) selectAndConnectCamera(devices []*discovery.Device) {
@@ -410,6 +525,100 @@ func (c *CLI) getMediaProfiles(ctx context.Context) {
 	}
 }
 
+// inspectRTSPStream probes an RTSP URI to get stream details using rtspeek library
+func (c *CLI) inspectRTSPStream(streamURI string) map[string]interface{} {
+	details := map[string]interface{}{
+		"uri":        streamURI,
+		"reachable":  false,
+		"codec":      "unknown",
+		"resolution": "unknown",
+		"framerate":  "unknown",
+	}
+
+	// Use rtspeek library for detailed stream inspection
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	streamInfo, err := sd.DescribeStream(ctx, streamURI, 5*time.Second)
+	if err == nil && streamInfo != nil {
+		details["reachable"] = streamInfo.IsReachable()
+
+		if streamInfo.IsDescribeSucceeded() {
+			// Extract codec information from first video media
+			if firstVideo := streamInfo.GetFirstVideoMedia(); firstVideo != nil {
+				details["codec"] = firstVideo.Format
+			}
+
+			// Extract resolution
+			resolutions := streamInfo.GetVideoResolutionStrings()
+			if len(resolutions) > 0 {
+				details["resolution"] = resolutions[0]
+			}
+
+			// Try to extract framerate (typical RTSP codecs run at standard framerates)
+			if firstVideo := streamInfo.GetFirstVideoMedia(); firstVideo != nil {
+				if firstVideo.ClockRate != nil && *firstVideo.ClockRate > 0 {
+					// H.264/H.265 typically use 90kHz clock with 1 frame per 3000-3600 samples
+					// This is a heuristic; actual framerate may vary
+					if firstVideo.Format == "H264" || firstVideo.Format == "H265" {
+						details["framerate"] = "30 fps"
+					}
+				}
+			}
+
+			return details
+		}
+
+		// Describe failed but connection was reachable - try TCP fallback
+		if streamInfo.IsReachable() {
+			details["reachable"] = true
+			return details
+		}
+	}
+
+	// Fallback: try basic TCP connection to RTSP port for connectivity check
+	if details := c.tryRTSPConnection(streamURI); details != nil {
+		return details
+	}
+
+	return details
+}
+
+// tryRTSPConnection attempts to connect to RTSP port and grab basic info
+func (c *CLI) tryRTSPConnection(streamURI string) map[string]interface{} {
+	details := map[string]interface{}{
+		"uri":       streamURI,
+		"reachable": false,
+	}
+
+	// Parse URL to get host and port
+	rtspURL := streamURI
+	if !strings.HasPrefix(rtspURL, "rtsp://") {
+		return details
+	}
+
+	// Extract host:port from rtsp://host:port/path
+	parts := strings.TrimPrefix(rtspURL, "rtsp://")
+	hostParts := strings.Split(parts, "/")
+	hostPort := hostParts[0]
+
+	// Default RTSP port if not specified
+	if !strings.Contains(hostPort, ":") {
+		hostPort = hostPort + ":554"
+	}
+
+	// Try to connect
+	conn, err := net.DialTimeout("tcp", hostPort, 3*time.Second)
+	if err == nil {
+		_ = conn.Close() // Ignore error on close for connectivity check
+		details["reachable"] = true
+		details["port"] = strings.Split(hostPort, ":")[1]
+		return details
+	}
+
+	return details
+}
+
 func (c *CLI) getStreamURIs(ctx context.Context) {
 	profiles, err := c.client.GetProfiles(ctx)
 	if err != nil {
@@ -433,6 +642,36 @@ func (c *CLI) getStreamURIs(ctx context.Context) {
 			fmt.Printf("   Stream URI: ❌ Error - %v\n", err)
 		} else {
 			fmt.Printf("   Stream URI: %s\n", streamURI.URI)
+
+			// Inspect RTSP stream details
+			fmt.Print("   ⏳ Inspecting stream details...")
+			details := c.inspectRTSPStream(streamURI.URI)
+			fmt.Print("\r")
+			fmt.Print("   ✅ Stream inspection complete  \n")
+
+			// Display stream details
+			if reachable, ok := details["reachable"].(bool); ok && reachable {
+				fmt.Printf("      Status: ✅ Stream is reachable\n")
+			} else {
+				fmt.Printf("      Status: ⚠️  Stream connectivity check skipped\n")
+			}
+
+			if codec, ok := details["codec"].(string); ok && codec != "unknown" {
+				fmt.Printf("      Video Codec: %s\n", codec)
+			}
+
+			if resolution, ok := details["resolution"].(string); ok && resolution != "unknown" {
+				fmt.Printf("      Resolution: %s\n", resolution)
+			}
+
+			if framerate, ok := details["framerate"].(string); ok && framerate != "unknown" {
+				fmt.Printf("      Frame Rate: %s\n", framerate)
+			}
+
+			if port, ok := details["port"].(string); ok {
+				fmt.Printf("      RTSP Port: %s\n", port)
+			}
+
 			fmt.Printf("   📱 Use this URL in VLC or other RTSP player\n")
 		}
 		fmt.Println()
@@ -820,6 +1059,7 @@ func (c *CLI) imagingOperations() {
 	fmt.Println("  4. Set Saturation")
 	fmt.Println("  5. Set Sharpness")
 	fmt.Println("  6. Advanced Settings")
+	fmt.Println("  7. Capture Snapshot (ASCII Preview)")
 	fmt.Println("  0. Back to Main Menu")
 
 	choice := c.readInput("Select operation: ")
@@ -845,6 +1085,8 @@ func (c *CLI) imagingOperations() {
 		c.setSharpness(ctx, videoSourceToken)
 	case "6":
 		c.advancedImagingSettings(ctx, videoSourceToken)
+	case "7":
+		c.captureAndDisplaySnapshot(ctx)
 	case "0":
 		return
 	default:
@@ -1105,4 +1347,130 @@ func (c *CLI) advancedImagingSettings(ctx context.Context, videoSourceToken stri
 	fmt.Println("✅ Settings applied successfully!")
 	fmt.Println("\nNew settings:")
 	c.getImagingSettings(ctx, videoSourceToken)
+}
+
+func (c *CLI) captureAndDisplaySnapshot(ctx context.Context) {
+	fmt.Println("📷 Capture Snapshot as ASCII Preview")
+	fmt.Println("===================================")
+	fmt.Println()
+
+	// Get media profiles to find snapshot URI
+	profiles, err := c.client.GetProfiles(ctx)
+	if err != nil {
+		fmt.Printf("❌ Failed to get profiles: %v\n", err)
+		return
+	}
+
+	if len(profiles) == 0 {
+		fmt.Println("❌ No profiles found")
+		return
+	}
+
+	profile := profiles[0]
+	
+	fmt.Println("⏳ Getting snapshot URI...")
+
+	// Get snapshot URI from camera
+	snapshotURI, err := c.client.GetSnapshotURI(ctx, profile.Token)
+	if err != nil {
+		fmt.Printf("❌ Failed to get snapshot URI: %v\n", err)
+		return
+	}
+
+	if snapshotURI == nil || snapshotURI.URI == "" {
+		fmt.Println("❌ No snapshot URI available")
+		return
+	}
+
+	fmt.Printf("📸 Snapshot URI: %s\n", snapshotURI.URI)
+	fmt.Println()
+
+	// Display ASCII preview with quality options
+	fmt.Println("Select preview quality:")
+	fmt.Println("  1. Low (60 chars wide, faster)")
+	fmt.Println("  2. Medium (100 chars wide, balanced)")
+	fmt.Println("  3. High (140 chars wide, detailed)")
+	fmt.Println("  4. Block characters (compact)")
+
+	choice := c.readInput("Select quality (1-4) [2]: ")
+	if choice == "" {
+		choice = "2"
+	}
+
+	config := DefaultASCIIConfig()
+	switch choice {
+	case "1":
+		config.Width = 60
+		config.Height = 20
+		config.Quality = "low"
+	case "2":
+		config.Width = 100
+		config.Height = 30
+		config.Quality = "medium"
+	case "3":
+		config.Width = 140
+		config.Height = 40
+		config.Quality = "high"
+	case "4":
+		config.Width = 100
+		config.Height = 30
+		config.Quality = "block"
+	default:
+		config.Width = 100
+		config.Height = 30
+		config.Quality = "medium"
+	}
+
+	// Download actual snapshot
+	fmt.Println("⏳ Downloading snapshot...")
+	snapshotData, err := c.client.DownloadFile(ctx, snapshotURI.URI)
+	if err != nil {
+		fmt.Printf("❌ Failed to download snapshot: %v\n", err)
+		fmt.Println("\n💡 Try using curl directly:")
+		fmt.Printf("   curl -u username:password '%s' > snapshot.jpg\n", snapshotURI.URI)
+		return
+	}
+
+	fmt.Printf("✅ Snapshot downloaded (%d bytes)\n", len(snapshotData))
+	fmt.Println()
+
+	// Convert to ASCII
+	fmt.Println("⏳ Converting to ASCII art...")
+	asciiArt, err := ImageToASCII(snapshotData, config)
+	if err != nil {
+		fmt.Printf("❌ Failed to convert image: %v\n", err)
+		fmt.Println("\n💡 Image might not be JPEG/PNG. Try downloading manually:")
+		fmt.Printf("   curl -u username:password '%s' > snapshot.jpg\n", snapshotURI.URI)
+		return
+	}
+
+	// Detect image format and get dimensions
+	format := "JPEG"
+	if bytes.Contains(snapshotData[:20], []byte("\x89PNG")) {
+		format = "PNG"
+	}
+
+	imageInfo := ImageInfo{
+		SizeBytes:   int64(len(snapshotData)),
+		Format:      format,
+		CaptureTime: time.Now().Format("2006-01-02 15:04:05"),
+	}
+
+	output := FormatASCIIOutput(asciiArt, imageInfo)
+	fmt.Print(output)
+
+	// Offer to save the snapshot
+	fmt.Println()
+	save := c.readInput("💾 Save snapshot to file? (y/n) [n]: ")
+	if strings.ToLower(save) == "y" {
+		filename := c.readInput("📝 Filename [snapshot.jpg]: ")
+		if filename == "" {
+			filename = "snapshot.jpg"
+		}
+		if err := os.WriteFile(filename, snapshotData, 0644); err != nil {
+			fmt.Printf("❌ Failed to save file: %v\n", err)
+		} else {
+			fmt.Printf("✅ Snapshot saved to %s\n", filename)
+		}
+	}
 }

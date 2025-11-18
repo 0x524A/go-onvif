@@ -1,0 +1,11 @@
+version: "2"
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+
+run:
+  timeout: 5m

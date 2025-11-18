@@ -2,7 +2,10 @@ package onvif
 
 import (
 	"context"
+	"crypto/md5"
 	"fmt"
+	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -201,3 +204,278 @@ func (c *Client) GetCredentials() (string, string) {
 	defer c.mu.RUnlock()
 	return c.username, c.password
 }
+
+// DownloadFile downloads a file from the given URL with authentication
+// Returns the raw file bytes
+// Supports both Basic and Digest authentication (tries basic first, falls back to digest)
+func (c *Client) DownloadFile(ctx context.Context, downloadURL string) ([]byte, error) {
+	// Try basic auth first
+	data, err := c.downloadWithBasicAuth(ctx, downloadURL)
+	if err == nil {
+		return data, nil
+	}
+
+	// If basic auth fails with 401, try digest auth
+	if strings.Contains(err.Error(), "401") {
+		digestData, digestErr := c.downloadWithDigestAuth(ctx, downloadURL)
+		if digestErr == nil {
+			return digestData, nil
+		}
+		// If digest auth also fails, return the original error
+		if strings.Contains(digestErr.Error(), "401") {
+			return nil, err // Return original error (both auth methods failed)
+		}
+		return nil, digestErr
+	}
+
+	return nil, err
+}
+
+// downloadWithBasicAuth performs an HTTP download with Basic authentication
+func (c *Client) downloadWithBasicAuth(ctx context.Context, downloadURL string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	if c.username != "" {
+		req.SetBasicAuth(c.username, c.password)
+	}
+
+	req.Header.Set("User-Agent", "onvif-go-client")
+	req.Header.Set("Connection", "close")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("download request failed: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyPreview, _ := io.ReadAll(resp.Body)
+		bodyStr := string(bodyPreview)
+		if len(bodyStr) > 200 {
+			bodyStr = bodyStr[:200] + "..."
+		}
+
+		errorMsg := fmt.Sprintf("download failed with status code %d", resp.StatusCode)
+
+		switch resp.StatusCode {
+		case http.StatusUnauthorized:
+			errorMsg += "\n  ❌ Authentication failed (401 Unauthorized)"
+			errorMsg += "\n  💡 Basic auth failed; trying digest auth..."
+		case http.StatusForbidden:
+			errorMsg += "\n  ❌ Access denied (403 Forbidden)"
+			errorMsg += "\n  💡 User may not have permission to download snapshots"
+			errorMsg += "\n  💡 Check camera user role/permissions"
+		case http.StatusNotFound:
+			errorMsg += "\n  ❌ Snapshot URI not found (404)"
+			errorMsg += "\n  💡 Camera may have revoked the URI"
+			errorMsg += "\n  💡 Try getting a fresh snapshot URI"
+		}
+
+		if bodyStr != "" && resp.StatusCode != http.StatusOK {
+			errorMsg += fmt.Sprintf("\n  📝 Response: %s", bodyStr)
+		}
+
+		return nil, fmt.Errorf("%s", errorMsg)
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	return data, nil
+}
+
+// downloadWithDigestAuth performs an HTTP download with Digest authentication
+func (c *Client) downloadWithDigestAuth(ctx context.Context, downloadURL string) ([]byte, error) {
+	if c.username == "" {
+		return nil, fmt.Errorf("digest auth requires credentials")
+	}
+
+	// Create a custom transport with digest auth
+	tr := &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		MaxIdleConns:        10,
+		MaxIdleConnsPerHost: 5,
+		IdleConnTimeout:     90 * time.Second,
+	}
+
+	// Create a custom HTTP client for digest auth
+	digestClient := &http.Client{
+		Transport: &digestAuthTransport{
+			transport: tr,
+			username:  c.username,
+			password:  c.password,
+		},
+		Timeout: 30 * time.Second,
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("User-Agent", "onvif-go-client")
+	req.Header.Set("Connection", "close")
+
+	resp, err := digestClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("digest auth request failed: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyPreview, _ := io.ReadAll(resp.Body)
+		bodyStr := string(bodyPreview)
+		if len(bodyStr) > 200 {
+			bodyStr = bodyStr[:200] + "..."
+		}
+
+		errorMsg := fmt.Sprintf("download failed with status code %d", resp.StatusCode)
+
+		switch resp.StatusCode {
+		case http.StatusUnauthorized:
+			errorMsg += "\n  ❌ Digest authentication failed (401 Unauthorized)"
+			errorMsg += "\n  💡 Check camera credentials (username/password)"
+			errorMsg += "\n  💡 Try accessing the snapshot URL manually:"
+			errorMsg += fmt.Sprintf("\n     curl --digest -u username:password '%s'", downloadURL)
+		case http.StatusForbidden:
+			errorMsg += "\n  ❌ Access denied (403 Forbidden)"
+			errorMsg += "\n  💡 User may not have permission to download snapshots"
+		case http.StatusNotFound:
+			errorMsg += "\n  ❌ Snapshot URI not found (404)"
+			errorMsg += "\n  💡 Try getting a fresh snapshot URI"
+		}
+
+		if bodyStr != "" {
+			errorMsg += fmt.Sprintf("\n  📝 Response: %s", bodyStr)
+		}
+
+		return nil, fmt.Errorf("%s", errorMsg)
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	return data, nil
+}
+
+// digestAuthTransport implements digest authentication for HTTP transport
+type digestAuthTransport struct {
+	transport *http.Transport
+	username  string
+	password  string
+	nc        int
+}
+
+// RoundTrip implements http.RoundTripper with digest auth support
+func (d *digestAuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// First request without auth to get the challenge
+	resp, err := d.transport.RoundTrip(req)
+	if err != nil {
+		return resp, err
+	}
+
+	// If we get 401, handle digest auth challenge
+	if resp.StatusCode == http.StatusUnauthorized {
+		// Read the WWW-Authenticate header
+		authHeader := resp.Header.Get("WWW-Authenticate")
+		if strings.Contains(authHeader, "Digest") {
+			// Parse digest challenge and create auth header
+			authHeaderValue := d.createDigestAuthHeader(req, authHeader)
+
+			// Create new request with auth header
+			newReq := req.Clone(req.Context())
+			newReq.Header.Set("Authorization", authHeaderValue)
+
+			// Retry with auth
+			resp, err = d.transport.RoundTrip(newReq)
+			return resp, err
+		}
+	}
+
+	return resp, err
+}
+
+// createDigestAuthHeader creates a digest auth header from the challenge
+func (d *digestAuthTransport) createDigestAuthHeader(req *http.Request, authHeader string) string {
+	// Simple digest auth implementation - parse challenge and create response
+	// This is a basic implementation that handles most ONVIF cameras
+
+	// Extract digest parameters from WWW-Authenticate header
+	realm := extractParam(authHeader, "realm")
+	nonce := extractParam(authHeader, "nonce")
+	qop := extractParam(authHeader, "qop")
+	uri := req.URL.Path
+	if req.URL.RawQuery != "" {
+		uri += "?" + req.URL.RawQuery
+	}
+
+	// Generate response hash
+	ha1 := md5Hash(d.username + ":" + realm + ":" + d.password)
+
+	method := req.Method
+	ha2 := md5Hash(method + ":" + uri)
+
+	d.nc++
+	ncStr := fmt.Sprintf("%08x", d.nc)
+	cnonce := generateNonce()
+
+	var responseStr string
+	if qop == "auth" {
+		responseStr = md5Hash(ha1 + ":" + nonce + ":" + ncStr + ":" + cnonce + ":auth:" + ha2)
+	} else {
+		responseStr = md5Hash(ha1 + ":" + nonce + ":" + ha2)
+	}
+
+	// Build Authorization header
+	authHeaderValue := fmt.Sprintf(`Digest username="%s", realm="%s", nonce="%s", uri="%s", response="%s"`,
+		d.username, realm, nonce, uri, responseStr)
+
+	if qop == "auth" {
+		authHeaderValue += fmt.Sprintf(`, opaque="%s", qop=%s, nc=%s, cnonce="%s"`,
+			extractParam(authHeader, "opaque"), qop, ncStr, cnonce)
+	}
+
+	return authHeaderValue
+}
+
+// Helper functions for digest auth
+func extractParam(authHeader, param string) string {
+	prefix := param + `="`
+	idx := strings.Index(authHeader, prefix)
+	if idx == -1 {
+		return ""
+	}
+	start := idx + len(prefix)
+	end := strings.Index(authHeader[start:], `"`)
+	if end == -1 {
+		return ""
+	}
+	return authHeader[start : start+end]
+}
+
+func md5Hash(s string) string {
+	return fmt.Sprintf("%x", md5sum(s))
+}
+
+func md5sum(s string) interface{} {
+	// Use crypto/md5 - import it if not already present
+	h := md5.New()
+	h.Write([]byte(s))
+	return h.Sum(nil)
+}
+
+func generateNonce() string {
+	// Generate a simple nonce
+	return fmt.Sprintf("%d", time.Now().UnixNano())
+}
+

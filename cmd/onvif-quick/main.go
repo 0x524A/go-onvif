@@ -22,9 +22,10 @@ func main() {
 	for {
 		fmt.Println("What would you like to do?")
 		fmt.Println("1. 🔍 Discover cameras")
-		fmt.Println("2. 📹 Connect to camera")
-		fmt.Println("3. 🎮 PTZ demo")
-		fmt.Println("4. 📡 Get stream URLs")
+		fmt.Println("2. 🌐 List network interfaces")
+		fmt.Println("3. 📹 Connect to camera")
+		fmt.Println("4. 🎮 PTZ demo")
+		fmt.Println("5. 📡 Get stream URLs")
 		fmt.Println("0. Exit")
 		fmt.Print("\nChoice: ")
 
@@ -35,10 +36,12 @@ func main() {
 		case "1":
 			discoverCameras()
 		case "2":
-			connectAndShowInfo()
+			listNetworkInterfaces()
 		case "3":
-			ptzDemo()
+			connectAndShowInfo()
 		case "4":
+			ptzDemo()
+		case "5":
 			getStreamURLs()
 		case "0", "q", "quit":
 			fmt.Println("Goodbye! 👋")
@@ -51,12 +54,48 @@ func main() {
 }
 
 func discoverCameras() {
+	reader := bufio.NewReader(os.Stdin)
+	
 	fmt.Println("🔍 Discovering cameras on network...")
+
+	// Ask if user wants to use a specific interface
+	fmt.Print("Use specific network interface? (y/n) [n]: ")
+	useInterface, _ := reader.ReadString('\n')
+	useInterface = strings.ToLower(strings.TrimSpace(useInterface))
+
+	var opts *discovery.DiscoverOptions
+	if useInterface == "y" || useInterface == "yes" {
+		// List interfaces
+		interfaces, err := discovery.ListNetworkInterfaces()
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			return
+		}
+
+		fmt.Println("\nAvailable interfaces:")
+		for i, iface := range interfaces {
+			fmt.Printf("  %d. %s (%v)\n", i+1, iface.Name, iface.Addresses)
+		}
+
+		fmt.Print("\nEnter interface name or IP: ")
+		ifaceInput, _ := reader.ReadString('\n')
+		ifaceInput = strings.TrimSpace(ifaceInput)
+
+		if ifaceInput != "" {
+			opts = &discovery.DiscoverOptions{
+				NetworkInterface: ifaceInput,
+			}
+		}
+	}
+
+	if opts == nil {
+		opts = &discovery.DiscoverOptions{}
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	devices, err := discovery.Discover(ctx, 5*time.Second)
+	devices, err := discovery.DiscoverWithOptions(ctx, 5*time.Second, opts)
 	if err != nil {
 		fmt.Printf("❌ Error: %v\n", err)
 		return
@@ -72,6 +111,45 @@ func discoverCameras() {
 		fmt.Printf("  %d. %s (%s)\n", i+1, device.GetName(), device.GetDeviceEndpoint())
 	}
 }
+
+func listNetworkInterfaces() {
+	fmt.Println("🌐 Network Interfaces")
+	fmt.Println("====================")
+
+	interfaces, err := discovery.ListNetworkInterfaces()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+
+	if len(interfaces) == 0 {
+		fmt.Println("No network interfaces found")
+		return
+	}
+
+	fmt.Printf("✅ Found %d interface(s):\n\n", len(interfaces))
+
+	for _, iface := range interfaces {
+		upStr := "Up"
+		if !iface.Up {
+			upStr = "Down"
+		}
+
+		multicastStr := "Yes"
+		if !iface.Multicast {
+			multicastStr = "No"
+		}
+
+		fmt.Printf("📡 %s (%s, Multicast: %s)\n", iface.Name, upStr, multicastStr)
+
+		if len(iface.Addresses) > 0 {
+			for _, addr := range iface.Addresses {
+				fmt.Printf("   └─ %s\n", addr)
+			}
+		}
+	}
+}
+
 
 func connectAndShowInfo() {
 	reader := bufio.NewReader(os.Stdin)
