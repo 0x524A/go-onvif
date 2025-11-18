@@ -180,7 +180,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: all-releases/*
-          draft: false
+          draft: true
           prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
           generate_release_notes: true
           fail_on_unmatched_files: true

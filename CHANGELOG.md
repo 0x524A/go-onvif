@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2025-11-18
+
+### Changed
+- **Release Workflow**: Upgraded to `softprops/action-gh-release@v2`
+  - Fixes asset upload race condition in v1
+  - Better handling of concurrent file uploads
+  - Added `fail_on_unmatched_files` and `make_latest` flags
+
 ## [1.1.1] - 2025-11-18
 
 ### Added
@@ -99,6 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive documentation
 - README with usage guide
 
-[Unreleased]: https://github.com/0x524a/onvif-go/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/0x524a/onvif-go/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/0x524a/onvif-go/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/0x524a/onvif-go/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/0x524a/onvif-go/compare/v1.0.3...v1.1.0
