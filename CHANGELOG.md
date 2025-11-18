@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2025-11-18
+
+### Added
+- **RTSPeek Library Integration**: RTSP stream inspection using `github.com/0x524A/rtspeek`
+  - Replaced command-line `ffprobe` execution with library-based approach
+  - Enhanced stream inspection with codec, resolution, and framerate detection
+  - 5-second timeout for stream DESCRIBE operations
+  - TCP fallback for basic connectivity checks
+  - See `cmd/onvif-cli/main.go` for implementation
+
+### Changed
+- **Code Quality Improvements**: Fixed all linting errors
+  - Removed unused `generateDemoASCII()` function
+  - Fixed dynamic format strings (SA1006 errors)
+  - Added proper error handling for Close() operations
+  - Migrated to golangci-lint v2 configuration
+  - CI/CD pipeline excludes utility tools and examples from linting
+- **golangci-lint v2**: Updated configuration and GitHub Actions workflow
+  - Created `.golangci.yml` with v2 schema
+  - Updated CI to use golangci-lint-action@v8 with v2.2
+  - Scoped linting to main packages only
+
+## [1.1.0] - 2025-11-18
+
 ### Added
 - **Simplified Endpoint API**: `NewClient()` now accepts multiple endpoint formats
   - Simple IP address: `"192.168.1.100"`
@@ -75,4 +99,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive documentation
 - README with usage guide
 
-[Unreleased]: https://github.com/0x524a/onvif-go/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/0x524a/onvif-go/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/0x524a/onvif-go/compare/v1.1.0...v1.1.1
+[1.1.0]: https://github.com/0x524a/onvif-go/compare/v1.0.3...v1.1.0
