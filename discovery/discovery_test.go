@@ -283,6 +283,13 @@ func TestListNetworkInterfaces(t *testing.T) {
 }
 
 func TestResolveNetworkInterface(t *testing.T) {
+	// Determine the loopback interface name based on platform
+	loopbackName := "lo"
+	if _, err := net.InterfaceByName("lo"); err != nil {
+		// Loopback might be "lo0" on macOS
+		loopbackName = "lo0"
+	}
+
 	tests := []struct {
 		name      string
 		ifaceSpec string
@@ -290,7 +297,7 @@ func TestResolveNetworkInterface(t *testing.T) {
 	}{
 		{
 			name:      "loopback by name",
-			ifaceSpec: "lo",
+			ifaceSpec: loopbackName,
 			shouldErr: false,
 		},
 		{
@@ -367,13 +374,18 @@ func TestDiscoverWithOptions_NilOptions(t *testing.T) {
 
 func TestDiscoverWithOptions_LoopbackInterface(t *testing.T) {
 	// Test with loopback interface for testing
-	_, err := net.InterfaceByName("lo")
-	if err != nil {
+	// Try both common loopback names
+	loopbackName := ""
+	if _, err := net.InterfaceByName("lo"); err == nil {
+		loopbackName = "lo"
+	} else if _, err := net.InterfaceByName("lo0"); err == nil {
+		loopbackName = "lo0"
+	} else {
 		t.Skip("Loopback interface not available on this system")
 	}
 
 	opts := &DiscoverOptions{
-		NetworkInterface: "lo",
+		NetworkInterface: loopbackName,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -381,7 +393,7 @@ func TestDiscoverWithOptions_LoopbackInterface(t *testing.T) {
 
 	devices, err := DiscoverWithOptions(ctx, 500*time.Millisecond, opts)
 	if err != nil && err != context.DeadlineExceeded {
-		t.Logf("DiscoverWithOptions with lo interface: %v (timeout is expected)", err)
+		t.Logf("DiscoverWithOptions with %s interface: %v (timeout is expected)", loopbackName, err)
 	}
 
 	if devices == nil {
