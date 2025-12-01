@@ -367,9 +367,17 @@ func (s *Server) HandleGetVideoSources(body interface{}) (interface{}, error) {
 
 // unmarshalBody is a helper to unmarshal SOAP body content
 func unmarshalBody(body interface{}, target interface{}) error {
-	bodyXML, err := xml.Marshal(body)
-	if err != nil {
-		return err
+	var bodyXML []byte
+	var err error
+	
+	// If body is already []byte, use it directly
+	if b, ok := body.([]byte); ok {
+		bodyXML = b
+	} else {
+		bodyXML, err = xml.Marshal(body)
+		if err != nil {
+			return err
+		}
 	}
 	return xml.Unmarshal(bodyXML, target)
 }
