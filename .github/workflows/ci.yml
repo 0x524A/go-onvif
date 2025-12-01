@@ -161,7 +161,7 @@ jobs:
         name: coverage-report
     
     - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
+      uses: SonarSource/sonarcloud-github-action@3b335e14ab49358d133eef17b8c1590fe7c21c0e # v2.2.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -179,15 +179,15 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@a4a2eec1d0ddf3f5835416e10cb208206f91ce91 # v5.0.0
       with:
         go-version: '1.23'
     
     - name: Cache Go modules
-      uses: actions/cache@v4
+      uses: actions/cache@e5f3f4dc664b57a06a2055cfc9b80cf9f20aba75 # v4.0.1
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-1.23-${{ hashFiles('**/go.sum') }}
