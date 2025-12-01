@@ -7,3 +7,6 @@ linters:
 
 run:
   timeout: 5m
+
+output:
+  format: colored-line-number

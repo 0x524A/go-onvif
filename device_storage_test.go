@@ -108,7 +108,7 @@ func newMockDeviceStorageServer() *httptest.Server {
 </SOAP-ENV:Envelope>`
 		}
 
-		w.Write([]byte(response))
+		_, _ = w.Write([]byte(response))
 	}))
 }
 
