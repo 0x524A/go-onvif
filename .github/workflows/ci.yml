@@ -18,15 +18,15 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@a4a2eec1d0ddf3f5835416e10cb208206f91ce91 # v5.0.0
       with:
         go-version: '1.23'
     
     - name: Cache Go modules
-      uses: actions/cache@v4
+      uses: actions/cache@e5f3f4dc664b57a06a2055cfc9b80cf9f20aba75 # v4.0.1
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -45,7 +45,7 @@ jobs:
         fi
     
     - name: Lint
-      uses: golangci/golangci-lint-action@v4
+      uses: golangci/golangci-lint-action@971c284620f5fc42b58b3b01cc4aefd4b19f4599 # v4.0.0
       with:
         version: v2.0.0
         skip-cache: true
@@ -58,15 +58,15 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@a4a2eec1d0ddf3f5835416e10cb208206f91ce91 # v5.0.0
       with:
         go-version: '1.23'
     
     - name: Cache Go modules
-      uses: actions/cache@v4
+      uses: actions/cache@e5f3f4dc664b57a06a2055cfc9b80cf9f20aba75 # v4.0.1
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-1.23-${{ hashFiles('**/go.sum') }}
@@ -83,7 +83,7 @@ jobs:
       run: go tool cover -html=coverage.out -o coverage.html
     
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@c16abc29c95fcf9174b58eb7e6f695e0d003b6f5 # v4.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.out
@@ -93,7 +93,7 @@ jobs:
     
     - name: Archive coverage
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@26f96dfc338e3cd6585081a28241e5868b2b888f # v4.3.0
       with:
         name: coverage-report
         path: |
@@ -119,15 +119,15 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@a4a2eec1d0ddf3f5835416e10cb208206f91ce91 # v5.0.0
       with:
         go-version: ${{ matrix.go-version }}
     
     - name: Cache Go modules
-      uses: actions/cache@v4
+      uses: actions/cache@e5f3f4dc664b57a06a2055cfc9b80cf9f20aba75 # v4.0.1
       with:
         path: |
           ~/.cache/go-build
@@ -151,12 +151,12 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       with:
         fetch-depth: 0
     
     - name: Download coverage from test job
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@fb7b1ae3fa6edf41bfe27490ab69d8657bea0656 # v4.1.7
       with:
         name: coverage-report
     
