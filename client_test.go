@@ -95,19 +95,19 @@ func TestNormalizeEndpoint(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := normalizeEndpoint(tt.input)
-			
+
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("normalizeEndpoint() expected error but got none")
 				}
 				return
 			}
-			
+
 			if err != nil {
 				t.Errorf("normalizeEndpoint() unexpected error: %v", err)
 				return
 			}
-			
+
 			if result != tt.expected {
 				t.Errorf("normalizeEndpoint() = %v, want %v", result, tt.expected)
 			}
@@ -453,7 +453,7 @@ func TestGetDeviceInformationWithMockServer(t *testing.T) {
 		// Return empty response - will cause EOF error which is expected for now
 	}))
 	defer server.Close()
-	
+
 	client, err := NewClient(
 		server.URL,
 		WithCredentials("admin", "password"),
@@ -461,14 +461,14 @@ func TestGetDeviceInformationWithMockServer(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewClient() failed: %v", err)
 	}
-	
+
 	ctx := context.Background()
 	_, err = client.GetDeviceInformation(ctx)
 	// We expect an error since we're not returning valid SOAP
 	if err == nil {
-		t.Errorf("Expected error with empty response, but got none") 
+		t.Errorf("Expected error with empty response, but got none")
 	}
-	
+
 	// This test just verifies the client can be created and make requests
 	t.Logf("Expected error occurred: %v", err)
 }
@@ -479,18 +479,18 @@ func TestGetDeviceInformationWithAuth(t *testing.T) {
 		w.WriteHeader(http.StatusUnauthorized)
 	}))
 	defer server.Close()
-	
+
 	client, err := NewClient(server.URL)
 	if err != nil {
 		t.Fatalf("NewClient() failed: %v", err)
 	}
-	
+
 	ctx := context.Background()
 	_, err = client.GetDeviceInformation(ctx)
 	if err == nil {
 		t.Errorf("Expected authentication error, but got none")
 	}
-	
+
 	t.Logf("Authentication error (expected): %v", err)
 }
 
@@ -504,16 +504,16 @@ func TestInitializeEndpointDiscovery(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewClient() failed: %v", err)
 	}
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	
+
 	err = client.Initialize(ctx)
 	// We expect this to fail due to network timeout
 	if err == nil {
 		t.Errorf("Expected network error, but got none")
 	}
-	
+
 	t.Logf("Network error (expected): %v", err)
 }
 
@@ -525,21 +525,21 @@ func TestGetProfilesRequiresInitialization(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewClient() failed: %v", err)
 	}
-	
+
 	ctx := context.Background()
 	_, err = client.GetProfiles(ctx)
 	// Should fail because Initialize was not called
 	if err == nil {
 		t.Errorf("Expected error when GetProfiles called without Initialize")
 	}
-	
+
 	t.Logf("Expected error: %v", err)
 }
 
 func TestContextTimeout(t *testing.T) {
 	mock := NewMockONVIFServer()
 	defer mock.Close()
-	
+
 	client, err := NewClient(
 		mock.URL(),
 		WithCredentials("admin", "password"),
@@ -547,17 +547,17 @@ func TestContextTimeout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewClient() failed: %v", err)
 	}
-	
+
 	// Create context with very short timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
 	defer cancel()
-	
+
 	// This should timeout
 	_, err = client.GetDeviceInformation(ctx)
 	if err == nil {
 		t.Errorf("Expected timeout error, but got none")
 	}
-	
+
 	if !strings.Contains(err.Error(), "context deadline exceeded") {
 		t.Errorf("Expected context deadline exceeded error, got: %v", err)
 	}
@@ -598,7 +598,7 @@ func BenchmarkNewClient(b *testing.B) {
 func BenchmarkGetDeviceInformation(b *testing.B) {
 	mock := NewMockONVIFServer()
 	defer mock.Close()
-	
+
 	client, err := NewClient(
 		mock.URL(),
 		WithCredentials("admin", "password"),
@@ -606,9 +606,9 @@ func BenchmarkGetDeviceInformation(b *testing.B) {
 	if err != nil {
 		b.Fatalf("NewClient() failed: %v", err)
 	}
-	
+
 	ctx := context.Background()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, err := client.GetDeviceInformation(ctx)
@@ -629,24 +629,24 @@ func ExampleClient_GetDeviceInformation() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	// Get device information
 	ctx := context.Background()
 	info, err := client.GetDeviceInformation(ctx)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	fmt.Printf("Camera: %s %s\n", info.Manufacturer, info.Model)
 	fmt.Printf("Firmware: %s\n", info.FirmwareVersion)
 }
 
 func TestFixLocalhostURL(t *testing.T) {
 	tests := []struct {
-		name         string
-		clientURL    string
-		serviceURL   string
-		expectedURL  string
+		name        string
+		clientURL   string
+		serviceURL  string
+		expectedURL string
 	}{
 		{
 			name:        "localhost hostname",

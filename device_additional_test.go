@@ -54,7 +54,7 @@ func newMockDeviceAdditionalServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "GetDPAddresses"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:GetDPAddressesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
@@ -71,7 +71,7 @@ func newMockDeviceAdditionalServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "SetDPAddresses"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:SetDPAddressesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl"/>
@@ -79,7 +79,7 @@ func newMockDeviceAdditionalServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "GetAccessPolicy"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:GetAccessPolicyResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
@@ -92,7 +92,7 @@ func newMockDeviceAdditionalServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "SetAccessPolicy"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:SetAccessPolicyResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl"/>
@@ -100,7 +100,7 @@ func newMockDeviceAdditionalServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "GetWsdlUrl"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:GetWsdlUrlResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">

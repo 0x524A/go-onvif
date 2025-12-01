@@ -27,14 +27,14 @@ func New(config *Config) (*Server, error) {
 	for i := range config.Profiles {
 		profile := &config.Profiles[i]
 		streamPath := fmt.Sprintf("/stream%d", i)
-		
+
 		host := config.Host
 		if host == "0.0.0.0" || host == "" {
 			host = "localhost"
 		}
-		
+
 		streamURI := fmt.Sprintf("rtsp://%s:8554%s", host, streamPath)
-		
+
 		server.streams[profile.Token] = &StreamConfig{
 			ProfileToken: profile.Token,
 			RTSPPath:     streamPath,
@@ -104,11 +104,11 @@ func (s *Server) Start(ctx context.Context) error {
 	// Register service handlers
 	s.registerDeviceService(mux)
 	s.registerMediaService(mux)
-	
+
 	if s.config.SupportPTZ {
 		s.registerPTZService(mux)
 	}
-	
+
 	if s.config.SupportImaging {
 		s.registerImagingService(mux)
 	}

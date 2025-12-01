@@ -140,7 +140,7 @@ func (c *Client) CreateCertificate(ctx context.Context, certificateID, subject s
 	}
 
 	type CreateCertificateResponse struct {
-		XMLName     xml.Name    `xml:"CreateCertificateResponse"`
+		XMLName     xml.Name     `xml:"CreateCertificateResponse"`
 		Certificate *Certificate `xml:"Certificate"`
 	}
 
@@ -204,7 +204,7 @@ func (c *Client) GetCertificateInformation(ctx context.Context, certificateID st
 	}
 
 	type GetCertificateInformationResponse struct {
-		XMLName               xml.Name                `xml:"GetCertificateInformationResponse"`
+		XMLName                xml.Name                `xml:"GetCertificateInformationResponse"`
 		CertificateInformation *CertificateInformation `xml:"CertificateInformation"`
 	}
 
@@ -296,8 +296,8 @@ func (c *Client) GetPkcs10Request(ctx context.Context, certificateID, subject st
 	}
 
 	type GetPkcs10RequestResponse struct {
-		XMLName        xml.Name    `xml:"GetPkcs10RequestResponse"`
-		Pkcs10Request  *BinaryData `xml:"Pkcs10Request"`
+		XMLName       xml.Name    `xml:"GetPkcs10RequestResponse"`
+		Pkcs10Request *BinaryData `xml:"Pkcs10Request"`
 	}
 
 	request := GetPkcs10RequestBody{
@@ -323,8 +323,8 @@ func (c *Client) GetPkcs10Request(ctx context.Context, certificateID, subject st
 // ONVIF Specification: LoadCertificateWithPrivateKey operation
 func (c *Client) LoadCertificateWithPrivateKey(ctx context.Context, certificates []*Certificate, privateKey []*BinaryData, certificateIDs []string) error {
 	type LoadCertificateWithPrivateKeyBody struct {
-		XMLName            xml.Name       `xml:"tds:LoadCertificateWithPrivateKey"`
-		Xmlns              string         `xml:"xmlns:tds,attr"`
+		XMLName                   xml.Name `xml:"tds:LoadCertificateWithPrivateKey"`
+		Xmlns                     string   `xml:"xmlns:tds,attr"`
 		CertificateWithPrivateKey []struct {
 			CertificateID string       `xml:"CertificateID"`
 			Certificate   *Certificate `xml:"Certificate"`

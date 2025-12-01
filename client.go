@@ -21,7 +21,7 @@ type Client struct {
 	password   string
 	httpClient *http.Client
 	mu         sync.RWMutex
-	
+
 	// Service endpoints
 	mediaEndpoint   string
 	ptzEndpoint     string
@@ -130,7 +130,7 @@ func normalizeEndpoint(endpoint string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("invalid IP address or hostname: %w", err)
 	}
-	
+
 	if parsedURL.Host == "" {
 		return "", fmt.Errorf("invalid endpoint format")
 	}
@@ -497,4 +497,3 @@ func generateNonce() string {
 	// Generate a simple nonce
 	return fmt.Sprintf("%d", time.Now().UnixNano())
 }
-

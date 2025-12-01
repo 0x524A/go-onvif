@@ -11,10 +11,10 @@ import (
 
 // ASCIIConfig controls ASCII art generation parameters
 type ASCIIConfig struct {
-	Width   int     // Output width in characters
-	Height  int     // Output height in characters
-	Invert  bool    // Invert brightness
-	Quality string  // "high", "medium", "low"
+	Width   int    // Output width in characters
+	Height  int    // Output height in characters
+	Invert  bool   // Invert brightness
+	Quality string // "high", "medium", "low"
 }
 
 // DefaultASCIIConfig returns a sensible default configuration
@@ -31,18 +31,18 @@ func DefaultASCIIConfig() ASCIIConfig {
 var (
 	// Full charset with many shades
 	charsetFull = []rune{' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'}
-	
+
 	// Medium charset - balanced
 	charsetMedium = []rune{' ', '.', '-', '=', '+', '#', '@'}
-	
+
 	// Simple charset - just a few chars
 	charsetSimple = []rune{' ', '-', '#', '@'}
-	
+
 	// Block charset - using block characters
 	charsetBlock = []rune{' ', '░', '▒', '▓', '█'}
-	
+
 	// Detailed charset
-	charsetDetailed = []rune{' ', '`', '.', ',', ':', ';', '!', 'i', 'l', 'I', 
+	charsetDetailed = []rune{' ', '`', '.', ',', ':', ';', '!', 'i', 'l', 'I',
 		'o', 'O', '0', 'e', 'E', 'p', 'P', 'x', 'X', '$', 'D', 'W', 'M', '@', '#'}
 )
 

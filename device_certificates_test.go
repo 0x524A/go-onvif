@@ -14,8 +14,8 @@ func newMockDeviceCertificatesServer() *httptest.Server {
 		w.Header().Set("Content-Type", "application/soap+xml")
 
 		// Parse request to determine which operation
-	buf := make([]byte, r.ContentLength)
-	_, _ = r.Body.Read(buf)
+		buf := make([]byte, r.ContentLength)
+		_, _ = r.Body.Read(buf)
 		requestBody := string(buf)
 
 		var response string

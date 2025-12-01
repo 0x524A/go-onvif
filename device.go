@@ -1092,4 +1092,3 @@ func (c *Client) SetNetworkDefaultGateway(ctx context.Context, gateway *NetworkG
 
 	return nil
 }
-

@@ -872,9 +872,9 @@ const (
 
 // RemoteUser represents remote user configuration
 type RemoteUser struct {
-	Username            string
-	Password            string
-	UseDerivedPassword  bool
+	Username           string
+	Password           string
+	UseDerivedPassword bool
 }
 
 // Certificate represents a certificate
@@ -917,17 +917,17 @@ type CertificateUsage struct {
 
 // DateTimeRange represents date/time range
 type DateTimeRange struct {
-	From time.Time
+	From  time.Time
 	Until time.Time
 }
 
 // Dot11Capabilities represents 802.11 capabilities
 type Dot11Capabilities struct {
-	TKIP                   bool
-	ScanAvailableNetworks  bool
-	MultipleConfiguration  bool
-	AdHocStationMode       bool
-	WEP                    bool
+	TKIP                  bool
+	ScanAvailableNetworks bool
+	MultipleConfiguration bool
+	AdHocStationMode      bool
+	WEP                   bool
 }
 
 // Dot11Status represents 802.11 status
@@ -985,12 +985,12 @@ type TLSConfiguration struct {
 
 // Dot11AvailableNetworks represents available 802.11 networks
 type Dot11AvailableNetworks struct {
-	SSID                    string
-	BSSID                   string
-	AuthAndMangementSuite   []Dot11AuthAndMangementSuite
-	PairCipher              []Dot11Cipher
-	GroupCipher             []Dot11Cipher
-	SignalStrength          Dot11SignalStrength
+	SSID                  string
+	BSSID                 string
+	AuthAndMangementSuite []Dot11AuthAndMangementSuite
+	PairCipher            []Dot11Cipher
+	GroupCipher           []Dot11Cipher
+	SignalStrength        Dot11SignalStrength
 }
 
 // Dot11AuthAndMangementSuite represents auth suite
@@ -1011,18 +1011,18 @@ type StorageConfiguration struct {
 
 // StorageConfigurationData represents storage configuration data
 type StorageConfigurationData struct {
-	Type                        string
-	LocalPath                   string
-	StorageUri                  string
-	User                        *UserCredential
-	CertPathValidationPolicyID  string
+	Type                       string
+	LocalPath                  string
+	StorageUri                 string
+	User                       *UserCredential
+	CertPathValidationPolicyID string
 }
 
 // UserCredential represents user credentials
 type UserCredential struct {
-	UserName  string
-	Password  string
-	Token     string
+	UserName string
+	Password string
+	Token    string
 }
 
 // LocationEntity represents geo location
@@ -1049,12 +1049,12 @@ type AccessPolicy struct {
 
 // PasswordComplexityConfiguration represents password complexity config
 type PasswordComplexityConfiguration struct {
-	MinLen                     int
-	Uppercase                  int
-	Number                     int
-	SpecialChars               int
-	BlockUsernameOccurrence    bool
-	PolicyConfigurationLocked  bool
+	MinLen                    int
+	Uppercase                 int
+	Number                    int
+	SpecialChars              int
+	BlockUsernameOccurrence   bool
+	PolicyConfigurationLocked bool
 }
 
 // PasswordHistoryConfiguration represents password history config

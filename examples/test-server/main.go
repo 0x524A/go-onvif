@@ -73,7 +73,7 @@ func main() {
 	for i, profile := range profiles {
 		fmt.Printf("\n   Profile %d: %s\n", i+1, profile.Name)
 		fmt.Printf("   Token: %s\n", profile.Token)
-		
+
 		if profile.VideoEncoderConfiguration != nil {
 			fmt.Printf("   Video: %dx%d @ %s\n",
 				profile.VideoEncoderConfiguration.Resolution.Width,
@@ -98,7 +98,7 @@ func main() {
 		// Test PTZ if available
 		if profile.PTZConfiguration != nil {
 			fmt.Println("   PTZ: ✓ Enabled")
-			
+
 			// Get PTZ status
 			status, err := client.GetStatus(ctx, profile.Token)
 			if err == nil {
@@ -121,7 +121,7 @@ func main() {
 	if len(profiles) > 0 && profiles[0].PTZConfiguration != nil {
 		fmt.Println("🎮 Test 5: Testing PTZ Control...")
 		profileToken := profiles[0].Token
-		
+
 		// Absolute move to home position
 		fmt.Println("   Moving to home position...")
 		position := &onvif.PTZVector{

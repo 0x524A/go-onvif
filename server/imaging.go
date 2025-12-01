@@ -42,18 +42,18 @@ type BacklightCompensationSettings struct {
 
 // ExposureSettings20 represents exposure settings for ONVIF 2.0
 type ExposureSettings20 struct {
-	Mode            string   `xml:"Mode"`
-	Priority        *string  `xml:"Priority,omitempty"`
+	Mode            string     `xml:"Mode"`
+	Priority        *string    `xml:"Priority,omitempty"`
 	Window          *Rectangle `xml:"Window,omitempty"`
-	MinExposureTime *float64 `xml:"MinExposureTime,omitempty"`
-	MaxExposureTime *float64 `xml:"MaxExposureTime,omitempty"`
-	MinGain         *float64 `xml:"MinGain,omitempty"`
-	MaxGain         *float64 `xml:"MaxGain,omitempty"`
-	MinIris         *float64 `xml:"MinIris,omitempty"`
-	MaxIris         *float64 `xml:"MaxIris,omitempty"`
-	ExposureTime    *float64 `xml:"ExposureTime,omitempty"`
-	Gain            *float64 `xml:"Gain,omitempty"`
-	Iris            *float64 `xml:"Iris,omitempty"`
+	MinExposureTime *float64   `xml:"MinExposureTime,omitempty"`
+	MaxExposureTime *float64   `xml:"MaxExposureTime,omitempty"`
+	MinGain         *float64   `xml:"MinGain,omitempty"`
+	MaxGain         *float64   `xml:"MaxGain,omitempty"`
+	MinIris         *float64   `xml:"MinIris,omitempty"`
+	MaxIris         *float64   `xml:"MaxIris,omitempty"`
+	ExposureTime    *float64   `xml:"ExposureTime,omitempty"`
+	Gain            *float64   `xml:"Gain,omitempty"`
+	Iris            *float64   `xml:"Iris,omitempty"`
 }
 
 // FocusConfiguration20 represents focus configuration for ONVIF 2.0
@@ -168,15 +168,15 @@ type WhiteBalanceOptions struct {
 
 // MoveRequest represents Move (focus) request
 type MoveRequest struct {
-	XMLName          xml.Name    `xml:"http://www.onvif.org/ver20/imaging/wsdl Move"`
-	VideoSourceToken string      `xml:"VideoSourceToken"`
-	Focus            *FocusMove  `xml:"Focus"`
+	XMLName          xml.Name   `xml:"http://www.onvif.org/ver20/imaging/wsdl Move"`
+	VideoSourceToken string     `xml:"VideoSourceToken"`
+	Focus            *FocusMove `xml:"Focus"`
 }
 
 // FocusMove represents focus move parameters
 type FocusMove struct {
-	Absolute *AbsoluteFocus    `xml:"Absolute,omitempty"`
-	Relative *RelativeFocus    `xml:"Relative,omitempty"`
+	Absolute   *AbsoluteFocus   `xml:"Absolute,omitempty"`
+	Relative   *RelativeFocus   `xml:"Relative,omitempty"`
 	Continuous *ContinuousFocus `xml:"Continuous,omitempty"`
 }
 
@@ -342,10 +342,10 @@ func (s *Server) HandleSetImagingSettings(body interface{}) (interface{}, error)
 func (s *Server) HandleGetOptions(body interface{}) (interface{}, error) {
 	// Return available imaging options/capabilities
 	options := &ImagingOptions{
-		Brightness: &FloatRange{Min: 0, Max: 100},
-		ColorSaturation: &FloatRange{Min: 0, Max: 100},
-		Contrast: &FloatRange{Min: 0, Max: 100},
-		Sharpness: &FloatRange{Min: 0, Max: 100},
+		Brightness:       &FloatRange{Min: 0, Max: 100},
+		ColorSaturation:  &FloatRange{Min: 0, Max: 100},
+		Contrast:         &FloatRange{Min: 0, Max: 100},
+		Sharpness:        &FloatRange{Min: 0, Max: 100},
 		IrCutFilterModes: []string{"ON", "OFF", "AUTO"},
 		BacklightCompensation: &BacklightCompensationOptions{
 			Mode:  []string{"OFF", "ON"},

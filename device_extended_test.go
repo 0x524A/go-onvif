@@ -24,7 +24,7 @@ func newMockDeviceExtendedServer() *httptest.Server {
 
 		switch {
 		case strings.Contains(bodyContent, "AddScopes"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:AddScopesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl"/>
@@ -32,7 +32,7 @@ func newMockDeviceExtendedServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "RemoveScopes"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:RemoveScopesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
@@ -42,7 +42,7 @@ func newMockDeviceExtendedServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "SetScopes"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:SetScopesResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl"/>
@@ -50,7 +50,7 @@ func newMockDeviceExtendedServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "GetRelayOutputs"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:GetRelayOutputsResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
@@ -66,7 +66,7 @@ func newMockDeviceExtendedServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "SetRelayOutputSettings"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:SetRelayOutputSettingsResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl"/>
@@ -74,7 +74,7 @@ func newMockDeviceExtendedServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "SetRelayOutputState"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:SetRelayOutputStateResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl"/>
@@ -82,7 +82,7 @@ func newMockDeviceExtendedServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "SendAuxiliaryCommand"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:SendAuxiliaryCommandResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
@@ -92,7 +92,7 @@ func newMockDeviceExtendedServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "GetSystemLog"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:GetSystemLogResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">
@@ -104,7 +104,7 @@ func newMockDeviceExtendedServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "SetSystemFactoryDefault"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:SetSystemFactoryDefaultResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl"/>
@@ -112,7 +112,7 @@ func newMockDeviceExtendedServer() *httptest.Server {
 </s:Envelope>`))
 
 		case strings.Contains(bodyContent, "StartFirmwareUpgrade"):
-		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+			_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
 	<s:Body>
 		<tds:StartFirmwareUpgradeResponse xmlns:tds="http://www.onvif.org/ver10/device/wsdl">

@@ -158,7 +158,7 @@ func buildConfig(host string, port int, username, password, manufacturer, model,
 	// Generate profiles
 	for i := 0; i < numProfiles; i++ {
 		template := templates[i%len(templates)]
-		
+
 		profile := server.ProfileConfig{
 			Token: fmt.Sprintf("profile_%d", i),
 			Name:  template.name,

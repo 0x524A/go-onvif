@@ -45,10 +45,10 @@ type AnalyticsCapabilities struct {
 
 // DeviceCapabilities represents device service capabilities
 type DeviceCapabilities struct {
-	XAddr   string                `xml:"XAddr"`
-	Network *NetworkCapabilities  `xml:"Network,omitempty"`
-	System  *SystemCapabilities   `xml:"System,omitempty"`
-	IO      *IOCapabilities       `xml:"IO,omitempty"`
+	XAddr    string                `xml:"XAddr"`
+	Network  *NetworkCapabilities  `xml:"Network,omitempty"`
+	System   *SystemCapabilities   `xml:"System,omitempty"`
+	IO       *IOCapabilities       `xml:"IO,omitempty"`
 	Security *SecurityCapabilities `xml:"Security,omitempty"`
 }
 
@@ -62,12 +62,12 @@ type NetworkCapabilities struct {
 
 // SystemCapabilities represents system capabilities
 type SystemCapabilities struct {
-	DiscoveryResolve  bool `xml:"DiscoveryResolve,attr"`
-	DiscoveryBye      bool `xml:"DiscoveryBye,attr"`
-	RemoteDiscovery   bool `xml:"RemoteDiscovery,attr"`
-	SystemBackup      bool `xml:"SystemBackup,attr"`
-	SystemLogging     bool `xml:"SystemLogging,attr"`
-	FirmwareUpgrade   bool `xml:"FirmwareUpgrade,attr"`
+	DiscoveryResolve bool `xml:"DiscoveryResolve,attr"`
+	DiscoveryBye     bool `xml:"DiscoveryBye,attr"`
+	RemoteDiscovery  bool `xml:"RemoteDiscovery,attr"`
+	SystemBackup     bool `xml:"SystemBackup,attr"`
+	SystemLogging    bool `xml:"SystemLogging,attr"`
+	FirmwareUpgrade  bool `xml:"FirmwareUpgrade,attr"`
 }
 
 // IOCapabilities represents I/O capabilities
@@ -127,8 +127,8 @@ type GetServicesResponse struct {
 
 // Service represents a service
 type Service struct {
-	Namespace string `xml:"Namespace"`
-	XAddr     string `xml:"XAddr"`
+	Namespace string  `xml:"Namespace"`
+	XAddr     string  `xml:"XAddr"`
 	Version   Version `xml:"Version"`
 }
 

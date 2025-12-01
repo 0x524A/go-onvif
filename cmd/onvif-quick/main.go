@@ -55,7 +55,7 @@ func main() {
 
 func discoverCameras() {
 	reader := bufio.NewReader(os.Stdin)
-	
+
 	fmt.Println("🔍 Discovering cameras on network...")
 
 	// Ask if user wants to use a specific interface
@@ -150,7 +150,6 @@ func listNetworkInterfaces() {
 	}
 }
 
-
 func connectAndShowInfo() {
 	reader := bufio.NewReader(os.Stdin)
 
@@ -200,7 +199,7 @@ func connectAndShowInfo() {
 	profiles, err := client.GetProfiles(ctx)
 	if err == nil && len(profiles) > 0 {
 		fmt.Printf("📺 %d profile(s) available\n", len(profiles))
-		
+
 		// Show first stream URL
 		streamURI, err := client.GetStreamURI(ctx, profiles[0].Token)
 		if err == nil {
@@ -228,7 +227,7 @@ func ptzDemo() {
 	password = strings.TrimSpace(password)
 
 	endpoint := fmt.Sprintf("http://%s/onvif/device_service", ip)
-	
+
 	client, err := onvif.NewClient(
 		endpoint,
 		onvif.WithCredentials(username, password),
@@ -333,7 +332,7 @@ func getStreamURLs() {
 	password = strings.TrimSpace(password)
 
 	endpoint := fmt.Sprintf("http://%s/onvif/device_service", ip)
-	
+
 	client, err := onvif.NewClient(
 		endpoint,
 		onvif.WithCredentials(username, password),
@@ -382,7 +381,7 @@ func getStreamURLs() {
 		if profile.VideoEncoderConfiguration != nil {
 			fmt.Printf("   🎬 Encoding: %s", profile.VideoEncoderConfiguration.Encoding)
 			if profile.VideoEncoderConfiguration.Resolution != nil {
-				fmt.Printf(" (%dx%d)", 
+				fmt.Printf(" (%dx%d)",
 					profile.VideoEncoderConfiguration.Resolution.Width,
 					profile.VideoEncoderConfiguration.Resolution.Height)
 			}

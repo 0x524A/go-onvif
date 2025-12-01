@@ -89,7 +89,7 @@ func demonstratePTZ(ctx context.Context, client *onvif.Client, profileToken stri
 	fmt.Println("Moving camera right...")
 	velocity := &onvif.PTZSpeed{
 		PanTilt: &onvif.Vector2D{
-			X: 0.5,  // Move right
+			X: 0.5, // Move right
 			Y: 0.0,
 		},
 	}

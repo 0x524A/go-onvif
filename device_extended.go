@@ -131,7 +131,7 @@ func (c *Client) FixedGetSystemDateAndTime(ctx context.Context) (*SystemDateTime
 	}
 
 	type GetSystemDateAndTimeResponse struct {
-		XMLName          xml.Name `xml:"GetSystemDateAndTimeResponse"`
+		XMLName           xml.Name `xml:"GetSystemDateAndTimeResponse"`
 		SystemDateAndTime struct {
 			DateTimeType    string `xml:"DateTimeType"`
 			DaylightSavings bool   `xml:"DaylightSavings"`
@@ -406,10 +406,10 @@ func (c *Client) GetRelayOutputs(ctx context.Context) ([]*RelayOutput, error) {
 // SetRelayOutputSettings sets the settings of a relay output
 func (c *Client) SetRelayOutputSettings(ctx context.Context, token string, settings *RelayOutputSettings) error {
 	type SetRelayOutputSettings struct {
-		XMLName         xml.Name `xml:"tds:SetRelayOutputSettings"`
-		Xmlns           string   `xml:"xmlns:tds,attr"`
+		XMLName          xml.Name `xml:"tds:SetRelayOutputSettings"`
+		Xmlns            string   `xml:"xmlns:tds,attr"`
 		RelayOutputToken string   `xml:"tds:RelayOutputToken"`
-		Properties      struct {
+		Properties       struct {
 			Mode      string `xml:"tt:Mode"`
 			DelayTime string `xml:"tt:DelayTime"`
 			IdleState string `xml:"tt:IdleState"`
@@ -417,7 +417,7 @@ func (c *Client) SetRelayOutputSettings(ctx context.Context, token string, setti
 	}
 
 	req := SetRelayOutputSettings{
-		Xmlns:           deviceNamespace,
+		Xmlns:            deviceNamespace,
 		RelayOutputToken: token,
 	}
 	req.Properties.Mode = string(settings.Mode)
@@ -437,16 +437,16 @@ func (c *Client) SetRelayOutputSettings(ctx context.Context, token string, setti
 // SetRelayOutputState sets the state of a relay output
 func (c *Client) SetRelayOutputState(ctx context.Context, token string, state RelayLogicalState) error {
 	type SetRelayOutputState struct {
-		XMLName         xml.Name          `xml:"tds:SetRelayOutputState"`
-		Xmlns           string            `xml:"xmlns:tds,attr"`
+		XMLName          xml.Name          `xml:"tds:SetRelayOutputState"`
+		Xmlns            string            `xml:"xmlns:tds,attr"`
 		RelayOutputToken string            `xml:"tds:RelayOutputToken"`
-		LogicalState    RelayLogicalState `xml:"tds:LogicalState"`
+		LogicalState     RelayLogicalState `xml:"tds:LogicalState"`
 	}
 
 	req := SetRelayOutputState{
-		Xmlns:           deviceNamespace,
+		Xmlns:            deviceNamespace,
 		RelayOutputToken: token,
-		LogicalState:    state,
+		LogicalState:     state,
 	}
 
 	username, password := c.GetCredentials()
@@ -628,8 +628,8 @@ func (c *Client) GetSystemUris(ctx context.Context) (*SystemLogUriList, string, 
 	}
 
 	type GetSystemUrisResponse struct {
-		XMLName         xml.Name `xml:"GetSystemUrisResponse"`
-		SystemLogUris   *struct {
+		XMLName       xml.Name `xml:"GetSystemUrisResponse"`
+		SystemLogUris *struct {
 			SystemLog []struct {
 				Type string `xml:"Type"`
 				Uri  string `xml:"Uri"`

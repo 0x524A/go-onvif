@@ -101,7 +101,7 @@ func (c *CLI) discoverCameras() {
 	// Try auto-discovery first (no specific interface)
 	fmt.Println("⏳ Attempting auto-discovery on default interface...")
 	devices, err := discovery.DiscoverWithOptions(ctx, 5*time.Second, &discovery.DiscoverOptions{})
-	
+
 	// If auto-discovery fails or finds nothing, offer interface selection
 	if err != nil || len(devices) == 0 {
 		if err != nil {
@@ -109,11 +109,11 @@ func (c *CLI) discoverCameras() {
 		} else {
 			fmt.Println("⚠️  No cameras found on default interface")
 		}
-		
+
 		fmt.Println()
 		fmt.Println("💡 Trying specific network interfaces...")
 		fmt.Println()
-		
+
 		// Get available interfaces and let user select
 		devices, err = c.discoverWithInterfaceSelection()
 		if err != nil {
@@ -139,17 +139,17 @@ func (c *CLI) discoverCameras() {
 	for i, device := range devices {
 		fmt.Printf("📹 Camera #%d:\n", i+1)
 		fmt.Printf("   Endpoint: %s\n", device.GetDeviceEndpoint())
-		
+
 		name := device.GetName()
 		if name != "" {
 			fmt.Printf("   Name: %s\n", name)
 		}
-		
+
 		location := device.GetLocation()
 		if location != "" {
 			fmt.Printf("   Location: %s\n", location)
 		}
-		
+
 		fmt.Printf("   Types: %v\n", device.Types)
 		fmt.Printf("   XAddrs: %v\n", device.XAddrs)
 		fmt.Println()
@@ -280,16 +280,16 @@ func (c *CLI) selectAndConnectCamera(devices []*discovery.Device) {
 
 func (c *CLI) connectToDiscoveredCamera(device *discovery.Device) {
 	endpoint := device.GetDeviceEndpoint()
-	
+
 	fmt.Printf("Connecting to: %s\n", endpoint)
-	
+
 	// Warn if using HTTPS
 	if strings.HasPrefix(endpoint, "https://") {
 		fmt.Println("⚠️  HTTPS endpoint detected - you may need to skip TLS verification for self-signed certificates")
 	}
-	
+
 	username := c.readInputWithDefault("Username", "admin")
-	
+
 	fmt.Print("Password: ")
 	password, _ := c.reader.ReadString('\n')
 	password = strings.TrimSpace(password)
@@ -309,14 +309,14 @@ func (c *CLI) connectToCamera() {
 	fmt.Println("===================")
 
 	endpoint := c.readInputWithDefault("Camera endpoint (http://ip:port/onvif/device_service)", "http://192.168.1.100/onvif/device_service")
-	
+
 	// Warn if using HTTPS
 	if strings.HasPrefix(endpoint, "https://") {
 		fmt.Println("⚠️  HTTPS endpoint detected - you may need to skip TLS verification for self-signed certificates")
 	}
-	
+
 	username := c.readInputWithDefault("Username", "admin")
-	
+
 	fmt.Print("Password: ")
 	password, _ := c.reader.ReadString('\n')
 	password = strings.TrimSpace(password)
@@ -442,7 +442,7 @@ func (c *CLI) getCapabilities(ctx context.Context) {
 	}
 
 	fmt.Println("✅ Device Capabilities:")
-	
+
 	if caps.Device != nil {
 		fmt.Printf("   ✓ Device Service\n")
 	}
@@ -582,11 +582,11 @@ func (c *CLI) inspectRTSPStream(streamURI string) map[string]interface{} {
 			if firstVideo := streamInfo.GetFirstVideoMedia(); firstVideo != nil {
 				// Get codec format (H264, H265, MJPEG, etc.)
 				details["codec"] = firstVideo.Format
-				
+
 				// Extract resolution directly from the video media
 				if firstVideo.Resolution != nil {
-					details["resolution"] = fmt.Sprintf("%dx%d", 
-						firstVideo.Resolution.Width, 
+					details["resolution"] = fmt.Sprintf("%dx%d",
+						firstVideo.Resolution.Width,
 						firstVideo.Resolution.Height)
 				} else {
 					// Fallback to resolution strings
@@ -673,7 +673,7 @@ func (c *CLI) getStreamURIs(ctx context.Context) {
 			fmt.Printf("   Stream URI: ❌ Error - %v\n", err)
 		} else {
 			fmt.Printf("   Stream URI: %s\n", streamURI.URI)
-			
+
 			// Warn if camera returns HTTPS when we connected via HTTP
 			if strings.HasPrefix(c.client.Endpoint(), "http://") && strings.HasPrefix(streamURI.URI, "https://") {
 				fmt.Printf("   ⚠️  WARNING: Camera returned HTTPS URL but you connected via HTTP\n")
@@ -735,14 +735,14 @@ func (c *CLI) getSnapshotURIs(ctx context.Context) {
 			fmt.Printf("   Snapshot URI: ❌ Error - %v\n", err)
 		} else {
 			fmt.Printf("   Snapshot URI: %s\n", snapshotURI.URI)
-			
+
 			// Warn if camera returns HTTPS when we connected via HTTP
 			if strings.HasPrefix(c.client.Endpoint(), "http://") && strings.HasPrefix(snapshotURI.URI, "https://") {
 				fmt.Printf("   ⚠️  WARNING: Camera returned HTTPS URL but you connected via HTTP\n")
 				fmt.Printf("   💡 Snapshot may fail due to TLS certificate issues\n")
 				fmt.Printf("   💡 Consider reconnecting with https:// endpoint and skip TLS verification\n")
 			}
-			
+
 			fmt.Printf("   🌐 Open this URL in a browser to see the snapshot\n")
 		}
 		fmt.Println()
@@ -792,13 +792,13 @@ func (c *CLI) getVideoEncoderConfig(ctx context.Context) {
 	fmt.Printf("   Token: %s\n", config.Token)
 	fmt.Printf("   Use Count: %d\n", config.UseCount)
 	fmt.Printf("   Encoding: %s\n", config.Encoding)
-	
+
 	if config.Resolution != nil {
 		fmt.Printf("   Resolution: %dx%d\n", config.Resolution.Width, config.Resolution.Height)
 	}
-	
+
 	fmt.Printf("   Quality: %.1f\n", config.Quality)
-	
+
 	if config.RateControl != nil {
 		fmt.Printf("   Frame Rate Limit: %d\n", config.RateControl.FrameRateLimit)
 		fmt.Printf("   Encoding Interval: %d\n", config.RateControl.EncodingInterval)
@@ -888,7 +888,7 @@ func (c *CLI) getPTZStatus(ctx context.Context, profileToken string) {
 	}
 
 	fmt.Println("✅ PTZ Status:")
-	
+
 	if status.Position != nil {
 		if status.Position.PanTilt != nil {
 			fmt.Printf("   Pan: %.3f\n", status.Position.PanTilt.X)
@@ -1035,10 +1035,10 @@ func (c *CLI) getPTZPresets(ctx context.Context, profileToken string) {
 		fmt.Printf("📍 Preset #%d:\n", i+1)
 		fmt.Printf("   Name: %s\n", preset.Name)
 		fmt.Printf("   Token: %s\n", preset.Token)
-		
+
 		if preset.PTZPosition != nil {
 			if preset.PTZPosition.PanTilt != nil {
-				fmt.Printf("   Pan: %.3f, Tilt: %.3f\n", 
+				fmt.Printf("   Pan: %.3f, Tilt: %.3f\n",
 					preset.PTZPosition.PanTilt.X,
 					preset.PTZPosition.PanTilt.Y)
 			}
@@ -1161,11 +1161,11 @@ func (c *CLI) getImagingSettings(ctx context.Context, videoSourceToken string) {
 	settings, err := c.client.GetImagingSettings(ctx, videoSourceToken)
 	if err != nil {
 		fmt.Printf("❌ Error: %v\n", err)
-		return  
+		return
 	}
 
 	fmt.Println("✅ Current Imaging Settings:")
-	
+
 	if settings.Brightness != nil {
 		fmt.Printf("   Brightness: %.1f\n", *settings.Brightness)
 	}
@@ -1284,7 +1284,7 @@ func (c *CLI) setSaturation(ctx context.Context, videoSourceToken string) {
 	saturation, err := strconv.ParseFloat(saturationStr, 64)
 	if err != nil {
 		fmt.Println("❌ Invalid saturation value")
-		return  
+		return
 	}
 
 	currentSettings.ColorSaturation = &saturation
@@ -1313,7 +1313,7 @@ func (c *CLI) setSharpness(ctx context.Context, videoSourceToken string) {
 	}
 
 	sharpnessStr := c.readInputWithDefault(fmt.Sprintf("Sharpness (0-100, current: %s)", currentValue), currentValue)
-	sharpness, err := strconv.ParseFloat(sharpnessStr, 64)  
+	sharpness, err := strconv.ParseFloat(sharpnessStr, 64)
 	if err != nil {
 		fmt.Println("❌ Invalid sharpness value")
 		return
@@ -1409,7 +1409,7 @@ func (c *CLI) captureAndDisplaySnapshot(ctx context.Context) {
 	}
 
 	profile := profiles[0]
-	
+
 	fmt.Println("⏳ Getting snapshot URI...")
 
 	// Get snapshot URI from camera

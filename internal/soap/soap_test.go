@@ -63,18 +63,18 @@ func TestBuildEnvelope(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name: "with authentication",
-			body: &testRequest{Value: "test"},
+			name:     "with authentication",
+			body:     &testRequest{Value: "test"},
 			username: "admin",
 			password: "password",
-			wantErr: false,
+			wantErr:  false,
 		},
 		{
-			name: "without authentication",
-			body: &testRequest{Value: "test"},
+			name:     "without authentication",
+			body:     &testRequest{Value: "test"},
 			username: "",
 			password: "",
-			wantErr: false,
+			wantErr:  false,
 		},
 	}
 

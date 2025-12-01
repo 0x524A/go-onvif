@@ -11,7 +11,7 @@ import (
 
 func main() {
 	fmt.Println("Discovering ONVIF devices on the network...")
-	
+
 	// Create a context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

@@ -88,15 +88,15 @@ type AudioEncoderConfig struct {
 
 // PTZConfig represents PTZ configuration
 type PTZConfig struct {
-	NodeToken         string    // PTZ node token
-	PanRange          Range     // Pan range in degrees
-	TiltRange         Range     // Tilt range in degrees
-	ZoomRange         Range     // Zoom range
-	DefaultSpeed      PTZSpeed  // Default speed
+	NodeToken          string   // PTZ node token
+	PanRange           Range    // Pan range in degrees
+	TiltRange          Range    // Tilt range in degrees
+	ZoomRange          Range    // Zoom range
+	DefaultSpeed       PTZSpeed // Default speed
 	SupportsContinuous bool     // Supports continuous move
 	SupportsAbsolute   bool     // Supports absolute move
 	SupportsRelative   bool     // Supports relative move
-	Presets           []Preset  // Predefined presets
+	Presets            []Preset // Predefined presets
 }
 
 // SnapshotConfig represents snapshot configuration
@@ -195,8 +195,8 @@ type BacklightCompensation struct {
 
 // ExposureSettings represents exposure settings
 type ExposureSettings struct {
-	Mode         string  // AUTO, MANUAL
-	Priority     string  // LowNoise, FrameRate
+	Mode         string // AUTO, MANUAL
+	Priority     string // LowNoise, FrameRate
 	MinExposure  float64
 	MaxExposure  float64
 	MinGain      float64
@@ -207,7 +207,7 @@ type ExposureSettings struct {
 
 // FocusSettings represents focus settings
 type FocusSettings struct {
-	AutoFocusMode string  // AUTO, MANUAL
+	AutoFocusMode string // AUTO, MANUAL
 	DefaultSpeed  float64
 	NearLimit     float64
 	FarLimit      float64
@@ -216,7 +216,7 @@ type FocusSettings struct {
 
 // WhiteBalanceSettings represents white balance settings
 type WhiteBalanceSettings struct {
-	Mode   string  // AUTO, MANUAL
+	Mode   string // AUTO, MANUAL
 	CrGain float64
 	CbGain float64
 }

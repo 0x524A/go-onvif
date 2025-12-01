@@ -75,9 +75,9 @@ type GetStatusResponse struct {
 
 // PTZStatus represents PTZ status
 type PTZStatus struct {
-	Position   PTZVector      `xml:"Position"`
-	MoveStatus PTZMoveStatus  `xml:"MoveStatus"`
-	UTCTime    string         `xml:"UtcTime"`
+	Position   PTZVector     `xml:"Position"`
+	MoveStatus PTZMoveStatus `xml:"MoveStatus"`
+	UTCTime    string        `xml:"UtcTime"`
 }
 
 // PTZMoveStatus represents PTZ movement status
@@ -113,7 +113,7 @@ type GetPresetsRequest struct {
 
 // GetPresetsResponse represents GetPresets response
 type GetPresetsResponse struct {
-	XMLName xml.Name     `xml:"http://www.onvif.org/ver20/ptz/wsdl GetPresetsResponse"`
+	XMLName xml.Name    `xml:"http://www.onvif.org/ver20/ptz/wsdl GetPresetsResponse"`
 	Preset  []PTZPreset `xml:"Preset"`
 }
 
@@ -153,16 +153,16 @@ type SetPresetResponse struct {
 
 // GetConfigurationsResponse represents GetConfigurations response
 type GetConfigurationsResponse struct {
-	XMLName        xml.Name           `xml:"http://www.onvif.org/ver20/ptz/wsdl GetConfigurationsResponse"`
+	XMLName          xml.Name              `xml:"http://www.onvif.org/ver20/ptz/wsdl GetConfigurationsResponse"`
 	PTZConfiguration []PTZConfigurationExt `xml:"PTZConfiguration"`
 }
 
 // PTZConfigurationExt represents PTZ configuration with extensions
 type PTZConfigurationExt struct {
-	Token      string       `xml:"token,attr"`
-	Name       string       `xml:"Name"`
-	UseCount   int          `xml:"UseCount"`
-	NodeToken  string       `xml:"NodeToken"`
+	Token         string         `xml:"token,attr"`
+	Name          string         `xml:"Name"`
+	UseCount      int            `xml:"UseCount"`
+	NodeToken     string         `xml:"NodeToken"`
 	PanTiltLimits *PanTiltLimits `xml:"PanTiltLimits,omitempty"`
 	ZoomLimits    *ZoomLimits    `xml:"ZoomLimits,omitempty"`
 }

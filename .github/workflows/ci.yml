@@ -18,15 +18,15 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@d632cb752374ac6c22015e4b4bef1d19db85d69f # v4.2.0
     
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@0a12ed9d6470c3512128ab8f076f97fbbff3da52 # v5.0.1
       with:
         go-version: '1.23'
     
     - name: Cache Go modules
-      uses: actions/cache@v4
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -45,7 +45,7 @@ jobs:
         fi
     
     - name: Lint
-      uses: golangci/golangci-lint-action@v4
+      uses: golangci/golangci-lint-action@3cfe3a4ac716397848d91e4042119f51a40b6aaf # v4.0.0
       with:
         version: latest
         args: --timeout=5m --fix=false
@@ -58,15 +58,15 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@d632cb752374ac6c22015e4b4bef1d19db85d69f # v4.2.0
     
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@0a12ed9d6470c3512128ab8f076f97fbbff3da52 # v5.0.1
       with:
         go-version: '1.23'
     
     - name: Cache Go modules
-      uses: actions/cache@v4
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-1.23-${{ hashFiles('**/go.sum') }}
@@ -83,7 +83,7 @@ jobs:
       run: go tool cover -html=coverage.out -o coverage.html
     
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@8a4b2d1c64a2a31fb92d9fa9f1e2b02e35d2db1a # v4.0.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.out
@@ -93,7 +93,7 @@ jobs:
     
     - name: Archive coverage
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@89ef406dd8d8a50a2f1e5e903c0e970c27a27de8 # v4.3.5
       with:
         name: coverage-report
         path: |
@@ -119,15 +119,15 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@d632cb752374ac6c22015e4b4bef1d19db85d69f # v4.2.0
     
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@0a12ed9d6470c3512128ab8f076f97fbbff3da52 # v5.0.1
       with:
         go-version: ${{ matrix.go-version }}
     
     - name: Cache Go modules
-      uses: actions/cache@v4
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
       with:
         path: |
           ~/.cache/go-build
@@ -151,17 +151,17 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@d632cb752374ac6c22015e4b4bef1d19db85d69f # v4.2.0
       with:
         fetch-depth: 0
     
     - name: Download coverage from test job
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
       with:
         name: coverage-report
     
     - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
+      uses: SonarSource/sonarcloud-github-action@3b335e14ab49358d133eef17b8c1590fe7c21c0e # v2.2.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -179,15 +179,15 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@d632cb752374ac6c22015e4b4bef1d19db85d69f # v4.2.0
     
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@0a12ed9d6470c3512128ab8f076f97fbbff3da52 # v5.0.1
       with:
         go-version: '1.23'
     
     - name: Cache Go modules
-      uses: actions/cache@v4
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-1.23-${{ hashFiles('**/go.sum') }}

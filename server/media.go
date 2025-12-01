@@ -9,7 +9,7 @@ import (
 
 // GetProfilesResponse represents GetProfiles response
 type GetProfilesResponse struct {
-	XMLName  xml.Name          `xml:"http://www.onvif.org/ver10/media/wsdl GetProfilesResponse"`
+	XMLName  xml.Name       `xml:"http://www.onvif.org/ver10/media/wsdl GetProfilesResponse"`
 	Profiles []MediaProfile `xml:"Profiles"`
 }
 
@@ -46,16 +46,16 @@ type AudioSourceConfiguration struct {
 
 // VideoEncoderConfiguration represents video encoder configuration
 type VideoEncoderConfiguration struct {
-	Token          string            `xml:"token,attr"`
-	Name           string            `xml:"Name"`
-	UseCount       int               `xml:"UseCount"`
-	Encoding       string            `xml:"Encoding"`
-	Resolution     VideoResolution   `xml:"Resolution"`
-	Quality        float64           `xml:"Quality"`
-	RateControl    *VideoRateControl `xml:"RateControl,omitempty"`
-	H264           *H264Configuration `xml:"H264,omitempty"`
+	Token          string                  `xml:"token,attr"`
+	Name           string                  `xml:"Name"`
+	UseCount       int                     `xml:"UseCount"`
+	Encoding       string                  `xml:"Encoding"`
+	Resolution     VideoResolution         `xml:"Resolution"`
+	Quality        float64                 `xml:"Quality"`
+	RateControl    *VideoRateControl       `xml:"RateControl,omitempty"`
+	H264           *H264Configuration      `xml:"H264,omitempty"`
 	Multicast      *MulticastConfiguration `xml:"Multicast,omitempty"`
-	SessionTimeout string            `xml:"SessionTimeout"`
+	SessionTimeout string                  `xml:"SessionTimeout"`
 }
 
 // AudioEncoderConfiguration represents audio encoder configuration
@@ -130,7 +130,7 @@ type MulticastConfiguration struct {
 
 // IPAddress represents an IP address
 type IPAddress struct {
-	Type    string `xml:"Type"`
+	Type        string `xml:"Type"`
 	IPv4Address string `xml:"IPv4Address,omitempty"`
 	IPv6Address string `xml:"IPv6Address,omitempty"`
 }

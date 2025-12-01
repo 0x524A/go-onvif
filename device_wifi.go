@@ -18,7 +18,7 @@ func (c *Client) GetDot11Capabilities(ctx context.Context) (*Dot11Capabilities, 
 	}
 
 	type GetDot11CapabilitiesResponse struct {
-		XMLName      xml.Name          `xml:"GetDot11CapabilitiesResponse"`
+		XMLName      xml.Name           `xml:"GetDot11CapabilitiesResponse"`
 		Capabilities *Dot11Capabilities `xml:"Capabilities"`
 	}
 
@@ -73,14 +73,14 @@ func (c *Client) GetDot11Status(ctx context.Context, interfaceToken string) (*Do
 // ONVIF Specification: GetDot1XConfiguration operation
 func (c *Client) GetDot1XConfiguration(ctx context.Context, configToken string) (*Dot1XConfiguration, error) {
 	type GetDot1XConfigurationBody struct {
-		XMLName               xml.Name `xml:"tds:GetDot1XConfiguration"`
-		Xmlns                 string   `xml:"xmlns:tds,attr"`
-		Dot1XConfigurationToken string `xml:"tds:Dot1XConfigurationToken"`
+		XMLName                 xml.Name `xml:"tds:GetDot1XConfiguration"`
+		Xmlns                   string   `xml:"xmlns:tds,attr"`
+		Dot1XConfigurationToken string   `xml:"tds:Dot1XConfigurationToken"`
 	}
 
 	type GetDot1XConfigurationResponse struct {
-		XMLName              xml.Name            `xml:"GetDot1XConfigurationResponse"`
-		Dot1XConfiguration   *Dot1XConfiguration `xml:"Dot1XConfiguration"`
+		XMLName            xml.Name            `xml:"GetDot1XConfigurationResponse"`
+		Dot1XConfiguration *Dot1XConfiguration `xml:"Dot1XConfiguration"`
 	}
 
 	request := GetDot1XConfigurationBody{
@@ -109,8 +109,8 @@ func (c *Client) GetDot1XConfigurations(ctx context.Context) ([]*Dot1XConfigurat
 	}
 
 	type GetDot1XConfigurationsResponse struct {
-		XMLName             xml.Name              `xml:"GetDot1XConfigurationsResponse"`
-		Dot1XConfiguration  []*Dot1XConfiguration `xml:"Dot1XConfiguration"`
+		XMLName            xml.Name              `xml:"GetDot1XConfigurationsResponse"`
+		Dot1XConfiguration []*Dot1XConfiguration `xml:"Dot1XConfiguration"`
 	}
 
 	request := GetDot1XConfigurationsBody{
@@ -193,9 +193,9 @@ func (c *Client) CreateDot1XConfiguration(ctx context.Context, config *Dot1XConf
 // ONVIF Specification: DeleteDot1XConfiguration operation
 func (c *Client) DeleteDot1XConfiguration(ctx context.Context, configToken string) error {
 	type DeleteDot1XConfigurationBody struct {
-		XMLName                     xml.Name `xml:"tds:DeleteDot1XConfiguration"`
-		Xmlns                       string   `xml:"xmlns:tds,attr"`
-		Dot1XConfigurationToken     string   `xml:"tds:Dot1XConfigurationToken"`
+		XMLName                 xml.Name `xml:"tds:DeleteDot1XConfiguration"`
+		Xmlns                   string   `xml:"xmlns:tds,attr"`
+		Dot1XConfigurationToken string   `xml:"tds:Dot1XConfigurationToken"`
 	}
 
 	type DeleteDot1XConfigurationResponse struct {

@@ -12,7 +12,7 @@ import (
 const (
 	// WS-Discovery multicast address
 	multicastAddr = "239.255.255.250:3702"
-	
+
 	// WS-Discovery probe message
 	probeTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing">
@@ -36,16 +36,16 @@ const (
 type Device struct {
 	// Device endpoint address
 	EndpointRef string
-	
+
 	// XAddrs contains the device service addresses
 	XAddrs []string
-	
+
 	// Types contains the device types
 	Types []string
-	
+
 	// Scopes contains the device scopes (name, location, etc.)
 	Scopes []string
-	
+
 	// Metadata version
 	MetadataVersion int
 }
@@ -62,8 +62,8 @@ type ProbeMatch struct {
 
 // ProbeMatches represents WS-Discovery probe matches
 type ProbeMatches struct {
-	XMLName     xml.Name      `xml:"ProbeMatches"`
-	ProbeMatch  []ProbeMatch  `xml:"ProbeMatch"`
+	XMLName    xml.Name     `xml:"ProbeMatches"`
+	ProbeMatch []ProbeMatch `xml:"ProbeMatch"`
 }
 
 // DiscoverOptions contains options for device discovery
@@ -72,7 +72,7 @@ type DiscoverOptions struct {
 	// If empty, the system will choose the default interface.
 	// Examples: "eth0", "wlan0", "192.168.1.100"
 	NetworkInterface string
-	
+
 	// Context and timeout are handled by the caller
 }
 
@@ -308,13 +308,13 @@ func ListNetworkInterfaces() ([]NetworkInterface, error) {
 type NetworkInterface struct {
 	// Name of the interface (e.g., "eth0", "wlan0")
 	Name string
-	
+
 	// IP addresses assigned to this interface
 	Addresses []string
-	
+
 	// Up indicates if the interface is up
 	Up bool
-	
+
 	// Multicast indicates if the interface supports multicast
 	Multicast bool
 }
@@ -324,7 +324,7 @@ func (d *Device) GetDeviceEndpoint() string {
 	if len(d.XAddrs) == 0 {
 		return ""
 	}
-	
+
 	// Return the first XAddr
 	return d.XAddrs[0]
 }

@@ -130,7 +130,7 @@ func (h *Handler) extractAction(bodyXML []byte) string {
 	decoder := xml.NewDecoder(bytes.NewReader(bodyXML))
 	inBody := false
 	depth := 0
-	
+
 	for {
 		token, err := decoder.Token()
 		if err != nil {
@@ -241,17 +241,17 @@ type GetSystemDateAndTimeRequest struct {
 
 // GetSystemDateAndTimeResponse represents GetSystemDateAndTime response
 type GetSystemDateAndTimeResponse struct {
-	XMLName        xml.Name `xml:"http://www.onvif.org/ver10/device/wsdl GetSystemDateAndTimeResponse"`
+	XMLName           xml.Name          `xml:"http://www.onvif.org/ver10/device/wsdl GetSystemDateAndTimeResponse"`
 	SystemDateAndTime SystemDateAndTime `xml:"SystemDateAndTime"`
 }
 
 // SystemDateAndTime represents system date and time
 type SystemDateAndTime struct {
-	DateTimeType    string    `xml:"DateTimeType"`
-	DaylightSavings bool      `xml:"DaylightSavings"`
-	TimeZone        TimeZone  `xml:"TimeZone,omitempty"`
-	UTCDateTime     DateTime  `xml:"UTCDateTime,omitempty"`
-	LocalDateTime   DateTime  `xml:"LocalDateTime,omitempty"`
+	DateTimeType    string   `xml:"DateTimeType"`
+	DaylightSavings bool     `xml:"DaylightSavings"`
+	TimeZone        TimeZone `xml:"TimeZone,omitempty"`
+	UTCDateTime     DateTime `xml:"UTCDateTime,omitempty"`
+	LocalDateTime   DateTime `xml:"LocalDateTime,omitempty"`
 }
 
 // TimeZone represents timezone information

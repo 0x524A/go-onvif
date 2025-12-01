@@ -1,5 +1,4 @@
 package onvif
-package captures
 
 import (
 	"context"

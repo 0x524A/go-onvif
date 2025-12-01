@@ -370,7 +370,7 @@ func (c *Client) GetDynamicDNS(ctx context.Context) (*DynamicDNSInformation, err
 	}
 
 	type GetDynamicDNSResponse struct {
-		XMLName              xml.Name `xml:"GetDynamicDNSResponse"`
+		XMLName               xml.Name `xml:"GetDynamicDNSResponse"`
 		DynamicDNSInformation struct {
 			Type string `xml:"Type"`
 			Name string `xml:"Name"`
@@ -431,13 +431,13 @@ func (c *Client) GetPasswordComplexityConfiguration(ctx context.Context) (*Passw
 	}
 
 	type GetPasswordComplexityConfigurationResponse struct {
-		XMLName                     xml.Name `xml:"GetPasswordComplexityConfigurationResponse"`
-		MinLen                      int      `xml:"MinLen"`
-		Uppercase                   int      `xml:"Uppercase"`
-		Number                      int      `xml:"Number"`
-		SpecialChars                int      `xml:"SpecialChars"`
-		BlockUsernameOccurrence     bool     `xml:"BlockUsernameOccurrence"`
-		PolicyConfigurationLocked   bool     `xml:"PolicyConfigurationLocked"`
+		XMLName                   xml.Name `xml:"GetPasswordComplexityConfigurationResponse"`
+		MinLen                    int      `xml:"MinLen"`
+		Uppercase                 int      `xml:"Uppercase"`
+		Number                    int      `xml:"Number"`
+		SpecialChars              int      `xml:"SpecialChars"`
+		BlockUsernameOccurrence   bool     `xml:"BlockUsernameOccurrence"`
+		PolicyConfigurationLocked bool     `xml:"PolicyConfigurationLocked"`
 	}
 
 	req := GetPasswordComplexityConfiguration{

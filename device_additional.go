@@ -110,8 +110,8 @@ func (c *Client) GetDPAddresses(ctx context.Context) ([]NetworkHost, error) {
 	}
 
 	type GetDPAddressesResponse struct {
-		XMLName     xml.Name      `xml:"GetDPAddressesResponse"`
-		DPAddress   []NetworkHost `xml:"DPAddress"`
+		XMLName   xml.Name      `xml:"GetDPAddressesResponse"`
+		DPAddress []NetworkHost `xml:"DPAddress"`
 	}
 
 	request := GetDPAddressesBody{
@@ -171,8 +171,8 @@ func (c *Client) GetAccessPolicy(ctx context.Context) (*AccessPolicy, error) {
 	}
 
 	type GetAccessPolicyResponse struct {
-		XMLName      xml.Name      `xml:"GetAccessPolicyResponse"`
-		PolicyFile   *BinaryData   `xml:"PolicyFile"`
+		XMLName    xml.Name    `xml:"GetAccessPolicyResponse"`
+		PolicyFile *BinaryData `xml:"PolicyFile"`
 	}
 
 	request := GetAccessPolicyBody{

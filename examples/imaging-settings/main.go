@@ -100,15 +100,15 @@ func main() {
 
 	// Modify some settings
 	fmt.Println("\n\nModifying imaging settings...")
-	
+
 	// Increase brightness
 	newBrightness := 60.0
 	settings.Brightness = &newBrightness
-	
+
 	// Increase contrast
 	newContrast := 55.0
 	settings.Contrast = &newContrast
-	
+
 	// Set to auto exposure
 	if settings.Exposure != nil {
 		settings.Exposure.Mode = "AUTO"
