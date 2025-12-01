@@ -16,10 +16,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Status check - always runs
+  status-check:
+    name: Workflow Status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Workflow started
+        run: echo "✅ CI workflow is running"
+
   # Quick validation - fail fast on obvious issues
   validate:
     name: Quick Validation
     runs-on: ubuntu-latest
+    needs: status-check
     
     steps:
     - name: Checkout code
