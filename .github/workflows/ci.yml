@@ -21,7 +21,7 @@ jobs:
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     
     - name: Set up Go
-      uses: actions/setup-go@0a12ed9d6470bc837f1072df29264398d2da47f23 # v5.0.1
+      uses: actions/setup-go@v5
       with:
         go-version: '1.23'
     
@@ -61,7 +61,7 @@ jobs:
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     
     - name: Set up Go
-      uses: actions/setup-go@0a12ed9d6470bc837f1072df29264398d2da47f23 # v5.0.1
+      uses: actions/setup-go@v5
       with:
         go-version: '1.23'
     
@@ -122,7 +122,7 @@ jobs:
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     
     - name: Set up Go
-      uses: actions/setup-go@0a12ed9d6470bc837f1072df29264398d2da47f23 # v5.0.1
+      uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go-version }}
     
@@ -182,7 +182,7 @@ jobs:
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     
     - name: Set up Go
-      uses: actions/setup-go@0a12ed9d6470bc837f1072df29264398d2da47f23 # v5.0.1
+      uses: actions/setup-go@v5
       with:
         go-version: '1.23'
     
