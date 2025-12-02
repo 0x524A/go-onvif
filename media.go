@@ -2321,3 +2321,1692 @@ func (c *Client) GetOSDOptions(ctx context.Context, configurationToken string) (
 		MaximumNumberOfOSDs: resp.Options.MaximumNumberOfOSDs,
 	}, nil
 }
+
+// GetVideoSourceConfigurations retrieves all video source configurations
+func (c *Client) GetVideoSourceConfigurations(ctx context.Context) ([]*VideoSourceConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetVideoSourceConfigurations struct {
+		XMLName xml.Name `xml:"trt:GetVideoSourceConfigurations"`
+		Xmlns   string   `xml:"xmlns:trt,attr"`
+	}
+
+	type GetVideoSourceConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetVideoSourceConfigurationsResponse"`
+		Configurations []struct {
+			Token       string `xml:"token,attr"`
+			Name        string `xml:"Name"`
+			UseCount    int    `xml:"UseCount"`
+			SourceToken string `xml:"SourceToken"`
+			Bounds      *struct {
+				X      int `xml:"x,attr"`
+				Y      int `xml:"y,attr"`
+				Width  int `xml:"width,attr"`
+				Height int `xml:"height,attr"`
+			} `xml:"Bounds"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetVideoSourceConfigurations{
+		Xmlns: mediaNamespace,
+	}
+
+	var resp GetVideoSourceConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetVideoSourceConfigurations failed: %w", err)
+	}
+
+	configs := make([]*VideoSourceConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		config := &VideoSourceConfiguration{
+			Token:       cfg.Token,
+			Name:        cfg.Name,
+			UseCount:    cfg.UseCount,
+			SourceToken: cfg.SourceToken,
+		}
+		if cfg.Bounds != nil {
+			config.Bounds = &IntRectangle{
+				X:      cfg.Bounds.X,
+				Y:      cfg.Bounds.Y,
+				Width:  cfg.Bounds.Width,
+				Height: cfg.Bounds.Height,
+			}
+		}
+		configs[i] = config
+	}
+
+	return configs, nil
+}
+
+// GetAudioSourceConfigurations retrieves all audio source configurations
+func (c *Client) GetAudioSourceConfigurations(ctx context.Context) ([]*AudioSourceConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetAudioSourceConfigurations struct {
+		XMLName xml.Name `xml:"trt:GetAudioSourceConfigurations"`
+		Xmlns   string   `xml:"xmlns:trt,attr"`
+	}
+
+	type GetAudioSourceConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetAudioSourceConfigurationsResponse"`
+		Configurations []struct {
+			Token       string `xml:"token,attr"`
+			Name        string `xml:"Name"`
+			UseCount    int    `xml:"UseCount"`
+			SourceToken string `xml:"SourceToken"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetAudioSourceConfigurations{
+		Xmlns: mediaNamespace,
+	}
+
+	var resp GetAudioSourceConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetAudioSourceConfigurations failed: %w", err)
+	}
+
+	configs := make([]*AudioSourceConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &AudioSourceConfiguration{
+			Token:       cfg.Token,
+			Name:        cfg.Name,
+			UseCount:    cfg.UseCount,
+			SourceToken: cfg.SourceToken,
+		}
+	}
+
+	return configs, nil
+}
+
+// GetVideoEncoderConfigurations retrieves all video encoder configurations
+func (c *Client) GetVideoEncoderConfigurations(ctx context.Context) ([]*VideoEncoderConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetVideoEncoderConfigurations struct {
+		XMLName xml.Name `xml:"trt:GetVideoEncoderConfigurations"`
+		Xmlns   string   `xml:"xmlns:trt,attr"`
+	}
+
+	type GetVideoEncoderConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetVideoEncoderConfigurationsResponse"`
+		Configurations []struct {
+			Token      string `xml:"token,attr"`
+			Name       string `xml:"Name"`
+			UseCount   int    `xml:"UseCount"`
+			Encoding   string `xml:"Encoding"`
+			Resolution *struct {
+				Width  int `xml:"Width"`
+				Height int `xml:"Height"`
+			} `xml:"Resolution"`
+			Quality     float64 `xml:"Quality"`
+			RateControl *struct {
+				FrameRateLimit   int `xml:"FrameRateLimit"`
+				EncodingInterval int `xml:"EncodingInterval"`
+				BitrateLimit     int `xml:"BitrateLimit"`
+			} `xml:"RateControl"`
+			MPEG4 *struct {
+				GovLength    int    `xml:"GovLength"`
+				MPEG4Profile string `xml:"MPEG4Profile"`
+			} `xml:"MPEG4"`
+			H264 *struct {
+				GovLength   int    `xml:"GovLength"`
+				H264Profile string `xml:"H264Profile"`
+			} `xml:"H264"`
+			Multicast *struct {
+				Address *struct {
+					Type        string `xml:"Type"`
+					IPv4Address string `xml:"IPv4Address"`
+					IPv6Address string `xml:"IPv6Address"`
+				} `xml:"Address"`
+				Port      int  `xml:"Port"`
+				TTL       int  `xml:"TTL"`
+				AutoStart bool `xml:"AutoStart"`
+			} `xml:"Multicast"`
+			SessionTimeout string `xml:"SessionTimeout"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetVideoEncoderConfigurations{
+		Xmlns: mediaNamespace,
+	}
+
+	var resp GetVideoEncoderConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetVideoEncoderConfigurations failed: %w", err)
+	}
+
+	configs := make([]*VideoEncoderConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		config := &VideoEncoderConfiguration{
+			Token:    cfg.Token,
+			Name:     cfg.Name,
+			UseCount: cfg.UseCount,
+			Encoding: cfg.Encoding,
+			Quality:  cfg.Quality,
+		}
+
+		if cfg.Resolution != nil {
+			config.Resolution = &VideoResolution{
+				Width:  cfg.Resolution.Width,
+				Height: cfg.Resolution.Height,
+			}
+		}
+
+		if cfg.RateControl != nil {
+			config.RateControl = &VideoRateControl{
+				FrameRateLimit:   cfg.RateControl.FrameRateLimit,
+				EncodingInterval: cfg.RateControl.EncodingInterval,
+				BitrateLimit:     cfg.RateControl.BitrateLimit,
+			}
+		}
+
+		if cfg.MPEG4 != nil {
+			config.MPEG4 = &MPEG4Configuration{
+				GovLength:    cfg.MPEG4.GovLength,
+				MPEG4Profile: cfg.MPEG4.MPEG4Profile,
+			}
+		}
+
+		if cfg.H264 != nil {
+			config.H264 = &H264Configuration{
+				GovLength:   cfg.H264.GovLength,
+				H264Profile: cfg.H264.H264Profile,
+			}
+		}
+
+		if cfg.Multicast != nil {
+			config.Multicast = &MulticastConfiguration{
+				Port:      cfg.Multicast.Port,
+				TTL:       cfg.Multicast.TTL,
+				AutoStart: cfg.Multicast.AutoStart,
+			}
+			if cfg.Multicast.Address != nil {
+				config.Multicast.Address = &IPAddress{
+					Type:        cfg.Multicast.Address.Type,
+					IPv4Address: cfg.Multicast.Address.IPv4Address,
+					IPv6Address: cfg.Multicast.Address.IPv6Address,
+				}
+			}
+		}
+
+		configs[i] = config
+	}
+
+	return configs, nil
+}
+
+// GetAudioEncoderConfigurations retrieves all audio encoder configurations
+func (c *Client) GetAudioEncoderConfigurations(ctx context.Context) ([]*AudioEncoderConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetAudioEncoderConfigurations struct {
+		XMLName xml.Name `xml:"trt:GetAudioEncoderConfigurations"`
+		Xmlns   string   `xml:"xmlns:trt,attr"`
+	}
+
+	type GetAudioEncoderConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetAudioEncoderConfigurationsResponse"`
+		Configurations []struct {
+			Token      string `xml:"token,attr"`
+			Name       string `xml:"Name"`
+			UseCount   int    `xml:"UseCount"`
+			Encoding   string `xml:"Encoding"`
+			Bitrate    int    `xml:"Bitrate"`
+			SampleRate int    `xml:"SampleRate"`
+			Multicast  *struct {
+				Address *struct {
+					Type        string `xml:"Type"`
+					IPv4Address string `xml:"IPv4Address"`
+					IPv6Address string `xml:"IPv6Address"`
+				} `xml:"Address"`
+				Port      int  `xml:"Port"`
+				TTL       int  `xml:"TTL"`
+				AutoStart bool `xml:"AutoStart"`
+			} `xml:"Multicast"`
+			SessionTimeout string `xml:"SessionTimeout"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetAudioEncoderConfigurations{
+		Xmlns: mediaNamespace,
+	}
+
+	var resp GetAudioEncoderConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetAudioEncoderConfigurations failed: %w", err)
+	}
+
+	configs := make([]*AudioEncoderConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		config := &AudioEncoderConfiguration{
+			Token:      cfg.Token,
+			Name:       cfg.Name,
+			UseCount:   cfg.UseCount,
+			Encoding:   cfg.Encoding,
+			Bitrate:    cfg.Bitrate,
+			SampleRate: cfg.SampleRate,
+		}
+
+		if cfg.Multicast != nil {
+			config.Multicast = &MulticastConfiguration{
+				Port:      cfg.Multicast.Port,
+				TTL:       cfg.Multicast.TTL,
+				AutoStart: cfg.Multicast.AutoStart,
+			}
+			if cfg.Multicast.Address != nil {
+				config.Multicast.Address = &IPAddress{
+					Type:        cfg.Multicast.Address.Type,
+					IPv4Address: cfg.Multicast.Address.IPv4Address,
+					IPv6Address: cfg.Multicast.Address.IPv6Address,
+				}
+			}
+		}
+
+		configs[i] = config
+	}
+
+	return configs, nil
+}
+
+// GetVideoSourceConfiguration retrieves a specific video source configuration
+func (c *Client) GetVideoSourceConfiguration(ctx context.Context, configurationToken string) (*VideoSourceConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetVideoSourceConfiguration struct {
+		XMLName            xml.Name `xml:"trt:GetVideoSourceConfiguration"`
+		Xmlns              string   `xml:"xmlns:trt,attr"`
+		ConfigurationToken string   `xml:"trt:ConfigurationToken"`
+	}
+
+	type GetVideoSourceConfigurationResponse struct {
+		XMLName       xml.Name `xml:"GetVideoSourceConfigurationResponse"`
+		Configuration struct {
+			Token       string `xml:"token,attr"`
+			Name        string `xml:"Name"`
+			UseCount    int    `xml:"UseCount"`
+			SourceToken string `xml:"SourceToken"`
+			Bounds      *struct {
+				X      int `xml:"x,attr"`
+				Y      int `xml:"y,attr"`
+				Width  int `xml:"width,attr"`
+				Height int `xml:"height,attr"`
+			} `xml:"Bounds"`
+		} `xml:"Configuration"`
+	}
+
+	req := GetVideoSourceConfiguration{
+		Xmlns:              mediaNamespace,
+		ConfigurationToken: configurationToken,
+	}
+
+	var resp GetVideoSourceConfigurationResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetVideoSourceConfiguration failed: %w", err)
+	}
+
+	config := &VideoSourceConfiguration{
+		Token:       resp.Configuration.Token,
+		Name:        resp.Configuration.Name,
+		UseCount:    resp.Configuration.UseCount,
+		SourceToken: resp.Configuration.SourceToken,
+	}
+
+	if resp.Configuration.Bounds != nil {
+		config.Bounds = &IntRectangle{
+			X:      resp.Configuration.Bounds.X,
+			Y:      resp.Configuration.Bounds.Y,
+			Width:  resp.Configuration.Bounds.Width,
+			Height: resp.Configuration.Bounds.Height,
+		}
+	}
+
+	return config, nil
+}
+
+// GetAudioSourceConfiguration retrieves a specific audio source configuration
+func (c *Client) GetAudioSourceConfiguration(ctx context.Context, configurationToken string) (*AudioSourceConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetAudioSourceConfiguration struct {
+		XMLName            xml.Name `xml:"trt:GetAudioSourceConfiguration"`
+		Xmlns              string   `xml:"xmlns:trt,attr"`
+		ConfigurationToken string   `xml:"trt:ConfigurationToken"`
+	}
+
+	type GetAudioSourceConfigurationResponse struct {
+		XMLName       xml.Name `xml:"GetAudioSourceConfigurationResponse"`
+		Configuration struct {
+			Token       string `xml:"token,attr"`
+			Name        string `xml:"Name"`
+			UseCount    int    `xml:"UseCount"`
+			SourceToken string `xml:"SourceToken"`
+		} `xml:"Configuration"`
+	}
+
+	req := GetAudioSourceConfiguration{
+		Xmlns:              mediaNamespace,
+		ConfigurationToken: configurationToken,
+	}
+
+	var resp GetAudioSourceConfigurationResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetAudioSourceConfiguration failed: %w", err)
+	}
+
+	return &AudioSourceConfiguration{
+		Token:       resp.Configuration.Token,
+		Name:        resp.Configuration.Name,
+		UseCount:    resp.Configuration.UseCount,
+		SourceToken: resp.Configuration.SourceToken,
+	}, nil
+}
+
+// GetVideoSourceConfigurationOptions retrieves available options for video source configuration
+func (c *Client) GetVideoSourceConfigurationOptions(ctx context.Context, configurationToken, profileToken string) (*VideoSourceConfigurationOptions, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetVideoSourceConfigurationOptions struct {
+		XMLName            xml.Name `xml:"trt:GetVideoSourceConfigurationOptions"`
+		Xmlns              string   `xml:"xmlns:trt,attr"`
+		ConfigurationToken string   `xml:"trt:ConfigurationToken,omitempty"`
+		ProfileToken       string   `xml:"trt:ProfileToken,omitempty"`
+	}
+
+	type GetVideoSourceConfigurationOptionsResponse struct {
+		XMLName xml.Name `xml:"GetVideoSourceConfigurationOptionsResponse"`
+		Options struct {
+			BoundsRange *struct {
+				X      *IntRange `xml:"X"`
+				Y      *IntRange `xml:"Y"`
+				Width  *IntRange `xml:"Width"`
+				Height *IntRange `xml:"Height"`
+			} `xml:"BoundsRange"`
+			VideoSourceTokensAvailable []string `xml:"VideoSourceTokensAvailable"`
+		} `xml:"Options"`
+	}
+
+	req := GetVideoSourceConfigurationOptions{
+		Xmlns: mediaNamespace,
+	}
+	if configurationToken != "" {
+		req.ConfigurationToken = configurationToken
+	}
+	if profileToken != "" {
+		req.ProfileToken = profileToken
+	}
+
+	var resp GetVideoSourceConfigurationOptionsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetVideoSourceConfigurationOptions failed: %w", err)
+	}
+
+	options := &VideoSourceConfigurationOptions{}
+	if resp.Options.BoundsRange != nil {
+		options.BoundsRange = &BoundsRange{
+			X:      resp.Options.BoundsRange.X,
+			Y:      resp.Options.BoundsRange.Y,
+			Width:  resp.Options.BoundsRange.Width,
+			Height: resp.Options.BoundsRange.Height,
+		}
+	}
+	options.VideoSourceTokensAvailable = resp.Options.VideoSourceTokensAvailable
+
+	return options, nil
+}
+
+// GetAudioSourceConfigurationOptions retrieves available options for audio source configuration
+func (c *Client) GetAudioSourceConfigurationOptions(ctx context.Context, configurationToken, profileToken string) (*AudioSourceConfigurationOptions, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetAudioSourceConfigurationOptions struct {
+		XMLName            xml.Name `xml:"trt:GetAudioSourceConfigurationOptions"`
+		Xmlns              string   `xml:"xmlns:trt,attr"`
+		ConfigurationToken string   `xml:"trt:ConfigurationToken,omitempty"`
+		ProfileToken       string   `xml:"trt:ProfileToken,omitempty"`
+	}
+
+	type GetAudioSourceConfigurationOptionsResponse struct {
+		XMLName xml.Name `xml:"GetAudioSourceConfigurationOptionsResponse"`
+		Options struct {
+			InputTokensAvailable []string `xml:"InputTokensAvailable"`
+		} `xml:"Options"`
+	}
+
+	req := GetAudioSourceConfigurationOptions{
+		Xmlns: mediaNamespace,
+	}
+	if configurationToken != "" {
+		req.ConfigurationToken = configurationToken
+	}
+	if profileToken != "" {
+		req.ProfileToken = profileToken
+	}
+
+	var resp GetAudioSourceConfigurationOptionsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetAudioSourceConfigurationOptions failed: %w", err)
+	}
+
+	return &AudioSourceConfigurationOptions{
+		InputTokensAvailable: resp.Options.InputTokensAvailable,
+	}, nil
+}
+
+// SetVideoSourceConfiguration sets video source configuration
+func (c *Client) SetVideoSourceConfiguration(ctx context.Context, config *VideoSourceConfiguration, forcePersistence bool) error {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type SetVideoSourceConfiguration struct {
+		XMLName       xml.Name `xml:"trt:SetVideoSourceConfiguration"`
+		Xmlns         string   `xml:"xmlns:trt,attr"`
+		Xmlnst        string   `xml:"xmlns:tt,attr"`
+		Configuration struct {
+			Token       string `xml:"token,attr"`
+			Name        string `xml:"tt:Name"`
+			UseCount    int    `xml:"tt:UseCount"`
+			SourceToken string `xml:"tt:SourceToken"`
+			Bounds      *struct {
+				X      int `xml:"x,attr"`
+				Y      int `xml:"y,attr"`
+				Width  int `xml:"width,attr"`
+				Height int `xml:"height,attr"`
+			} `xml:"tt:Bounds,omitempty"`
+		} `xml:"trt:Configuration"`
+		ForcePersistence bool `xml:"trt:ForcePersistence"`
+	}
+
+	req := SetVideoSourceConfiguration{
+		Xmlns:            mediaNamespace,
+		Xmlnst:           "http://www.onvif.org/ver10/schema",
+		ForcePersistence: forcePersistence,
+	}
+
+	req.Configuration.Token = config.Token
+	req.Configuration.Name = config.Name
+	req.Configuration.UseCount = config.UseCount
+	req.Configuration.SourceToken = config.SourceToken
+
+	if config.Bounds != nil {
+		req.Configuration.Bounds = &struct {
+			X      int `xml:"x,attr"`
+			Y      int `xml:"y,attr"`
+			Width  int `xml:"width,attr"`
+			Height int `xml:"height,attr"`
+		}{
+			X:      config.Bounds.X,
+			Y:      config.Bounds.Y,
+			Width:  config.Bounds.Width,
+			Height: config.Bounds.Height,
+		}
+	}
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, nil); err != nil {
+		return fmt.Errorf("SetVideoSourceConfiguration failed: %w", err)
+	}
+
+	return nil
+}
+
+// SetAudioSourceConfiguration sets audio source configuration
+func (c *Client) SetAudioSourceConfiguration(ctx context.Context, config *AudioSourceConfiguration, forcePersistence bool) error {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type SetAudioSourceConfiguration struct {
+		XMLName       xml.Name `xml:"trt:SetAudioSourceConfiguration"`
+		Xmlns         string   `xml:"xmlns:trt,attr"`
+		Xmlnst        string   `xml:"xmlns:tt,attr"`
+		Configuration struct {
+			Token       string `xml:"token,attr"`
+			Name        string `xml:"tt:Name"`
+			UseCount    int    `xml:"tt:UseCount"`
+			SourceToken string `xml:"tt:SourceToken"`
+		} `xml:"trt:Configuration"`
+		ForcePersistence bool `xml:"trt:ForcePersistence"`
+	}
+
+	req := SetAudioSourceConfiguration{
+		Xmlns:            mediaNamespace,
+		Xmlnst:           "http://www.onvif.org/ver10/schema",
+		ForcePersistence: forcePersistence,
+	}
+
+	req.Configuration.Token = config.Token
+	req.Configuration.Name = config.Name
+	req.Configuration.UseCount = config.UseCount
+	req.Configuration.SourceToken = config.SourceToken
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, nil); err != nil {
+		return fmt.Errorf("SetAudioSourceConfiguration failed: %w", err)
+	}
+
+	return nil
+}
+
+// GetCompatibleVideoEncoderConfigurations retrieves compatible video encoder configurations for a profile
+func (c *Client) GetCompatibleVideoEncoderConfigurations(ctx context.Context, profileToken string) ([]*VideoEncoderConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetCompatibleVideoEncoderConfigurations struct {
+		XMLName      xml.Name `xml:"trt:GetCompatibleVideoEncoderConfigurations"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	type GetCompatibleVideoEncoderConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetCompatibleVideoEncoderConfigurationsResponse"`
+		Configurations []struct {
+			Token      string `xml:"token,attr"`
+			Name       string `xml:"Name"`
+			UseCount   int    `xml:"UseCount"`
+			Encoding   string `xml:"Encoding"`
+			Resolution *struct {
+				Width  int `xml:"Width"`
+				Height int `xml:"Height"`
+			} `xml:"Resolution"`
+			Quality     float64 `xml:"Quality"`
+			RateControl *struct {
+				FrameRateLimit   int `xml:"FrameRateLimit"`
+				EncodingInterval int `xml:"EncodingInterval"`
+				BitrateLimit     int `xml:"BitrateLimit"`
+			} `xml:"RateControl"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetCompatibleVideoEncoderConfigurations{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	var resp GetCompatibleVideoEncoderConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetCompatibleVideoEncoderConfigurations failed: %w", err)
+	}
+
+	configs := make([]*VideoEncoderConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		config := &VideoEncoderConfiguration{
+			Token:    cfg.Token,
+			Name:     cfg.Name,
+			UseCount: cfg.UseCount,
+			Encoding: cfg.Encoding,
+			Quality:  cfg.Quality,
+		}
+
+		if cfg.Resolution != nil {
+			config.Resolution = &VideoResolution{
+				Width:  cfg.Resolution.Width,
+				Height: cfg.Resolution.Height,
+			}
+		}
+
+		if cfg.RateControl != nil {
+			config.RateControl = &VideoRateControl{
+				FrameRateLimit:   cfg.RateControl.FrameRateLimit,
+				EncodingInterval: cfg.RateControl.EncodingInterval,
+				BitrateLimit:     cfg.RateControl.BitrateLimit,
+			}
+		}
+
+		configs[i] = config
+	}
+
+	return configs, nil
+}
+
+// GetCompatibleVideoSourceConfigurations retrieves compatible video source configurations for a profile
+func (c *Client) GetCompatibleVideoSourceConfigurations(ctx context.Context, profileToken string) ([]*VideoSourceConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetCompatibleVideoSourceConfigurations struct {
+		XMLName      xml.Name `xml:"trt:GetCompatibleVideoSourceConfigurations"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	type GetCompatibleVideoSourceConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetCompatibleVideoSourceConfigurationsResponse"`
+		Configurations []struct {
+			Token       string `xml:"token,attr"`
+			Name        string `xml:"Name"`
+			UseCount    int    `xml:"UseCount"`
+			SourceToken string `xml:"SourceToken"`
+			Bounds      *struct {
+				X      int `xml:"x,attr"`
+				Y      int `xml:"y,attr"`
+				Width  int `xml:"width,attr"`
+				Height int `xml:"height,attr"`
+			} `xml:"Bounds"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetCompatibleVideoSourceConfigurations{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	var resp GetCompatibleVideoSourceConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetCompatibleVideoSourceConfigurations failed: %w", err)
+	}
+
+	configs := make([]*VideoSourceConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		config := &VideoSourceConfiguration{
+			Token:       cfg.Token,
+			Name:        cfg.Name,
+			UseCount:    cfg.UseCount,
+			SourceToken: cfg.SourceToken,
+		}
+		if cfg.Bounds != nil {
+			config.Bounds = &IntRectangle{
+				X:      cfg.Bounds.X,
+				Y:      cfg.Bounds.Y,
+				Width:  cfg.Bounds.Width,
+				Height: cfg.Bounds.Height,
+			}
+		}
+		configs[i] = config
+	}
+
+	return configs, nil
+}
+
+// GetCompatibleAudioEncoderConfigurations retrieves compatible audio encoder configurations for a profile
+func (c *Client) GetCompatibleAudioEncoderConfigurations(ctx context.Context, profileToken string) ([]*AudioEncoderConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetCompatibleAudioEncoderConfigurations struct {
+		XMLName      xml.Name `xml:"trt:GetCompatibleAudioEncoderConfigurations"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	type GetCompatibleAudioEncoderConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetCompatibleAudioEncoderConfigurationsResponse"`
+		Configurations []struct {
+			Token      string `xml:"token,attr"`
+			Name       string `xml:"Name"`
+			UseCount   int    `xml:"UseCount"`
+			Encoding   string `xml:"Encoding"`
+			Bitrate    int    `xml:"Bitrate"`
+			SampleRate int    `xml:"SampleRate"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetCompatibleAudioEncoderConfigurations{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	var resp GetCompatibleAudioEncoderConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetCompatibleAudioEncoderConfigurations failed: %w", err)
+	}
+
+	configs := make([]*AudioEncoderConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &AudioEncoderConfiguration{
+			Token:      cfg.Token,
+			Name:       cfg.Name,
+			UseCount:   cfg.UseCount,
+			Encoding:   cfg.Encoding,
+			Bitrate:    cfg.Bitrate,
+			SampleRate: cfg.SampleRate,
+		}
+	}
+
+	return configs, nil
+}
+
+// GetCompatibleAudioSourceConfigurations retrieves compatible audio source configurations for a profile
+func (c *Client) GetCompatibleAudioSourceConfigurations(ctx context.Context, profileToken string) ([]*AudioSourceConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetCompatibleAudioSourceConfigurations struct {
+		XMLName      xml.Name `xml:"trt:GetCompatibleAudioSourceConfigurations"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	type GetCompatibleAudioSourceConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetCompatibleAudioSourceConfigurationsResponse"`
+		Configurations []struct {
+			Token       string `xml:"token,attr"`
+			Name        string `xml:"Name"`
+			UseCount    int    `xml:"UseCount"`
+			SourceToken string `xml:"SourceToken"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetCompatibleAudioSourceConfigurations{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	var resp GetCompatibleAudioSourceConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetCompatibleAudioSourceConfigurations failed: %w", err)
+	}
+
+	configs := make([]*AudioSourceConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &AudioSourceConfiguration{
+			Token:       cfg.Token,
+			Name:        cfg.Name,
+			UseCount:    cfg.UseCount,
+			SourceToken: cfg.SourceToken,
+		}
+	}
+
+	return configs, nil
+}
+
+// GetCompatiblePTZConfigurations retrieves compatible PTZ configurations for a profile
+func (c *Client) GetCompatiblePTZConfigurations(ctx context.Context, profileToken string) ([]*PTZConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetCompatiblePTZConfigurations struct {
+		XMLName      xml.Name `xml:"trt:GetCompatiblePTZConfigurations"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	type GetCompatiblePTZConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetCompatiblePTZConfigurationsResponse"`
+		Configurations []struct {
+			Token     string `xml:"token,attr"`
+			Name      string `xml:"Name"`
+			UseCount  int    `xml:"UseCount"`
+			NodeToken string `xml:"NodeToken"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetCompatiblePTZConfigurations{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	var resp GetCompatiblePTZConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetCompatiblePTZConfigurations failed: %w", err)
+	}
+
+	configs := make([]*PTZConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &PTZConfiguration{
+			Token:     cfg.Token,
+			Name:      cfg.Name,
+			UseCount:  cfg.UseCount,
+			NodeToken: cfg.NodeToken,
+		}
+	}
+
+	return configs, nil
+}
+
+// GetCompatibleMetadataConfigurations retrieves compatible metadata configurations for a profile
+func (c *Client) GetCompatibleMetadataConfigurations(ctx context.Context, profileToken string) ([]*MetadataConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetCompatibleMetadataConfigurations struct {
+		XMLName      xml.Name `xml:"trt:GetCompatibleMetadataConfigurations"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	type GetCompatibleMetadataConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetCompatibleMetadataConfigurationsResponse"`
+		Configurations []struct {
+			Token     string `xml:"token,attr"`
+			Name      string `xml:"Name"`
+			UseCount  int    `xml:"UseCount"`
+			Analytics bool   `xml:"Analytics"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetCompatibleMetadataConfigurations{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	var resp GetCompatibleMetadataConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetCompatibleMetadataConfigurations failed: %w", err)
+	}
+
+	configs := make([]*MetadataConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &MetadataConfiguration{
+			Token:     cfg.Token,
+			Name:      cfg.Name,
+			UseCount:  cfg.UseCount,
+			Analytics: cfg.Analytics,
+		}
+	}
+
+	return configs, nil
+}
+
+// GetCompatibleAudioOutputConfigurations retrieves compatible audio output configurations for a profile
+func (c *Client) GetCompatibleAudioOutputConfigurations(ctx context.Context, profileToken string) ([]*AudioOutputConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetCompatibleAudioOutputConfigurations struct {
+		XMLName      xml.Name `xml:"trt:GetCompatibleAudioOutputConfigurations"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	type GetCompatibleAudioOutputConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetCompatibleAudioOutputConfigurationsResponse"`
+		Configurations []struct {
+			Token       string `xml:"token,attr"`
+			Name        string `xml:"Name"`
+			UseCount    int    `xml:"UseCount"`
+			OutputToken string `xml:"OutputToken"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetCompatibleAudioOutputConfigurations{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	var resp GetCompatibleAudioOutputConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetCompatibleAudioOutputConfigurations failed: %w", err)
+	}
+
+	configs := make([]*AudioOutputConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &AudioOutputConfiguration{
+			Token:       cfg.Token,
+			Name:        cfg.Name,
+			UseCount:    cfg.UseCount,
+			OutputToken: cfg.OutputToken,
+		}
+	}
+
+	return configs, nil
+}
+
+// GetCompatibleAudioDecoderConfigurations retrieves compatible audio decoder configurations for a profile
+func (c *Client) GetCompatibleAudioDecoderConfigurations(ctx context.Context, profileToken string) ([]*AudioDecoderConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetCompatibleAudioDecoderConfigurations struct {
+		XMLName      xml.Name `xml:"trt:GetCompatibleAudioDecoderConfigurations"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	type GetCompatibleAudioDecoderConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetCompatibleAudioDecoderConfigurationsResponse"`
+		Configurations []struct {
+			Token    string `xml:"token,attr"`
+			Name     string `xml:"Name"`
+			UseCount int    `xml:"UseCount"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetCompatibleAudioDecoderConfigurations{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	var resp GetCompatibleAudioDecoderConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetCompatibleAudioDecoderConfigurations failed: %w", err)
+	}
+
+	configs := make([]*AudioDecoderConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &AudioDecoderConfiguration{
+			Token:    cfg.Token,
+			Name:     cfg.Name,
+			UseCount: cfg.UseCount,
+		}
+	}
+
+	return configs, nil
+}
+
+// GetMetadataConfigurations retrieves all metadata configurations
+func (c *Client) GetMetadataConfigurations(ctx context.Context) ([]*MetadataConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetMetadataConfigurations struct {
+		XMLName xml.Name `xml:"trt:GetMetadataConfigurations"`
+		Xmlns   string   `xml:"xmlns:trt,attr"`
+	}
+
+	type GetMetadataConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetMetadataConfigurationsResponse"`
+		Configurations []struct {
+			Token     string `xml:"token,attr"`
+			Name      string `xml:"Name"`
+			UseCount  int    `xml:"UseCount"`
+			Analytics bool   `xml:"Analytics"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetMetadataConfigurations{
+		Xmlns: mediaNamespace,
+	}
+
+	var resp GetMetadataConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetMetadataConfigurations failed: %w", err)
+	}
+
+	configs := make([]*MetadataConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &MetadataConfiguration{
+			Token:     cfg.Token,
+			Name:      cfg.Name,
+			UseCount:  cfg.UseCount,
+			Analytics: cfg.Analytics,
+		}
+	}
+
+	return configs, nil
+}
+
+// GetAudioOutputConfigurations retrieves all audio output configurations
+func (c *Client) GetAudioOutputConfigurations(ctx context.Context) ([]*AudioOutputConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetAudioOutputConfigurations struct {
+		XMLName xml.Name `xml:"trt:GetAudioOutputConfigurations"`
+		Xmlns   string   `xml:"xmlns:trt,attr"`
+	}
+
+	type GetAudioOutputConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetAudioOutputConfigurationsResponse"`
+		Configurations []struct {
+			Token       string `xml:"token,attr"`
+			Name        string `xml:"Name"`
+			UseCount    int    `xml:"UseCount"`
+			OutputToken string `xml:"OutputToken"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetAudioOutputConfigurations{
+		Xmlns: mediaNamespace,
+	}
+
+	var resp GetAudioOutputConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetAudioOutputConfigurations failed: %w", err)
+	}
+
+	configs := make([]*AudioOutputConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &AudioOutputConfiguration{
+			Token:       cfg.Token,
+			Name:        cfg.Name,
+			UseCount:    cfg.UseCount,
+			OutputToken: cfg.OutputToken,
+		}
+	}
+
+	return configs, nil
+}
+
+// GetAudioDecoderConfigurations retrieves all audio decoder configurations
+func (c *Client) GetAudioDecoderConfigurations(ctx context.Context) ([]*AudioDecoderConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetAudioDecoderConfigurations struct {
+		XMLName xml.Name `xml:"trt:GetAudioDecoderConfigurations"`
+		Xmlns   string   `xml:"xmlns:trt,attr"`
+	}
+
+	type GetAudioDecoderConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetAudioDecoderConfigurationsResponse"`
+		Configurations []struct {
+			Token    string `xml:"token,attr"`
+			Name     string `xml:"Name"`
+			UseCount int    `xml:"UseCount"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetAudioDecoderConfigurations{
+		Xmlns: mediaNamespace,
+	}
+
+	var resp GetAudioDecoderConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetAudioDecoderConfigurations failed: %w", err)
+	}
+
+	configs := make([]*AudioDecoderConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &AudioDecoderConfiguration{
+			Token:    cfg.Token,
+			Name:     cfg.Name,
+			UseCount: cfg.UseCount,
+		}
+	}
+
+	return configs, nil
+}
+
+// GetAudioDecoderConfiguration retrieves a specific audio decoder configuration
+func (c *Client) GetAudioDecoderConfiguration(ctx context.Context, configurationToken string) (*AudioDecoderConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetAudioDecoderConfiguration struct {
+		XMLName            xml.Name `xml:"trt:GetAudioDecoderConfiguration"`
+		Xmlns              string   `xml:"xmlns:trt,attr"`
+		ConfigurationToken string   `xml:"trt:ConfigurationToken"`
+	}
+
+	type GetAudioDecoderConfigurationResponse struct {
+		XMLName       xml.Name `xml:"GetAudioDecoderConfigurationResponse"`
+		Configuration struct {
+			Token    string `xml:"token,attr"`
+			Name     string `xml:"Name"`
+			UseCount int    `xml:"UseCount"`
+		} `xml:"Configuration"`
+	}
+
+	req := GetAudioDecoderConfiguration{
+		Xmlns:              mediaNamespace,
+		ConfigurationToken: configurationToken,
+	}
+
+	var resp GetAudioDecoderConfigurationResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetAudioDecoderConfiguration failed: %w", err)
+	}
+
+	return &AudioDecoderConfiguration{
+		Token:    resp.Configuration.Token,
+		Name:     resp.Configuration.Name,
+		UseCount: resp.Configuration.UseCount,
+	}, nil
+}
+
+// SetAudioDecoderConfiguration sets audio decoder configuration
+func (c *Client) SetAudioDecoderConfiguration(ctx context.Context, config *AudioDecoderConfiguration, forcePersistence bool) error {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type SetAudioDecoderConfiguration struct {
+		XMLName       xml.Name `xml:"trt:SetAudioDecoderConfiguration"`
+		Xmlns         string   `xml:"xmlns:trt,attr"`
+		Xmlnst        string   `xml:"xmlns:tt,attr"`
+		Configuration struct {
+			Token    string `xml:"token,attr"`
+			Name     string `xml:"tt:Name"`
+			UseCount int    `xml:"tt:UseCount"`
+		} `xml:"trt:Configuration"`
+		ForcePersistence bool `xml:"trt:ForcePersistence"`
+	}
+
+	req := SetAudioDecoderConfiguration{
+		Xmlns:            mediaNamespace,
+		Xmlnst:           "http://www.onvif.org/ver10/schema",
+		ForcePersistence: forcePersistence,
+	}
+
+	req.Configuration.Token = config.Token
+	req.Configuration.Name = config.Name
+	req.Configuration.UseCount = config.UseCount
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, nil); err != nil {
+		return fmt.Errorf("SetAudioDecoderConfiguration failed: %w", err)
+	}
+
+	return nil
+}
+
+// GetVideoAnalyticsConfigurations retrieves all video analytics configurations
+func (c *Client) GetVideoAnalyticsConfigurations(ctx context.Context) ([]*VideoAnalyticsConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetVideoAnalyticsConfigurations struct {
+		XMLName xml.Name `xml:"trt:GetVideoAnalyticsConfigurations"`
+		Xmlns   string   `xml:"xmlns:trt,attr"`
+	}
+
+	type GetVideoAnalyticsConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetVideoAnalyticsConfigurationsResponse"`
+		Configurations []struct {
+			Token    string `xml:"token,attr"`
+			Name     string `xml:"Name"`
+			UseCount int    `xml:"UseCount"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetVideoAnalyticsConfigurations{
+		Xmlns: mediaNamespace,
+	}
+
+	var resp GetVideoAnalyticsConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetVideoAnalyticsConfigurations failed: %w", err)
+	}
+
+	configs := make([]*VideoAnalyticsConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &VideoAnalyticsConfiguration{
+			Token:    cfg.Token,
+			Name:     cfg.Name,
+			UseCount: cfg.UseCount,
+		}
+	}
+
+	return configs, nil
+}
+
+// GetVideoAnalyticsConfiguration retrieves a specific video analytics configuration
+func (c *Client) GetVideoAnalyticsConfiguration(ctx context.Context, configurationToken string) (*VideoAnalyticsConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetVideoAnalyticsConfiguration struct {
+		XMLName            xml.Name `xml:"trt:GetVideoAnalyticsConfiguration"`
+		Xmlns              string   `xml:"xmlns:trt,attr"`
+		ConfigurationToken string   `xml:"trt:ConfigurationToken"`
+	}
+
+	type GetVideoAnalyticsConfigurationResponse struct {
+		XMLName       xml.Name `xml:"GetVideoAnalyticsConfigurationResponse"`
+		Configuration struct {
+			Token    string `xml:"token,attr"`
+			Name     string `xml:"Name"`
+			UseCount int    `xml:"UseCount"`
+		} `xml:"Configuration"`
+	}
+
+	req := GetVideoAnalyticsConfiguration{
+		Xmlns:              mediaNamespace,
+		ConfigurationToken: configurationToken,
+	}
+
+	var resp GetVideoAnalyticsConfigurationResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetVideoAnalyticsConfiguration failed: %w", err)
+	}
+
+	return &VideoAnalyticsConfiguration{
+		Token:    resp.Configuration.Token,
+		Name:     resp.Configuration.Name,
+		UseCount: resp.Configuration.UseCount,
+	}, nil
+}
+
+// GetCompatibleVideoAnalyticsConfigurations retrieves compatible video analytics configurations for a profile
+func (c *Client) GetCompatibleVideoAnalyticsConfigurations(ctx context.Context, profileToken string) ([]*VideoAnalyticsConfiguration, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetCompatibleVideoAnalyticsConfigurations struct {
+		XMLName      xml.Name `xml:"trt:GetCompatibleVideoAnalyticsConfigurations"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	type GetCompatibleVideoAnalyticsConfigurationsResponse struct {
+		XMLName        xml.Name `xml:"GetCompatibleVideoAnalyticsConfigurationsResponse"`
+		Configurations []struct {
+			Token    string `xml:"token,attr"`
+			Name     string `xml:"Name"`
+			UseCount int    `xml:"UseCount"`
+		} `xml:"Configurations"`
+	}
+
+	req := GetCompatibleVideoAnalyticsConfigurations{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	var resp GetCompatibleVideoAnalyticsConfigurationsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetCompatibleVideoAnalyticsConfigurations failed: %w", err)
+	}
+
+	configs := make([]*VideoAnalyticsConfiguration, len(resp.Configurations))
+	for i, cfg := range resp.Configurations {
+		configs[i] = &VideoAnalyticsConfiguration{
+			Token:    cfg.Token,
+			Name:     cfg.Name,
+			UseCount: cfg.UseCount,
+		}
+	}
+
+	return configs, nil
+}
+
+// SetVideoAnalyticsConfiguration sets video analytics configuration
+func (c *Client) SetVideoAnalyticsConfiguration(ctx context.Context, config *VideoAnalyticsConfiguration, forcePersistence bool) error {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type SetVideoAnalyticsConfiguration struct {
+		XMLName       xml.Name `xml:"trt:SetVideoAnalyticsConfiguration"`
+		Xmlns         string   `xml:"xmlns:trt,attr"`
+		Xmlnst        string   `xml:"xmlns:tt,attr"`
+		Configuration struct {
+			Token    string `xml:"token,attr"`
+			Name     string `xml:"tt:Name"`
+			UseCount int    `xml:"tt:UseCount"`
+		} `xml:"trt:Configuration"`
+		ForcePersistence bool `xml:"trt:ForcePersistence"`
+	}
+
+	req := SetVideoAnalyticsConfiguration{
+		Xmlns:            mediaNamespace,
+		Xmlnst:           "http://www.onvif.org/ver10/schema",
+		ForcePersistence: forcePersistence,
+	}
+
+	req.Configuration.Token = config.Token
+	req.Configuration.Name = config.Name
+	req.Configuration.UseCount = config.UseCount
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, nil); err != nil {
+		return fmt.Errorf("SetVideoAnalyticsConfiguration failed: %w", err)
+	}
+
+	return nil
+}
+
+// GetVideoAnalyticsConfigurationOptions retrieves available options for video analytics configuration
+func (c *Client) GetVideoAnalyticsConfigurationOptions(ctx context.Context, configurationToken, profileToken string) (*VideoAnalyticsConfigurationOptions, error) {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type GetVideoAnalyticsConfigurationOptions struct {
+		XMLName            xml.Name `xml:"trt:GetVideoAnalyticsConfigurationOptions"`
+		Xmlns              string   `xml:"xmlns:trt,attr"`
+		ConfigurationToken string   `xml:"trt:ConfigurationToken,omitempty"`
+		ProfileToken       string   `xml:"trt:ProfileToken,omitempty"`
+	}
+
+	type GetVideoAnalyticsConfigurationOptionsResponse struct {
+		XMLName xml.Name `xml:"GetVideoAnalyticsConfigurationOptionsResponse"`
+		Options struct{} `xml:"Options"`
+	}
+
+	req := GetVideoAnalyticsConfigurationOptions{
+		Xmlns: mediaNamespace,
+	}
+	if configurationToken != "" {
+		req.ConfigurationToken = configurationToken
+	}
+	if profileToken != "" {
+		req.ProfileToken = profileToken
+	}
+
+	var resp GetVideoAnalyticsConfigurationOptionsResponse
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
+		return nil, fmt.Errorf("GetVideoAnalyticsConfigurationOptions failed: %w", err)
+	}
+
+	return &VideoAnalyticsConfigurationOptions{}, nil
+}
+
+// AddVideoAnalyticsConfiguration adds a video analytics configuration to a profile
+func (c *Client) AddVideoAnalyticsConfiguration(ctx context.Context, profileToken, configurationToken string) error {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type AddVideoAnalyticsConfiguration struct {
+		XMLName            xml.Name `xml:"trt:AddVideoAnalyticsConfiguration"`
+		Xmlns              string   `xml:"xmlns:trt,attr"`
+		ProfileToken       string   `xml:"trt:ProfileToken"`
+		ConfigurationToken string   `xml:"trt:ConfigurationToken"`
+	}
+
+	req := AddVideoAnalyticsConfiguration{
+		Xmlns:              mediaNamespace,
+		ProfileToken:       profileToken,
+		ConfigurationToken: configurationToken,
+	}
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, nil); err != nil {
+		return fmt.Errorf("AddVideoAnalyticsConfiguration failed: %w", err)
+	}
+
+	return nil
+}
+
+// RemoveVideoAnalyticsConfiguration removes a video analytics configuration from a profile
+func (c *Client) RemoveVideoAnalyticsConfiguration(ctx context.Context, profileToken string) error {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type RemoveVideoAnalyticsConfiguration struct {
+		XMLName      xml.Name `xml:"trt:RemoveVideoAnalyticsConfiguration"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	req := RemoveVideoAnalyticsConfiguration{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, nil); err != nil {
+		return fmt.Errorf("RemoveVideoAnalyticsConfiguration failed: %w", err)
+	}
+
+	return nil
+}
+
+// AddAudioOutputConfiguration adds an audio output configuration to a profile
+func (c *Client) AddAudioOutputConfiguration(ctx context.Context, profileToken, configurationToken string) error {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type AddAudioOutputConfiguration struct {
+		XMLName            xml.Name `xml:"trt:AddAudioOutputConfiguration"`
+		Xmlns              string   `xml:"xmlns:trt,attr"`
+		ProfileToken       string   `xml:"trt:ProfileToken"`
+		ConfigurationToken string   `xml:"trt:ConfigurationToken"`
+	}
+
+	req := AddAudioOutputConfiguration{
+		Xmlns:              mediaNamespace,
+		ProfileToken:       profileToken,
+		ConfigurationToken: configurationToken,
+	}
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, nil); err != nil {
+		return fmt.Errorf("AddAudioOutputConfiguration failed: %w", err)
+	}
+
+	return nil
+}
+
+// RemoveAudioOutputConfiguration removes an audio output configuration from a profile
+func (c *Client) RemoveAudioOutputConfiguration(ctx context.Context, profileToken string) error {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type RemoveAudioOutputConfiguration struct {
+		XMLName      xml.Name `xml:"trt:RemoveAudioOutputConfiguration"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	req := RemoveAudioOutputConfiguration{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, nil); err != nil {
+		return fmt.Errorf("RemoveAudioOutputConfiguration failed: %w", err)
+	}
+
+	return nil
+}
+
+// AddAudioDecoderConfiguration adds an audio decoder configuration to a profile
+func (c *Client) AddAudioDecoderConfiguration(ctx context.Context, profileToken, configurationToken string) error {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type AddAudioDecoderConfiguration struct {
+		XMLName            xml.Name `xml:"trt:AddAudioDecoderConfiguration"`
+		Xmlns              string   `xml:"xmlns:trt,attr"`
+		ProfileToken       string   `xml:"trt:ProfileToken"`
+		ConfigurationToken string   `xml:"trt:ConfigurationToken"`
+	}
+
+	req := AddAudioDecoderConfiguration{
+		Xmlns:              mediaNamespace,
+		ProfileToken:       profileToken,
+		ConfigurationToken: configurationToken,
+	}
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, nil); err != nil {
+		return fmt.Errorf("AddAudioDecoderConfiguration failed: %w", err)
+	}
+
+	return nil
+}
+
+// RemoveAudioDecoderConfiguration removes an audio decoder configuration from a profile
+func (c *Client) RemoveAudioDecoderConfiguration(ctx context.Context, profileToken string) error {
+	endpoint := c.mediaEndpoint
+	if endpoint == "" {
+		endpoint = c.endpoint
+	}
+
+	type RemoveAudioDecoderConfiguration struct {
+		XMLName      xml.Name `xml:"trt:RemoveAudioDecoderConfiguration"`
+		Xmlns        string   `xml:"xmlns:trt,attr"`
+		ProfileToken string   `xml:"trt:ProfileToken"`
+	}
+
+	req := RemoveAudioDecoderConfiguration{
+		Xmlns:        mediaNamespace,
+		ProfileToken: profileToken,
+	}
+
+	username, password := c.GetCredentials()
+	soapClient := soap.NewClient(c.httpClient, username, password)
+
+	if err := soapClient.Call(ctx, endpoint, "", req, nil); err != nil {
+		return fmt.Errorf("RemoveAudioDecoderConfiguration failed: %w", err)
+	}
+
+	return nil
+}

@@ -423,6 +423,79 @@ type OSDConfigurationOptions struct {
 	MaximumNumberOfOSDs int
 }
 
+// VideoSourceConfigurationOptions represents available options for video source configuration
+type VideoSourceConfigurationOptions struct {
+	BoundsRange                *BoundsRange
+	VideoSourceTokensAvailable []string
+}
+
+// AudioSourceConfigurationOptions represents available options for audio source configuration
+type AudioSourceConfigurationOptions struct {
+	InputTokensAvailable []string
+}
+
+// BoundsRange represents bounds range for video source configuration
+type BoundsRange struct {
+	X      *IntRange
+	Y      *IntRange
+	Width  *IntRange
+	Height *IntRange
+}
+
+// AudioDecoderConfiguration represents audio decoder configuration
+type AudioDecoderConfiguration struct {
+	Token    string
+	Name     string
+	UseCount int
+}
+
+// VideoAnalyticsConfiguration represents video analytics configuration
+type VideoAnalyticsConfiguration struct {
+	Token                        string
+	Name                         string
+	UseCount                     int
+	AnalyticsEngineConfiguration *AnalyticsEngineConfiguration
+	RuleEngineConfiguration      *RuleEngineConfiguration
+}
+
+// AnalyticsEngineConfiguration represents analytics engine configuration
+type AnalyticsEngineConfiguration struct {
+	AnalyticsEngine *Config
+	Parameters      *ItemList
+}
+
+// RuleEngineConfiguration represents rule engine configuration
+type RuleEngineConfiguration struct {
+	Rule *Config
+}
+
+// Config represents a generic configuration
+type Config struct {
+	Parameters *ItemList
+}
+
+// ItemList represents a list of configuration items
+type ItemList struct {
+	SimpleItem  []SimpleItem
+	ElementItem []ElementItem
+}
+
+// SimpleItem represents a simple configuration item
+type SimpleItem struct {
+	Name  string
+	Value string
+}
+
+// ElementItem represents an element configuration item
+type ElementItem struct {
+	Name string
+}
+
+// VideoAnalyticsConfigurationOptions represents available options for video analytics configuration
+type VideoAnalyticsConfigurationOptions struct {
+	// Simplified for now - can be expanded based on ONVIF spec
+}
+
 // StreamSetup represents stream setup parameters
 type StreamSetup struct {
 	Stream    string // RTP-Unicast, RTP-Multicast
