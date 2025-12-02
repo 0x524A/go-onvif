@@ -11,6 +11,20 @@ import (
 // Media service namespace
 const mediaNamespace = "http://www.onvif.org/ver10/media/wsdl"
 
+// getMediaEndpoint returns the media endpoint, falling back to the default endpoint if not set.
+func (c *Client) getMediaEndpoint() string {
+	if c.mediaEndpoint != "" {
+		return c.mediaEndpoint
+	}
+	return c.endpoint
+}
+
+// getMediaSoapClient creates a new SOAP client for media operations.
+func (c *Client) getMediaSoapClient() *soap.Client {
+	username, password := c.GetCredentials()
+	return soap.NewClient(c.httpClient, username, password)
+}
+
 // GetProfiles retrieves all media profiles
 func (c *Client) GetProfiles(ctx context.Context) ([]*Profile, error) {
 	endpoint := c.mediaEndpoint
@@ -2046,13 +2060,8 @@ func (c *Client) GetMetadataConfigurationOptions(ctx context.Context, configurat
 }
 
 // GetAudioOutputConfiguration retrieves audio output configuration
-//
-//nolint:dupl // Similar structure to GetAudioSourceConfiguration but different types and operations
 func (c *Client) GetAudioOutputConfiguration(ctx context.Context, configurationToken string) (*AudioOutputConfiguration, error) {
-	endpoint := c.mediaEndpoint
-	if endpoint == "" {
-		endpoint = c.endpoint
-	}
+	endpoint := c.getMediaEndpoint()
 
 	type GetAudioOutputConfiguration struct {
 		XMLName            xml.Name `xml:"trt:GetAudioOutputConfiguration"`
@@ -2076,9 +2085,7 @@ func (c *Client) GetAudioOutputConfiguration(ctx context.Context, configurationT
 	}
 
 	var resp GetAudioOutputConfigurationResponse
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
+	soapClient := c.getMediaSoapClient()
 
 	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
 		return nil, fmt.Errorf("GetAudioOutputConfiguration failed: %w", err)
@@ -2703,10 +2710,7 @@ func (c *Client) GetVideoSourceConfiguration(ctx context.Context, configurationT
 
 // GetAudioSourceConfiguration retrieves a specific audio source configuration
 func (c *Client) GetAudioSourceConfiguration(ctx context.Context, configurationToken string) (*AudioSourceConfiguration, error) {
-	endpoint := c.mediaEndpoint
-	if endpoint == "" {
-		endpoint = c.endpoint
-	}
+	endpoint := c.getMediaEndpoint()
 
 	type GetAudioSourceConfiguration struct {
 		XMLName            xml.Name `xml:"trt:GetAudioSourceConfiguration"`
@@ -2730,9 +2734,7 @@ func (c *Client) GetAudioSourceConfiguration(ctx context.Context, configurationT
 	}
 
 	var resp GetAudioSourceConfigurationResponse
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
+	soapClient := c.getMediaSoapClient()
 
 	if err := soapClient.Call(ctx, endpoint, "", req, &resp); err != nil {
 		return nil, fmt.Errorf("GetAudioSourceConfiguration failed: %w", err)

@@ -35,7 +35,7 @@ func TestGetProfiles(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client, err := NewClient(server.URL+"/onvif/media_service")
+	client, err := NewClient(server.URL + "/onvif/media_service")
 	if err != nil {
 		t.Fatalf("NewClient() failed: %v", err)
 	}
@@ -1487,4 +1487,3 @@ func TestGetOSDOptions(t *testing.T) {
 		t.Errorf("Expected MaximumNumberOfOSDs 10, got %d", options.MaximumNumberOfOSDs)
 	}
 }
-

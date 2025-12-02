@@ -10,7 +10,7 @@ func TestDefaultConfig(t *testing.T) {
 	config := DefaultConfig()
 
 	tests := []struct {
-		name     string
+		name      string
 		checkFunc func(*Config) error
 	}{
 		{
@@ -131,28 +131,28 @@ func TestDefaultConfig(t *testing.T) {
 
 func TestResolution(t *testing.T) {
 	tests := []struct {
-		name       string
-		resolution Resolution
+		name        string
+		resolution  Resolution
 		expectValid bool
 	}{
 		{
-			name:       "Valid resolution 1920x1080",
-			resolution: Resolution{Width: 1920, Height: 1080},
+			name:        "Valid resolution 1920x1080",
+			resolution:  Resolution{Width: 1920, Height: 1080},
 			expectValid: true,
 		},
 		{
-			name:       "Valid resolution 640x480",
-			resolution: Resolution{Width: 640, Height: 480},
+			name:        "Valid resolution 640x480",
+			resolution:  Resolution{Width: 640, Height: 480},
 			expectValid: true,
 		},
 		{
-			name:       "Zero width",
-			resolution: Resolution{Width: 0, Height: 1080},
+			name:        "Zero width",
+			resolution:  Resolution{Width: 0, Height: 1080},
 			expectValid: false,
 		},
 		{
-			name:       "Zero height",
-			resolution: Resolution{Width: 1920, Height: 0},
+			name:        "Zero height",
+			resolution:  Resolution{Width: 1920, Height: 0},
 			expectValid: false,
 		},
 	}
@@ -160,7 +160,7 @@ func TestResolution(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if (tt.resolution.Width > 0 && tt.resolution.Height > 0) != tt.expectValid {
-				t.Errorf("Resolution validation failed: Width=%d, Height=%d", 
+				t.Errorf("Resolution validation failed: Width=%d, Height=%d",
 					tt.resolution.Width, tt.resolution.Height)
 			}
 		})
@@ -219,23 +219,23 @@ func TestRange(t *testing.T) {
 
 func TestBounds(t *testing.T) {
 	tests := []struct {
-		name      string
-		bounds    Bounds
+		name        string
+		bounds      Bounds
 		expectValid bool
 	}{
 		{
-			name:      "Valid bounds",
-			bounds:    Bounds{X: 0, Y: 0, Width: 1920, Height: 1080},
+			name:        "Valid bounds",
+			bounds:      Bounds{X: 0, Y: 0, Width: 1920, Height: 1080},
 			expectValid: true,
 		},
 		{
-			name:      "Zero width",
-			bounds:    Bounds{X: 0, Y: 0, Width: 0, Height: 1080},
+			name:        "Zero width",
+			bounds:      Bounds{X: 0, Y: 0, Width: 0, Height: 1080},
 			expectValid: false,
 		},
 		{
-			name:      "Negative coordinates",
-			bounds:    Bounds{X: -10, Y: -10, Width: 1920, Height: 1080},
+			name:        "Negative coordinates",
+			bounds:      Bounds{X: -10, Y: -10, Width: 1920, Height: 1080},
 			expectValid: true, // Negative coordinates may be valid in some cases
 		},
 	}
@@ -252,8 +252,8 @@ func TestBounds(t *testing.T) {
 
 func TestPreset(t *testing.T) {
 	tests := []struct {
-		name      string
-		preset    Preset
+		name        string
+		preset      Preset
 		expectValid bool
 	}{
 		{
@@ -277,7 +277,7 @@ func TestPreset(t *testing.T) {
 			name: "Preset with empty name",
 			preset: Preset{
 				Token: "preset_1",
-				Name:        "",
+				Name:  "",
 			},
 			expectValid: false,
 		},
@@ -287,7 +287,7 @@ func TestPreset(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			isValid := tt.preset.Token != "" && tt.preset.Name != ""
 			if isValid != tt.expectValid {
-				t.Errorf("Preset validation failed: Token=%s, Name=%s", 
+				t.Errorf("Preset validation failed: Token=%s, Name=%s",
 					tt.preset.Token, tt.preset.Name)
 			}
 		})
@@ -346,9 +346,9 @@ func TestPTZConfig(t *testing.T) {
 
 func TestVideoEncoderConfig(t *testing.T) {
 	tests := []struct {
-		name         string
+		name          string
 		encoderConfig VideoEncoderConfig
-		expectValid  bool
+		expectValid   bool
 	}{
 		{
 			name: "Valid H264 encoder",
@@ -406,7 +406,7 @@ func TestVideoEncoderConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			isValid := tt.encoderConfig.Encoding != "" && 
+			isValid := tt.encoderConfig.Encoding != "" &&
 				tt.encoderConfig.Quality >= 0 && tt.encoderConfig.Quality <= 100 &&
 				tt.encoderConfig.Resolution.Width > 0 && tt.encoderConfig.Resolution.Height > 0
 			if isValid != tt.expectValid {
@@ -418,9 +418,9 @@ func TestVideoEncoderConfig(t *testing.T) {
 
 func TestProfileConfig(t *testing.T) {
 	tests := []struct {
-		name         string
+		name          string
 		profileConfig ProfileConfig
-		expectValid  bool
+		expectValid   bool
 	}{
 		{
 			name: "Valid profile config",
@@ -475,7 +475,7 @@ func TestSnapshotConfig(t *testing.T) {
 	tests := []struct {
 		name           string
 		snapshotConfig SnapshotConfig
-		expectValid   bool
+		expectValid    bool
 	}{
 		{
 			name: "Valid snapshot config",
@@ -509,7 +509,7 @@ func TestSnapshotConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Snapshot config is valid if it has resolution and quality when enabled
-			isValid := !tt.snapshotConfig.Enabled || 
+			isValid := !tt.snapshotConfig.Enabled ||
 				(tt.snapshotConfig.Resolution.Width > 0 && tt.snapshotConfig.Resolution.Height > 0)
 			if isValid != tt.expectValid {
 				t.Errorf("Snapshot validation failed: Enabled=%v, Resolution=%dx%d",
@@ -545,10 +545,10 @@ func TestServiceEndpoints(t *testing.T) {
 		{
 			name: "Default endpoints",
 			config: &Config{
-				Host:        "192.168.1.100",
-				Port:        8080,
-				BasePath:    "/onvif",
-				SupportPTZ: true,
+				Host:          "192.168.1.100",
+				Port:          8080,
+				BasePath:      "/onvif",
+				SupportPTZ:    true,
 				SupportEvents: true,
 			},
 			host:           "",
@@ -557,10 +557,10 @@ func TestServiceEndpoints(t *testing.T) {
 		{
 			name: "Custom host",
 			config: &Config{
-				Host:        "192.168.1.100",
-				Port:        8080,
-				BasePath:    "/onvif",
-				SupportPTZ: false,
+				Host:          "192.168.1.100",
+				Port:          8080,
+				BasePath:      "/onvif",
+				SupportPTZ:    false,
 				SupportEvents: false,
 			},
 			host:           "custom.example.com",
@@ -569,9 +569,9 @@ func TestServiceEndpoints(t *testing.T) {
 		{
 			name: "Port 80",
 			config: &Config{
-				Host:        "localhost",
-				Port:        80,
-				BasePath:    "/onvif",
+				Host:       "localhost",
+				Port:       80,
+				BasePath:   "/onvif",
 				SupportPTZ: true,
 			},
 			host:           "",
@@ -602,7 +602,7 @@ func TestServiceEndpoints(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			endpoints := tt.config.ServiceEndpoints(tt.host)
-			
+
 			for _, svc := range tt.expectServices {
 				if _, ok := endpoints[svc]; !ok {
 					t.Errorf("Missing endpoint: %s", svc)
@@ -621,15 +621,15 @@ func TestServiceEndpoints(t *testing.T) {
 
 func TestServiceEndpointsURL(t *testing.T) {
 	config := &Config{
-		Host:     "example.com",
-		Port:     9000,
-		BasePath: "/services",
-		SupportPTZ: true,
+		Host:          "example.com",
+		Port:          9000,
+		BasePath:      "/services",
+		SupportPTZ:    true,
 		SupportEvents: true,
 	}
 
 	endpoints := config.ServiceEndpoints("example.com")
-	
+
 	expectedDeviceURL := "http://example.com:9000/services/device_service"
 	if endpoints["device"] != expectedDeviceURL {
 		t.Errorf("Device endpoint mismatch: got %s, want %s", endpoints["device"], expectedDeviceURL)
@@ -639,27 +639,27 @@ func TestServiceEndpointsURL(t *testing.T) {
 func TestToONVIFProfile(t *testing.T) {
 	profile := &ProfileConfig{
 		Token: "profile_1",
-		Name: "HD Profile",
+		Name:  "HD Profile",
 		VideoSource: VideoSourceConfig{
-			Token: "source_1",
-			Framerate: 30,
+			Token:      "source_1",
+			Framerate:  30,
 			Resolution: Resolution{Width: 1920, Height: 1080},
 		},
 		VideoEncoder: VideoEncoderConfig{
-			Encoding: "H264",
-			Bitrate: 4096,
-			Framerate: 30,
+			Encoding:   "H264",
+			Bitrate:    4096,
+			Framerate:  30,
 			Resolution: Resolution{Width: 1920, Height: 1080},
 		},
 		Snapshot: SnapshotConfig{
-			Enabled: true,
+			Enabled:    true,
 			Resolution: Resolution{Width: 1920, Height: 1080},
-			Quality: 85.0,
+			Quality:    85.0,
 		},
 	}
 
 	onvifProfile := profile.ToONVIFProfile()
-	
+
 	if onvifProfile.Token != "profile_1" {
 		t.Errorf("Profile token mismatch: got %s", onvifProfile.Token)
 	}

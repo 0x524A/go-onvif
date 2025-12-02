@@ -20,9 +20,9 @@ func TestHandleGetDeviceInformation(t *testing.T) {
 	}
 
 	tests := []struct {
-		name  string
-		got   string
-		want  string
+		name string
+		got  string
+		want string
 	}{
 		{"Manufacturer", deviceResp.Manufacturer, config.DeviceInfo.Manufacturer},
 		{"Model", deviceResp.Model, config.DeviceInfo.Model},
@@ -206,8 +206,8 @@ func TestCapabilitiesStructure(t *testing.T) {
 			XAddr: "http://localhost:8080/onvif/media_service",
 			StreamingCapabilities: &StreamingCapabilities{
 				RTPMulticast: true,
-				RTP_TCP:       true,
-				RTP_RTSP_TCP:  true,
+				RTP_TCP:      true,
+				RTP_RTSP_TCP: true,
 			},
 		},
 	}
@@ -236,8 +236,8 @@ func TestMediaCapabilitiesStructure(t *testing.T) {
 		XAddr: "http://localhost:8080/onvif/media_service",
 		StreamingCapabilities: &StreamingCapabilities{
 			RTPMulticast: true,
-			RTP_TCP:       true,
-			RTP_RTSP_TCP:  true,
+			RTP_TCP:      true,
+			RTP_RTSP_TCP: true,
 		},
 	}
 
@@ -362,8 +362,8 @@ func TestGetCapabilitiesResponse(t *testing.T) {
 			XAddr: "http://localhost:8080/media",
 			StreamingCapabilities: &StreamingCapabilities{
 				RTPMulticast: true,
-				RTP_TCP:       true,
-				RTP_RTSP_TCP:  true,
+				RTP_TCP:      true,
+				RTP_RTSP_TCP: true,
 			},
 		},
 	}

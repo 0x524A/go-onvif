@@ -265,28 +265,28 @@ func _DisabledTestHandleStop(t *testing.T) {
 
 func TestPTZPosition(t *testing.T) {
 	tests := []struct {
-		name      string
-		position  PTZPosition
+		name        string
+		position    PTZPosition
 		expectValid bool
 	}{
 		{
-			name:      "Valid center position",
-			position:  PTZPosition{Pan: 0, Tilt: 0, Zoom: 0},
+			name:        "Valid center position",
+			position:    PTZPosition{Pan: 0, Tilt: 0, Zoom: 0},
 			expectValid: true,
 		},
 		{
-			name:      "Position with pan",
-			position:  PTZPosition{Pan: 45, Tilt: 0, Zoom: 0},
+			name:        "Position with pan",
+			position:    PTZPosition{Pan: 45, Tilt: 0, Zoom: 0},
 			expectValid: true,
 		},
 		{
-			name:      "Position with zoom",
-			position:  PTZPosition{Pan: 0, Tilt: 0, Zoom: 5},
+			name:        "Position with zoom",
+			position:    PTZPosition{Pan: 0, Tilt: 0, Zoom: 5},
 			expectValid: true,
 		},
 		{
-			name:      "Full position",
-			position:  PTZPosition{Pan: 180, Tilt: 45, Zoom: 10},
+			name:        "Full position",
+			position:    PTZPosition{Pan: 180, Tilt: 45, Zoom: 10},
 			expectValid: true,
 		},
 	}
@@ -328,23 +328,23 @@ func TestPTZSpeed(t *testing.T) {
 	tilt := 0.5
 	zoom := 0.5
 	tests := []struct {
-		name      string
-		speed     PTZVector
+		name        string
+		speed       PTZVector
 		expectValid bool
 	}{
 		{
-			name:      "Valid speed",
-			speed:     PTZVector{PanTilt: &Vector2D{X: pan, Y: tilt}, Zoom: &Vector1D{X: zoom}},
+			name:        "Valid speed",
+			speed:       PTZVector{PanTilt: &Vector2D{X: pan, Y: tilt}, Zoom: &Vector1D{X: zoom}},
 			expectValid: true,
 		},
 		{
-			name:      "High speed",
-			speed:     PTZVector{PanTilt: &Vector2D{X: 1.0, Y: 1.0}, Zoom: &Vector1D{X: 1.0}},
+			name:        "High speed",
+			speed:       PTZVector{PanTilt: &Vector2D{X: 1.0, Y: 1.0}, Zoom: &Vector1D{X: 1.0}},
 			expectValid: true,
 		},
 		{
-			name:      "Zero speed",
-			speed:     PTZVector{PanTilt: &Vector2D{X: 0, Y: 0}, Zoom: &Vector1D{X: 0}},
+			name:        "Zero speed",
+			speed:       PTZVector{PanTilt: &Vector2D{X: 0, Y: 0}, Zoom: &Vector1D{X: 0}},
 			expectValid: true,
 		},
 	}
@@ -438,7 +438,7 @@ func TestPTZMovementOperations(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := tt.handler([]byte(tt.reqXML))
-			
+
 			// These may fail due to XML namespace issues, but we're testing the handler exists
 			if resp == nil && err == nil {
 				t.Logf("%s: got nil response and nil error", tt.name)
@@ -501,7 +501,7 @@ func TestPTZStateTransitions(t *testing.T) {
 
 	// Verify position can be updated
 	ptzState.LastUpdate = time.Now()
-	
+
 	updatedState, _ := server.GetPTZState(profileToken)
 	if updatedState == nil {
 		t.Fatal("Updated PTZ state is nil")

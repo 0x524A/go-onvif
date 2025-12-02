@@ -271,9 +271,9 @@ func TestGetImagingState(t *testing.T) {
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
 	tests := []struct {
-		name     string
-		token    string
-		expectOk bool
+		name      string
+		token     string
+		expectOk  bool
 		checkFunc func(*ImagingState) error
 	}{
 		{
@@ -436,11 +436,11 @@ func TestServerInfoMethod(t *testing.T) {
 	server, _ := New(config)
 
 	info := server.ServerInfo()
-	
+
 	if info == "" {
 		t.Fatal("ServerInfo() returned empty string")
 	}
-	
+
 	// ServerInfo returns a formatted string with server information
 	if !strings.Contains(info, "127.0.0.1") && !strings.Contains(info, "localhost") {
 		t.Logf("ServerInfo may not contain host: %s", info)

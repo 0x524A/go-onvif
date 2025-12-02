@@ -125,8 +125,8 @@ func TestExtractAction(t *testing.T) {
 	handler := NewHandler("", "")
 
 	tests := []struct {
-		name         string
-		soapBody     string
+		name           string
+		soapBody       string
 		expectedAction string
 	}{
 		{
