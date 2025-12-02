@@ -1,0 +1,34 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ master, main ]
+    paths:
+      - 'docs/**'
+      - '*.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docs-check:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check for broken links
+        uses: peter-evans/link-checker@v1
+        with:
+          args: -v -r -d docs/
+        continue-on-error: true
+      
+      - name: Validate markdown
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: 'docs/**/*.md'
+        continue-on-error: true
+

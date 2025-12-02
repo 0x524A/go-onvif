@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master, main, develop ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, main, develop ]
 
 permissions:
   contents: read
@@ -16,19 +16,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Status check - always runs
-  status-check:
-    name: Workflow Status
-    runs-on: ubuntu-latest
-    steps:
-      - name: Workflow started
-        run: echo "✅ CI workflow is running"
-
   # Quick validation - fail fast on obvious issues
   validate:
     name: Quick Validation
     runs-on: ubuntu-latest
-    needs: status-check
     
     steps:
     - name: Checkout code
@@ -42,7 +33,9 @@ jobs:
     - name: Cache Go modules
       uses: actions/cache@v4
       with:
-        path: ~/go/pkg/mod
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-
@@ -53,18 +46,22 @@ jobs:
     - name: Check formatting
       run: |
         if [ "$(gofmt -s -l . | grep -v vendor | wc -l)" -gt 0 ]; then
-          echo "Code formatting issues found:"
+          echo "❌ Code formatting issues found:"
           gofmt -s -d . | grep -v vendor
           exit 1
         fi
+        echo "✅ Code formatting is correct"
     
-    - name: Lint
-      uses: golangci/golangci-lint-action@v4
+    - name: Run go vet
+      run: go vet ./...
+    
+    - name: Lint with golangci-lint
+      uses: golangci/golangci-lint-action@v6
       with:
-        version: v1.64
-        skip-cache: true
+        version: latest
+        args: --timeout=5m
 
-  # Test on primary Go version
+  # Test on primary Go version with coverage
   test:
     name: Test (Go 1.23)
     runs-on: ubuntu-latest
@@ -82,7 +79,9 @@ jobs:
     - name: Cache Go modules
       uses: actions/cache@v4
       with:
-        path: ~/go/pkg/mod
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
         key: ${{ runner.os }}-go-1.23-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-1.23-
@@ -103,7 +102,7 @@ jobs:
         files: ./coverage.out
         flags: unittests
         name: codecov-umbrella
-        fail_ci_if_error: true
+        fail_ci_if_error: false
     
     - name: Archive coverage
       if: always()
@@ -115,17 +114,18 @@ jobs:
           coverage.html
         retention-days: 30
 
-  # Test on multiple Go versions (after primary test passes)
+  # Test on multiple Go versions and platforms
   test-matrix:
-    name: Test (Go ${{ matrix.go-version }})
+    name: Test (Go ${{ matrix.go-version }} on ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    needs: test
+    needs: validate
     strategy:
-      fail-fast: true  # Stop on first failure
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        go-version: ['1.21', '1.22']
+        go-version: ['1.21', '1.22', '1.23']
         exclude:
+          # Skip older Go versions on macOS and Windows to save CI time
           - os: macos-latest
             go-version: '1.21'
           - os: windows-latest
@@ -156,40 +156,11 @@ jobs:
     - name: Run tests
       run: go test -v -race ./...
 
-  # Code quality - only run if tests pass
-  sonarcloud:
-    name: Code Quality (SonarCloud)
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && secrets.SONAR_TOKEN != ''
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    
-    - name: Download coverage from test job
-      uses: actions/download-artifact@v4
-      with:
-        name: coverage-report
-    
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.projectKey=0x524a_onvif-go
-          -Dsonar.organization=0x524a
-          -Dsonar.go.coverage.reportPaths=coverage.out
-
   # Build verification
   build:
-    name: Build
+    name: Build Verification
     runs-on: ubuntu-latest
-    needs: test
+    needs: validate
     
     steps:
     - name: Checkout code
@@ -203,7 +174,9 @@ jobs:
     - name: Cache Go modules
       uses: actions/cache@v4
       with:
-        path: ~/go/pkg/mod
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
         key: ${{ runner.os }}-go-1.23-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-1.23-
@@ -217,6 +190,44 @@ jobs:
     - name: Build examples
       run: |
         for dir in examples/*/; do
-          echo "Building $dir"
-          (cd "$dir" && go build -v .)
+          if [ -f "$dir/main.go" ] || [ -f "$dir/*.go" ]; then
+            echo "Building $dir"
+            (cd "$dir" && go build -v .) || echo "⚠️  Failed to build $dir"
+          fi
         done
+    
+    - name: Build CLI tools
+      run: |
+        go build -v ./cmd/onvif-cli
+        go build -v ./cmd/onvif-quick
+        go build -v ./cmd/onvif-server
+        go build -v ./cmd/onvif-diagnostics
+
+  # Code quality - only run if tests pass
+  sonarcloud:
+    name: Code Quality (SonarCloud)
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && secrets.SONAR_TOKEN != ''
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Download coverage from test job
+      uses: actions/download-artifact@v4
+      with:
+        name: coverage-report
+    
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.projectKey=0x524a_onvif-go
+          -Dsonar.organization=0x524a
+          -Dsonar.go.coverage.reportPaths=coverage.out

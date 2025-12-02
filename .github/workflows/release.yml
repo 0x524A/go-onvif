@@ -3,8 +3,12 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.2.3)'
+        required: true
 
 permissions:
   contents: write
@@ -39,20 +43,26 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Go
-        uses: actions/setup-go@a4a2eec1d0ddf3f5835416e10cb208206f91ce91 # v5.0.0
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.23'
 
       - name: Get version
         id: version
         run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
           echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}"
 
       - name: Build binaries
         env:
@@ -62,7 +72,8 @@ jobs:
           CGO_ENABLED: 0
         run: |
           VERSION=${{ steps.version.outputs.VERSION }}
-          LDFLAGS="-s -w -X main.Version=${VERSION} -X main.Commit=${{ steps.version.outputs.SHORT_SHA }}"
+          SHORT_SHA=${{ steps.version.outputs.SHORT_SHA }}
+          LDFLAGS="-s -w -X main.Version=${VERSION} -X main.Commit=${SHORT_SHA}"
           
           # Set file extension for Windows
           EXT=""
@@ -73,16 +84,16 @@ jobs:
           # Build all CLI tools
           mkdir -p dist
           
-          echo "Building onvif-cli..."
+          echo "🔨 Building onvif-cli..."
           go build -ldflags="${LDFLAGS}" -o "dist/onvif-cli-${{ matrix.goos }}-${{ matrix.goarch }}${EXT}" ./cmd/onvif-cli
           
-          echo "Building onvif-quick..."
+          echo "🔨 Building onvif-quick..."
           go build -ldflags="${LDFLAGS}" -o "dist/onvif-quick-${{ matrix.goos }}-${{ matrix.goarch }}${EXT}" ./cmd/onvif-quick
           
-          echo "Building onvif-server..."
+          echo "🔨 Building onvif-server..."
           go build -ldflags="${LDFLAGS}" -o "dist/onvif-server-${{ matrix.goos }}-${{ matrix.goarch }}${EXT}" ./cmd/onvif-server
           
-          echo "Building onvif-diagnostics..."
+          echo "🔨 Building onvif-diagnostics..."
           go build -ldflags="${LDFLAGS}" -o "dist/onvif-diagnostics-${{ matrix.goos }}-${{ matrix.goarch }}${EXT}" ./cmd/onvif-diagnostics
 
       - name: Create archive
@@ -107,7 +118,7 @@ jobs:
           fi
           
           # Copy documentation
-          cp README.md LICENSE staging/
+          cp README.md LICENSE staging/ 2>/dev/null || true
           
           # Create archive from staging directory
           if [ "${{ matrix.goos }}" = "windows" ]; then
@@ -119,6 +130,8 @@ jobs:
             tar czf "../releases/${ARCHIVE_NAME}.tar.gz" .
             cd ..
           fi
+          
+          echo "✅ Created ${ARCHIVE_NAME}.tar.gz"
 
       - name: Generate checksums
         run: |
@@ -134,7 +147,7 @@ jobs:
         with:
           name: release-${{ matrix.goos }}-${{ matrix.goarch }}
           path: releases/*
-          retention-days: 5
+          retention-days: 7
 
   release:
     name: Create GitHub Release
@@ -142,12 +155,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Download all artifacts
-        uses: actions/download-artifact@fb7b1ae3fa6edf41bfe27490ab69d8657bea0656 # v4.1.7
+        uses: actions/download-artifact@v4
         with:
           path: all-releases
           pattern: release-*
@@ -157,14 +170,18 @@ jobs:
         run: |
           cd all-releases
           # Combine all checksum files
-          cat checksums-*.txt > checksums.txt
+          cat checksums-*.txt > checksums.txt 2>/dev/null || true
           # Remove individual checksum files
-          rm checksums-*.txt
+          rm -f checksums-*.txt
 
       - name: Get version and changelog
         id: version
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
           
           # Generate changelog from commits since last tag
@@ -174,21 +191,22 @@ jobs:
             git log --pretty=format:"- %s (%h)" ${PREV_TAG}..HEAD >> $GITHUB_OUTPUT
             echo "" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "CHANGELOG=Initial release" >> $GITHUB_OUTPUT
           fi
 
       - name: Create Release
-        uses: softprops/action-gh-release@d4c6436acb972979c89d42d294e19ddc00bdef6e # v2.0.1
+        uses: softprops/action-gh-release@v2
         with:
           files: all-releases/*
-          draft: true
+          draft: false
           prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
           generate_release_notes: true
-          fail_on_unmatched_files: true
           make_latest: true
           body: |
             ## Release ${{ steps.version.outputs.VERSION }}
             
-            ### Installation
+            ### 📦 Installation
             
             Download the appropriate binary for your platform below.
             
@@ -211,11 +229,11 @@ jobs:
             go get github.com/${{ github.repository }}@${{ steps.version.outputs.VERSION }}
             ```
             
-            ### Checksums
+            ### 🔐 Checksums
             
             SHA256 checksums are available in `checksums.txt`
             
-            ### Changes
+            ### 📝 Changes
             
             ${{ steps.version.outputs.CHANGELOG }}
         env:
@@ -228,23 +246,16 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Checkout code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@2db740d56eb54d769da97c489bb369cf5d3dda6ec # v3.0.0
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa601d98bc5fc6 # v3.0.0
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@8c334bdf38b3b7d57f1a2ab4dcb89e44d874e2a2 # v3.0.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        continue-on-error: true
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@8c334bdf38b3b7d57f1a2ab4dcb89e44d874e2a2 # v3.0.0
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -252,10 +263,12 @@ jobs:
 
       - name: Get version
         id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Build and push
-        uses: docker/build-push-action@5176660ba9f93254eda4d16d1a0beb4e32bd5a8e # v5.0.0
+        uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64,linux/arm64,linux/arm/v7

@@ -1,4 +1,4 @@
-name: Additional Coverage Reports
+name: Coverage Analysis
 
 on:
   workflow_run:
@@ -15,28 +15,55 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      uses: actions/checkout@v4
     
-    - name: Download artifacts
-      uses: actions/download-artifact@fb7b1ae3fa6edf41bfe27490ab69d8657bea0656 # v4.1.7
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+    
+    - name: Download coverage artifacts
+      uses: actions/download-artifact@v4
       with:
         name: coverage-report
+        run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Check coverage percentage
       run: |
         if [ -f coverage.out ]; then
+          echo "📊 Coverage Report:"
+          go tool cover -func=coverage.out | tail -1
+          
           coverage=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
-          echo "Coverage: $coverage%"
-          # Set threshold to 40%
-          if (( $(echo "$coverage < 40" | bc -l) )); then
-            echo "⚠️  Coverage below 40% threshold: $coverage%"
+          echo "Total Coverage: ${coverage}%"
+          
+          # Set threshold to 50%
+          threshold=50
+          if (( $(echo "$coverage < $threshold" | bc -l) )); then
+            echo "⚠️  Coverage below ${threshold}% threshold: ${coverage}%"
+            echo "::warning::Coverage is below ${threshold}% threshold"
           else
-            echo "✅ Coverage above threshold: $coverage%"
+            echo "✅ Coverage above ${threshold}% threshold: ${coverage}%"
           fi
+          
+          # Generate detailed coverage by package
+          echo ""
+          echo "📦 Coverage by Package:"
+          go tool cover -func=coverage.out | grep -E "^github.com" | sort -k3 -nr | head -20
+        else
+          echo "❌ Coverage file not found"
+          exit 1
         fi
     
-    - name: Upload coverage badge
-      continue-on-error: true
-      run: |
-        # Optional: Update badges or notifications
-        echo "Coverage analysis complete"
+    - name: Comment PR with coverage
+      if: github.event.workflow_run.event == 'pull_request'
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        recreate: true
+        message: |
+          ## 📊 Coverage Report
+          
+          Total Coverage: **${{ steps.coverage.outputs.percentage }}%**
+          
+          [View detailed coverage report](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})
