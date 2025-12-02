@@ -84,6 +84,7 @@ func TestBuildEnvelope(t *testing.T) {
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BuildEnvelope() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 
@@ -114,6 +115,8 @@ func TestClientCall(t *testing.T) {
 		{
 			name: "successful request",
 			setupServer: func(t *testing.T) *httptest.Server {
+				t.Helper()
+
 				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.Header().Set("Content-Type", "application/soap+xml")
 					w.WriteHeader(http.StatusOK)
@@ -135,6 +138,8 @@ func TestClientCall(t *testing.T) {
 		{
 			name: "unauthorized request",
 			setupServer: func(t *testing.T) *httptest.Server {
+				t.Helper()
+
 				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(http.StatusUnauthorized)
 				}))
@@ -146,6 +151,8 @@ func TestClientCall(t *testing.T) {
 		{
 			name: "http error status",
 			setupServer: func(t *testing.T) *httptest.Server {
+				t.Helper()
+
 				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(http.StatusInternalServerError)
 					_, _ = w.Write([]byte("Internal Server Error"))

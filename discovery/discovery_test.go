@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"context"
+	"errors"
 	"net"
 	"testing"
 	"time"
@@ -130,7 +131,7 @@ func TestDiscover_WithTimeout(t *testing.T) {
 	devices, err := Discover(ctx, 500*time.Millisecond)
 
 	// We expect either no error (empty devices list) or a timeout/context error
-	if err != nil && err != context.DeadlineExceeded {
+	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
 		t.Logf("Discover returned error: %v (this is expected in test environment)", err)
 	}
 
@@ -214,8 +215,9 @@ func TestDevice_GetScopes(t *testing.T) {
 	// Test specific scope extraction
 	hasName := false
 	for _, scope := range device.Scopes {
-		if len(scope) > 0 && scope[:5] == "onvif" {
+		if scope != "" && scope[:5] == "onvif" {
 			hasName = true
+
 			break
 		}
 	}
@@ -271,6 +273,7 @@ func TestListNetworkInterfaces(t *testing.T) {
 			if len(iface.Addresses) == 0 {
 				t.Error("Loopback interface should have addresses")
 			}
+
 			break
 		}
 	}
@@ -345,7 +348,7 @@ func TestDiscoverWithOptions_DefaultOptions(t *testing.T) {
 	defer cancel()
 
 	devices, err := DiscoverWithOptions(ctx, 1*time.Second, &DiscoverOptions{})
-	if err != nil && err != context.DeadlineExceeded {
+	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
 		t.Logf("DiscoverWithOptions returned: %v (this is OK if no cameras on network)", err)
 	}
 
@@ -363,7 +366,7 @@ func TestDiscoverWithOptions_NilOptions(t *testing.T) {
 	defer cancel()
 
 	devices, err := DiscoverWithOptions(ctx, 500*time.Millisecond, nil)
-	if err != nil && err != context.DeadlineExceeded {
+	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
 		t.Logf("DiscoverWithOptions with nil returned: %v", err)
 	}
 
@@ -392,7 +395,7 @@ func TestDiscoverWithOptions_LoopbackInterface(t *testing.T) {
 	defer cancel()
 
 	devices, err := DiscoverWithOptions(ctx, 500*time.Millisecond, opts)
-	if err != nil && err != context.DeadlineExceeded {
+	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
 		t.Logf("DiscoverWithOptions with %s interface: %v (timeout is expected)", loopbackName, err)
 	}
 
@@ -425,7 +428,7 @@ func TestDiscover_BackwardCompatibility(t *testing.T) {
 	defer cancel()
 
 	devices, err := Discover(ctx, 500*time.Millisecond)
-	if err != nil && err != context.DeadlineExceeded {
+	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
 		t.Logf("Discover returned: %v", err)
 	}
 

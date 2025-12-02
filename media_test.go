@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// TestGetProfiles tests GetProfiles operation
+// TestGetProfiles tests GetProfiles operation.
 func TestGetProfiles(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -59,7 +59,7 @@ func TestGetProfiles(t *testing.T) {
 	}
 }
 
-// TestGetProfile tests GetProfile operation
+// TestGetProfile tests GetProfile operation.
 func TestGetProfile(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -94,7 +94,7 @@ func TestGetProfile(t *testing.T) {
 	}
 }
 
-// TestSetProfile tests SetProfile operation
+// TestSetProfile tests SetProfile operation.
 func TestSetProfile(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -120,7 +120,7 @@ func TestSetProfile(t *testing.T) {
 	}
 }
 
-// TestGetStreamURI tests GetStreamURI operation
+// TestGetStreamURI tests GetStreamURI operation.
 func TestGetStreamURI(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -157,7 +157,7 @@ func TestGetStreamURI(t *testing.T) {
 	}
 }
 
-// TestGetSnapshotURI tests GetSnapshotURI operation
+// TestGetSnapshotURI tests GetSnapshotURI operation.
 func TestGetSnapshotURI(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -192,7 +192,7 @@ func TestGetSnapshotURI(t *testing.T) {
 	}
 }
 
-// TestGetVideoSources tests GetVideoSources operation
+// TestGetVideoSources tests GetVideoSources operation.
 func TestGetVideoSources(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -235,7 +235,7 @@ func TestGetVideoSources(t *testing.T) {
 	}
 }
 
-// TestGetAudioSources tests GetAudioSources operation
+// TestGetAudioSources tests GetAudioSources operation.
 func TestGetAudioSources(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -270,7 +270,7 @@ func TestGetAudioSources(t *testing.T) {
 	}
 }
 
-// TestGetAudioOutputs tests GetAudioOutputs operation
+// TestGetAudioOutputs tests GetAudioOutputs operation.
 func TestGetAudioOutputs(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -303,7 +303,7 @@ func TestGetAudioOutputs(t *testing.T) {
 	}
 }
 
-// TestCreateProfile tests CreateProfile operation
+// TestCreateProfile tests CreateProfile operation.
 func TestCreateProfile(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -338,7 +338,7 @@ func TestCreateProfile(t *testing.T) {
 	}
 }
 
-// TestDeleteProfile tests DeleteProfile operation
+// TestDeleteProfile tests DeleteProfile operation.
 func TestDeleteProfile(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -359,7 +359,7 @@ func TestDeleteProfile(t *testing.T) {
 	}
 }
 
-// TestGetVideoEncoderConfiguration tests GetVideoEncoderConfiguration operation
+// TestGetVideoEncoderConfiguration tests GetVideoEncoderConfiguration operation.
 func TestGetVideoEncoderConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -404,7 +404,7 @@ func TestGetVideoEncoderConfiguration(t *testing.T) {
 	}
 }
 
-// TestSetVideoEncoderConfiguration tests SetVideoEncoderConfiguration operation
+// TestSetVideoEncoderConfiguration tests SetVideoEncoderConfiguration operation.
 func TestSetVideoEncoderConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -436,7 +436,7 @@ func TestSetVideoEncoderConfiguration(t *testing.T) {
 	}
 }
 
-// TestGetMediaServiceCapabilities tests GetMediaServiceCapabilities operation
+// TestGetMediaServiceCapabilities tests GetMediaServiceCapabilities operation.
 func TestGetMediaServiceCapabilities(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -476,7 +476,7 @@ func TestGetMediaServiceCapabilities(t *testing.T) {
 	}
 }
 
-// TestGetVideoEncoderConfigurationOptions tests GetVideoEncoderConfigurationOptions operation
+// TestGetVideoEncoderConfigurationOptions tests GetVideoEncoderConfigurationOptions operation.
 func TestGetVideoEncoderConfigurationOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -525,7 +525,7 @@ func TestGetVideoEncoderConfigurationOptions(t *testing.T) {
 	}
 }
 
-// TestGetAudioEncoderConfiguration tests GetAudioEncoderConfiguration operation
+// TestGetAudioEncoderConfiguration tests GetAudioEncoderConfiguration operation.
 func TestGetAudioEncoderConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -567,7 +567,7 @@ func TestGetAudioEncoderConfiguration(t *testing.T) {
 	}
 }
 
-// TestSetAudioEncoderConfiguration tests SetAudioEncoderConfiguration operation
+// TestSetAudioEncoderConfiguration tests SetAudioEncoderConfiguration operation.
 func TestSetAudioEncoderConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -596,7 +596,7 @@ func TestSetAudioEncoderConfiguration(t *testing.T) {
 	}
 }
 
-// TestGetMetadataConfiguration tests GetMetadataConfiguration operation
+// TestGetMetadataConfiguration tests GetMetadataConfiguration operation.
 func TestGetMetadataConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -640,7 +640,7 @@ func TestGetMetadataConfiguration(t *testing.T) {
 	}
 }
 
-// TestSetMetadataConfiguration tests SetMetadataConfiguration operation
+// TestSetMetadataConfiguration tests SetMetadataConfiguration operation.
 func TestSetMetadataConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -671,7 +671,7 @@ func TestSetMetadataConfiguration(t *testing.T) {
 	}
 }
 
-// TestGetVideoSourceModes tests GetVideoSourceModes operation
+// TestGetVideoSourceModes tests GetVideoSourceModes operation.
 func TestGetVideoSourceModes(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -714,7 +714,7 @@ func TestGetVideoSourceModes(t *testing.T) {
 	}
 }
 
-// TestSetVideoSourceMode tests SetVideoSourceMode operation
+// TestSetVideoSourceMode tests SetVideoSourceMode operation.
 func TestSetVideoSourceMode(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -735,7 +735,7 @@ func TestSetVideoSourceMode(t *testing.T) {
 	}
 }
 
-// TestSetSynchronizationPoint tests SetSynchronizationPoint operation
+// TestSetSynchronizationPoint tests SetSynchronizationPoint operation.
 func TestSetSynchronizationPoint(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -756,7 +756,7 @@ func TestSetSynchronizationPoint(t *testing.T) {
 	}
 }
 
-// TestGetOSDs tests GetOSDs operation
+// TestGetOSDs tests GetOSDs operation.
 func TestGetOSDs(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -790,7 +790,7 @@ func TestGetOSDs(t *testing.T) {
 	}
 }
 
-// TestGetOSD tests GetOSD operation
+// TestGetOSD tests GetOSD operation.
 func TestGetOSD(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -823,7 +823,7 @@ func TestGetOSD(t *testing.T) {
 	}
 }
 
-// TestSetOSD tests SetOSD operation
+// TestSetOSD tests SetOSD operation.
 func TestSetOSD(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -848,7 +848,7 @@ func TestSetOSD(t *testing.T) {
 	}
 }
 
-// TestCreateOSD tests CreateOSD operation
+// TestCreateOSD tests CreateOSD operation.
 func TestCreateOSD(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -881,7 +881,7 @@ func TestCreateOSD(t *testing.T) {
 	}
 }
 
-// TestDeleteOSD tests DeleteOSD operation
+// TestDeleteOSD tests DeleteOSD operation.
 func TestDeleteOSD(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -902,7 +902,7 @@ func TestDeleteOSD(t *testing.T) {
 	}
 }
 
-// TestStartMulticastStreaming tests StartMulticastStreaming operation
+// TestStartMulticastStreaming tests StartMulticastStreaming operation.
 func TestStartMulticastStreaming(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -923,7 +923,7 @@ func TestStartMulticastStreaming(t *testing.T) {
 	}
 }
 
-// TestStopMulticastStreaming tests StopMulticastStreaming operation
+// TestStopMulticastStreaming tests StopMulticastStreaming operation.
 func TestStopMulticastStreaming(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -944,7 +944,7 @@ func TestStopMulticastStreaming(t *testing.T) {
 	}
 }
 
-// TestAddVideoEncoderConfiguration tests AddVideoEncoderConfiguration operation
+// TestAddVideoEncoderConfiguration tests AddVideoEncoderConfiguration operation.
 func TestAddVideoEncoderConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -965,7 +965,7 @@ func TestAddVideoEncoderConfiguration(t *testing.T) {
 	}
 }
 
-// TestRemoveVideoEncoderConfiguration tests RemoveVideoEncoderConfiguration operation
+// TestRemoveVideoEncoderConfiguration tests RemoveVideoEncoderConfiguration operation.
 func TestRemoveVideoEncoderConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -986,7 +986,7 @@ func TestRemoveVideoEncoderConfiguration(t *testing.T) {
 	}
 }
 
-// TestAddAudioEncoderConfiguration tests AddAudioEncoderConfiguration operation
+// TestAddAudioEncoderConfiguration tests AddAudioEncoderConfiguration operation.
 func TestAddAudioEncoderConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -1007,7 +1007,7 @@ func TestAddAudioEncoderConfiguration(t *testing.T) {
 	}
 }
 
-// TestRemoveAudioEncoderConfiguration tests RemoveAudioEncoderConfiguration operation
+// TestRemoveAudioEncoderConfiguration tests RemoveAudioEncoderConfiguration operation.
 func TestRemoveAudioEncoderConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -1028,7 +1028,7 @@ func TestRemoveAudioEncoderConfiguration(t *testing.T) {
 	}
 }
 
-// TestAddAudioSourceConfiguration tests AddAudioSourceConfiguration operation
+// TestAddAudioSourceConfiguration tests AddAudioSourceConfiguration operation.
 func TestAddAudioSourceConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -1049,7 +1049,7 @@ func TestAddAudioSourceConfiguration(t *testing.T) {
 	}
 }
 
-// TestRemoveAudioSourceConfiguration tests RemoveAudioSourceConfiguration operation
+// TestRemoveAudioSourceConfiguration tests RemoveAudioSourceConfiguration operation.
 func TestRemoveAudioSourceConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -1070,7 +1070,7 @@ func TestRemoveAudioSourceConfiguration(t *testing.T) {
 	}
 }
 
-// TestAddVideoSourceConfiguration tests AddVideoSourceConfiguration operation
+// TestAddVideoSourceConfiguration tests AddVideoSourceConfiguration operation.
 func TestAddVideoSourceConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -1091,7 +1091,7 @@ func TestAddVideoSourceConfiguration(t *testing.T) {
 	}
 }
 
-// TestRemoveVideoSourceConfiguration tests RemoveVideoSourceConfiguration operation
+// TestRemoveVideoSourceConfiguration tests RemoveVideoSourceConfiguration operation.
 func TestRemoveVideoSourceConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -1112,7 +1112,7 @@ func TestRemoveVideoSourceConfiguration(t *testing.T) {
 	}
 }
 
-// TestAddPTZConfiguration tests AddPTZConfiguration operation
+// TestAddPTZConfiguration tests AddPTZConfiguration operation.
 func TestAddPTZConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -1133,7 +1133,7 @@ func TestAddPTZConfiguration(t *testing.T) {
 	}
 }
 
-// TestRemovePTZConfiguration tests RemovePTZConfiguration operation
+// TestRemovePTZConfiguration tests RemovePTZConfiguration operation.
 func TestRemovePTZConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -1154,7 +1154,7 @@ func TestRemovePTZConfiguration(t *testing.T) {
 	}
 }
 
-// TestAddMetadataConfiguration tests AddMetadataConfiguration operation
+// TestAddMetadataConfiguration tests AddMetadataConfiguration operation.
 func TestAddMetadataConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -1175,7 +1175,7 @@ func TestAddMetadataConfiguration(t *testing.T) {
 	}
 }
 
-// TestRemoveMetadataConfiguration tests RemoveMetadataConfiguration operation
+// TestRemoveMetadataConfiguration tests RemoveMetadataConfiguration operation.
 func TestRemoveMetadataConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -1196,7 +1196,7 @@ func TestRemoveMetadataConfiguration(t *testing.T) {
 	}
 }
 
-// TestGetAudioEncoderConfigurationOptions tests GetAudioEncoderConfigurationOptions operation
+// TestGetAudioEncoderConfigurationOptions tests GetAudioEncoderConfigurationOptions operation.
 func TestGetAudioEncoderConfigurationOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -1236,7 +1236,7 @@ func TestGetAudioEncoderConfigurationOptions(t *testing.T) {
 	}
 }
 
-// TestGetMetadataConfigurationOptions tests GetMetadataConfigurationOptions operation
+// TestGetMetadataConfigurationOptions tests GetMetadataConfigurationOptions operation.
 func TestGetMetadataConfigurationOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -1274,7 +1274,7 @@ func TestGetMetadataConfigurationOptions(t *testing.T) {
 	}
 }
 
-// TestGetAudioOutputConfiguration tests GetAudioOutputConfiguration operation
+// TestGetAudioOutputConfiguration tests GetAudioOutputConfiguration operation.
 func TestGetAudioOutputConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -1310,7 +1310,7 @@ func TestGetAudioOutputConfiguration(t *testing.T) {
 	}
 }
 
-// TestSetAudioOutputConfiguration tests SetAudioOutputConfiguration operation
+// TestSetAudioOutputConfiguration tests SetAudioOutputConfiguration operation.
 func TestSetAudioOutputConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -1337,7 +1337,7 @@ func TestSetAudioOutputConfiguration(t *testing.T) {
 	}
 }
 
-// TestGetAudioOutputConfigurationOptions tests GetAudioOutputConfigurationOptions operation
+// TestGetAudioOutputConfigurationOptions tests GetAudioOutputConfigurationOptions operation.
 func TestGetAudioOutputConfigurationOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -1373,7 +1373,7 @@ func TestGetAudioOutputConfigurationOptions(t *testing.T) {
 	}
 }
 
-// TestGetAudioDecoderConfigurationOptions tests GetAudioDecoderConfigurationOptions operation
+// TestGetAudioDecoderConfigurationOptions tests GetAudioDecoderConfigurationOptions operation.
 func TestGetAudioDecoderConfigurationOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -1413,7 +1413,7 @@ func TestGetAudioDecoderConfigurationOptions(t *testing.T) {
 	}
 }
 
-// TestGetGuaranteedNumberOfVideoEncoderInstances tests GetGuaranteedNumberOfVideoEncoderInstances operation
+// TestGetGuaranteedNumberOfVideoEncoderInstances tests GetGuaranteedNumberOfVideoEncoderInstances operation.
 func TestGetGuaranteedNumberOfVideoEncoderInstances(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>
@@ -1453,7 +1453,7 @@ func TestGetGuaranteedNumberOfVideoEncoderInstances(t *testing.T) {
 	}
 }
 
-// TestGetOSDOptions tests GetOSDOptions operation
+// TestGetOSDOptions tests GetOSDOptions operation.
 func TestGetOSDOptions(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := `<?xml version="1.0" encoding="UTF-8"?>

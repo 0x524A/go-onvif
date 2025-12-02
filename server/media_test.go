@@ -54,6 +54,7 @@ func TestHandleGetStreamURI(t *testing.T) {
 
 	if streamResp.MediaUri.Uri == "" {
 		t.Error("Stream URI is empty")
+
 		return
 	}
 
@@ -100,6 +101,7 @@ func TestHandleGetVideoSources(t *testing.T) {
 
 	if len(sourcesResp.VideoSources) == 0 {
 		t.Error("No video sources returned")
+
 		return
 	}
 

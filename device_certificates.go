@@ -8,9 +8,7 @@ import (
 	"github.com/0x524a/onvif-go/internal/soap"
 )
 
-// GetCertificates retrieves all certificates stored on the device.
-//
-// ONVIF Specification: GetCertificates operation
+// ONVIF Specification: GetCertificates operation.
 func (c *Client) GetCertificates(ctx context.Context) ([]*Certificate, error) {
 	type GetCertificatesBody struct {
 		XMLName xml.Name `xml:"tds:GetCertificates"`
@@ -37,9 +35,7 @@ func (c *Client) GetCertificates(ctx context.Context) ([]*Certificate, error) {
 	return response.Certificates, nil
 }
 
-// GetCACertificates retrieves all CA certificates stored on the device.
-//
-// ONVIF Specification: GetCACertificates operation
+// ONVIF Specification: GetCACertificates operation.
 func (c *Client) GetCACertificates(ctx context.Context) ([]*Certificate, error) {
 	type GetCACertificatesBody struct {
 		XMLName xml.Name `xml:"tds:GetCACertificates"`
@@ -66,9 +62,7 @@ func (c *Client) GetCACertificates(ctx context.Context) ([]*Certificate, error) 
 	return response.Certificates, nil
 }
 
-// LoadCertificates uploads certificates to the device.
-//
-// ONVIF Specification: LoadCertificates operation
+// ONVIF Specification: LoadCertificates operation.
 func (c *Client) LoadCertificates(ctx context.Context, certificates []*Certificate) error {
 	type LoadCertificatesBody struct {
 		XMLName     xml.Name       `xml:"tds:LoadCertificates"`
@@ -96,9 +90,7 @@ func (c *Client) LoadCertificates(ctx context.Context, certificates []*Certifica
 	return nil
 }
 
-// LoadCACertificates uploads CA certificates to the device.
-//
-// ONVIF Specification: LoadCACertificates operation
+// ONVIF Specification: LoadCACertificates operation.
 func (c *Client) LoadCACertificates(ctx context.Context, certificates []*Certificate) error {
 	type LoadCACertificatesBody struct {
 		XMLName     xml.Name       `xml:"tds:LoadCACertificates"`
@@ -126,10 +118,11 @@ func (c *Client) LoadCACertificates(ctx context.Context, certificates []*Certifi
 	return nil
 }
 
-// CreateCertificate creates a self-signed certificate.
-//
-// ONVIF Specification: CreateCertificate operation
-func (c *Client) CreateCertificate(ctx context.Context, certificateID, subject string, validNotBefore, validNotAfter string) (*Certificate, error) {
+// ONVIF Specification: CreateCertificate operation.
+func (c *Client) CreateCertificate(
+	ctx context.Context,
+	certificateID, subject, validNotBefore, validNotAfter string,
+) (*Certificate, error) {
 	type CreateCertificateBody struct {
 		XMLName        xml.Name `xml:"tds:CreateCertificate"`
 		Xmlns          string   `xml:"xmlns:tds,attr"`
@@ -163,9 +156,7 @@ func (c *Client) CreateCertificate(ctx context.Context, certificateID, subject s
 	return response.Certificate, nil
 }
 
-// DeleteCertificates deletes certificates from the device.
-//
-// ONVIF Specification: DeleteCertificates operation
+// ONVIF Specification: DeleteCertificates operation.
 func (c *Client) DeleteCertificates(ctx context.Context, certificateIDs []string) error {
 	type DeleteCertificatesBody struct {
 		XMLName       xml.Name `xml:"tds:DeleteCertificates"`
@@ -193,9 +184,7 @@ func (c *Client) DeleteCertificates(ctx context.Context, certificateIDs []string
 	return nil
 }
 
-// GetCertificateInformation retrieves information about a certificate.
-//
-// ONVIF Specification: GetCertificateInformation operation
+// ONVIF Specification: GetCertificateInformation operation.
 func (c *Client) GetCertificateInformation(ctx context.Context, certificateID string) (*CertificateInformation, error) {
 	type GetCertificateInformationBody struct {
 		XMLName       xml.Name `xml:"tds:GetCertificateInformation"`
@@ -224,9 +213,7 @@ func (c *Client) GetCertificateInformation(ctx context.Context, certificateID st
 	return response.CertificateInformation, nil
 }
 
-// GetCertificatesStatus retrieves the status of certificates.
-//
-// ONVIF Specification: GetCertificatesStatus operation
+// ONVIF Specification: GetCertificatesStatus operation.
 func (c *Client) GetCertificatesStatus(ctx context.Context) ([]*CertificateStatus, error) {
 	type GetCertificatesStatusBody struct {
 		XMLName xml.Name `xml:"tds:GetCertificatesStatus"`
@@ -253,9 +240,7 @@ func (c *Client) GetCertificatesStatus(ctx context.Context) ([]*CertificateStatu
 	return response.CertificateStatus, nil
 }
 
-// SetCertificatesStatus sets the status of certificates (enabled/disabled).
-//
-// ONVIF Specification: SetCertificatesStatus operation
+// ONVIF Specification: SetCertificatesStatus operation.
 func (c *Client) SetCertificatesStatus(ctx context.Context, statuses []*CertificateStatus) error {
 	type SetCertificatesStatusBody struct {
 		XMLName           xml.Name             `xml:"tds:SetCertificatesStatus"`
@@ -283,10 +268,12 @@ func (c *Client) SetCertificatesStatus(ctx context.Context, statuses []*Certific
 	return nil
 }
 
-// GetPkcs10Request generates a PKCS#10 certificate signing request.
-//
-// ONVIF Specification: GetPkcs10Request operation
-func (c *Client) GetPkcs10Request(ctx context.Context, certificateID, subject string, attributes *BinaryData) (*BinaryData, error) {
+// ONVIF Specification: GetPkcs10Request operation.
+func (c *Client) GetPkcs10Request(
+	ctx context.Context,
+	certificateID, subject string,
+	attributes *BinaryData,
+) (*BinaryData, error) {
 	type GetPkcs10RequestBody struct {
 		XMLName       xml.Name    `xml:"tds:GetPkcs10Request"`
 		Xmlns         string      `xml:"xmlns:tds,attr"`
@@ -318,10 +305,13 @@ func (c *Client) GetPkcs10Request(ctx context.Context, certificateID, subject st
 	return response.Pkcs10Request, nil
 }
 
-// LoadCertificateWithPrivateKey uploads a certificate with its private key.
-//
-// ONVIF Specification: LoadCertificateWithPrivateKey operation
-func (c *Client) LoadCertificateWithPrivateKey(ctx context.Context, certificates []*Certificate, privateKey []*BinaryData, certificateIDs []string) error {
+// ONVIF Specification: LoadCertificateWithPrivateKey operation.
+func (c *Client) LoadCertificateWithPrivateKey(
+	ctx context.Context,
+	certificates []*Certificate,
+	privateKey []*BinaryData,
+	certificateIDs []string,
+) error {
 	type LoadCertificateWithPrivateKeyBody struct {
 		XMLName                   xml.Name `xml:"tds:LoadCertificateWithPrivateKey"`
 		Xmlns                     string   `xml:"xmlns:tds,attr"`
@@ -368,9 +358,7 @@ func (c *Client) LoadCertificateWithPrivateKey(ctx context.Context, certificates
 	return nil
 }
 
-// GetClientCertificateMode retrieves the client certificate authentication mode.
-//
-// ONVIF Specification: GetClientCertificateMode operation
+// ONVIF Specification: GetClientCertificateMode operation.
 func (c *Client) GetClientCertificateMode(ctx context.Context) (bool, error) {
 	type GetClientCertificateModeBody struct {
 		XMLName xml.Name `xml:"tds:GetClientCertificateMode"`
@@ -397,9 +385,7 @@ func (c *Client) GetClientCertificateMode(ctx context.Context) (bool, error) {
 	return response.Enabled, nil
 }
 
-// SetClientCertificateMode sets the client certificate authentication mode.
-//
-// ONVIF Specification: SetClientCertificateMode operation
+// ONVIF Specification: SetClientCertificateMode operation.
 func (c *Client) SetClientCertificateMode(ctx context.Context, enabled bool) error {
 	type SetClientCertificateModeBody struct {
 		XMLName xml.Name `xml:"tds:SetClientCertificateMode"`

@@ -8,7 +8,7 @@ import (
 	"github.com/0x524a/onvif-go/internal/soap"
 )
 
-// SetDNS sets the DNS settings on a device
+// SetDNS sets the DNS settings on a device.
 func (c *Client) SetDNS(ctx context.Context, fromDHCP bool, searchDomain []string, dnsManual []IPAddress) error {
 	type SetDNS struct {
 		XMLName      xml.Name `xml:"tds:SetDNS"`
@@ -50,7 +50,7 @@ func (c *Client) SetDNS(ctx context.Context, fromDHCP bool, searchDomain []strin
 	return nil
 }
 
-// SetNTP sets the NTP settings on a device
+// SetNTP sets the NTP settings on a device.
 func (c *Client) SetNTP(ctx context.Context, fromDHCP bool, ntpManual []NetworkHost) error {
 	type SetNTP struct {
 		XMLName   xml.Name `xml:"tds:SetNTP"`
@@ -93,7 +93,7 @@ func (c *Client) SetNTP(ctx context.Context, fromDHCP bool, ntpManual []NetworkH
 	return nil
 }
 
-// SetHostnameFromDHCP controls whether the hostname is set manually or retrieved via DHCP
+// SetHostnameFromDHCP controls whether the hostname is set manually or retrieved via DHCP.
 func (c *Client) SetHostnameFromDHCP(ctx context.Context, fromDHCP bool) (bool, error) {
 	type SetHostnameFromDHCP struct {
 		XMLName  xml.Name `xml:"tds:SetHostnameFromDHCP"`
@@ -123,7 +123,7 @@ func (c *Client) SetHostnameFromDHCP(ctx context.Context, fromDHCP bool) (bool, 
 	return resp.RebootNeeded, nil
 }
 
-// FixedGetSystemDateAndTime retrieves the device's system date and time with proper typing
+// FixedGetSystemDateAndTime retrieves the device's system date and time with proper typing.
 func (c *Client) FixedGetSystemDateAndTime(ctx context.Context) (*SystemDateTime, error) {
 	type GetSystemDateAndTime struct {
 		XMLName xml.Name `xml:"tds:GetSystemDateAndTime"`
@@ -211,7 +211,7 @@ func (c *Client) FixedGetSystemDateAndTime(ctx context.Context) (*SystemDateTime
 	}, nil
 }
 
-// SetSystemDateAndTime sets the device system date and time
+// SetSystemDateAndTime sets the device system date and time.
 func (c *Client) SetSystemDateAndTime(ctx context.Context, dateTime *SystemDateTime) error {
 	type SetSystemDateAndTime struct {
 		XMLName         xml.Name `xml:"tds:SetSystemDateAndTime"`
@@ -280,7 +280,7 @@ func (c *Client) SetSystemDateAndTime(ctx context.Context, dateTime *SystemDateT
 	return nil
 }
 
-// AddScopes adds new configurable scope parameters to a device
+// AddScopes adds new configurable scope parameters to a device.
 func (c *Client) AddScopes(ctx context.Context, scopeItems []string) error {
 	type AddScopes struct {
 		XMLName   xml.Name `xml:"tds:AddScopes"`
@@ -303,7 +303,7 @@ func (c *Client) AddScopes(ctx context.Context, scopeItems []string) error {
 	return nil
 }
 
-// RemoveScopes deletes scope-configurable scope parameters from a device
+// RemoveScopes deletes scope-configurable scope parameters from a device.
 func (c *Client) RemoveScopes(ctx context.Context, scopeItems []string) ([]string, error) {
 	type RemoveScopes struct {
 		XMLName   xml.Name `xml:"tds:RemoveScopes"`
@@ -333,7 +333,7 @@ func (c *Client) RemoveScopes(ctx context.Context, scopeItems []string) ([]strin
 	return resp.ScopeItem, nil
 }
 
-// SetScopes sets the scope parameters of a device
+// SetScopes sets the scope parameters of a device.
 func (c *Client) SetScopes(ctx context.Context, scopes []string) error {
 	type SetScopes struct {
 		XMLName xml.Name `xml:"tds:SetScopes"`
@@ -356,7 +356,7 @@ func (c *Client) SetScopes(ctx context.Context, scopes []string) error {
 	return nil
 }
 
-// GetRelayOutputs gets a list of all available relay outputs and their settings
+// GetRelayOutputs gets a list of all available relay outputs and their settings.
 func (c *Client) GetRelayOutputs(ctx context.Context) ([]*RelayOutput, error) {
 	type GetRelayOutputs struct {
 		XMLName xml.Name `xml:"tds:GetRelayOutputs"`
@@ -403,7 +403,7 @@ func (c *Client) GetRelayOutputs(ctx context.Context) ([]*RelayOutput, error) {
 	return relays, nil
 }
 
-// SetRelayOutputSettings sets the settings of a relay output
+// SetRelayOutputSettings sets the settings of a relay output.
 func (c *Client) SetRelayOutputSettings(ctx context.Context, token string, settings *RelayOutputSettings) error {
 	type SetRelayOutputSettings struct {
 		XMLName          xml.Name `xml:"tds:SetRelayOutputSettings"`
@@ -434,7 +434,7 @@ func (c *Client) SetRelayOutputSettings(ctx context.Context, token string, setti
 	return nil
 }
 
-// SetRelayOutputState sets the state of a relay output
+// SetRelayOutputState sets the state of a relay output.
 func (c *Client) SetRelayOutputState(ctx context.Context, token string, state RelayLogicalState) error {
 	type SetRelayOutputState struct {
 		XMLName          xml.Name          `xml:"tds:SetRelayOutputState"`
@@ -459,7 +459,7 @@ func (c *Client) SetRelayOutputState(ctx context.Context, token string, state Re
 	return nil
 }
 
-// SendAuxiliaryCommand sends an auxiliary command to the device
+// SendAuxiliaryCommand sends an auxiliary command to the device.
 func (c *Client) SendAuxiliaryCommand(ctx context.Context, command AuxiliaryData) (AuxiliaryData, error) {
 	type SendAuxiliaryCommand struct {
 		XMLName          xml.Name      `xml:"tds:SendAuxiliaryCommand"`
@@ -489,7 +489,7 @@ func (c *Client) SendAuxiliaryCommand(ctx context.Context, command AuxiliaryData
 	return resp.AuxiliaryCommandResponse, nil
 }
 
-// GetSystemLog gets a system log from the device
+// GetSystemLog gets a system log from the device.
 func (c *Client) GetSystemLog(ctx context.Context, logType SystemLogType) (*SystemLog, error) {
 	type GetSystemLog struct {
 		XMLName xml.Name      `xml:"tds:GetSystemLog"`
@@ -534,7 +534,7 @@ func (c *Client) GetSystemLog(ctx context.Context, logType SystemLogType) (*Syst
 	return systemLog, nil
 }
 
-// GetSystemBackup retrieves system backup configuration files from a device
+// GetSystemBackup retrieves system backup configuration files from a device.
 func (c *Client) GetSystemBackup(ctx context.Context) ([]*BackupFile, error) {
 	type GetSystemBackup struct {
 		XMLName xml.Name `xml:"tds:GetSystemBackup"`
@@ -577,7 +577,7 @@ func (c *Client) GetSystemBackup(ctx context.Context) ([]*BackupFile, error) {
 	return backups, nil
 }
 
-// RestoreSystem restores the system backup configuration files
+// RestoreSystem restores the system backup configuration files.
 func (c *Client) RestoreSystem(ctx context.Context, backupFiles []*BackupFile) error {
 	type RestoreSystem struct {
 		XMLName     xml.Name `xml:"tds:RestoreSystem"`
@@ -620,8 +620,10 @@ func (c *Client) RestoreSystem(ctx context.Context, backupFiles []*BackupFile) e
 	return nil
 }
 
-// GetSystemUris retrieves URIs from which system information may be downloaded
-func (c *Client) GetSystemUris(ctx context.Context) (*SystemLogUriList, string, string, error) {
+// GetSystemUris retrieves URIs from which system information may be downloaded.
+func (c *Client) GetSystemUris(
+	ctx context.Context,
+) (uriList *SystemLogUriList, systemBackupURI, systemLogURI string, err error) {
 	type GetSystemUris struct {
 		XMLName xml.Name `xml:"tds:GetSystemUris"`
 		Xmlns   string   `xml:"xmlns:tds,attr"`
@@ -666,7 +668,7 @@ func (c *Client) GetSystemUris(ctx context.Context) (*SystemLogUriList, string, 
 	return logUris, resp.SupportInfoUri, resp.SystemBackupUri, nil
 }
 
-// GetSystemSupportInformation gets arbitrary device diagnostics information
+// GetSystemSupportInformation gets arbitrary device diagnostics information.
 func (c *Client) GetSystemSupportInformation(ctx context.Context) (*SupportInformation, error) {
 	type GetSystemSupportInformation struct {
 		XMLName xml.Name `xml:"tds:GetSystemSupportInformation"`
@@ -709,7 +711,7 @@ func (c *Client) GetSystemSupportInformation(ctx context.Context) (*SupportInfor
 	return info, nil
 }
 
-// SetSystemFactoryDefault reloads the parameters on the device to their factory default values
+// SetSystemFactoryDefault reloads the parameters on the device to their factory default values.
 func (c *Client) SetSystemFactoryDefault(ctx context.Context, factoryDefault FactoryDefaultType) error {
 	type SetSystemFactoryDefault struct {
 		XMLName        xml.Name           `xml:"tds:SetSystemFactoryDefault"`
@@ -732,8 +734,10 @@ func (c *Client) SetSystemFactoryDefault(ctx context.Context, factoryDefault Fac
 	return nil
 }
 
-// StartFirmwareUpgrade initiates a firmware upgrade using the HTTP POST mechanism
-func (c *Client) StartFirmwareUpgrade(ctx context.Context) (string, string, string, error) {
+// StartFirmwareUpgrade initiates a firmware upgrade using the HTTP POST mechanism.
+func (c *Client) StartFirmwareUpgrade(
+	ctx context.Context,
+) (uploadURI, uploadDelay, expectedDownTime string, err error) {
 	type StartFirmwareUpgrade struct {
 		XMLName xml.Name `xml:"tds:StartFirmwareUpgrade"`
 		Xmlns   string   `xml:"xmlns:tds,attr"`
@@ -762,8 +766,8 @@ func (c *Client) StartFirmwareUpgrade(ctx context.Context) (string, string, stri
 	return resp.UploadUri, resp.UploadDelay, resp.ExpectedDownTime, nil
 }
 
-// StartSystemRestore initiates a system restore from backed up configuration data
-func (c *Client) StartSystemRestore(ctx context.Context) (string, string, error) {
+// StartSystemRestore initiates a system restore from backed up configuration data.
+func (c *Client) StartSystemRestore(ctx context.Context) (uploadURI, expectedDownTime string, err error) {
 	type StartSystemRestore struct {
 		XMLName xml.Name `xml:"tds:StartSystemRestore"`
 		Xmlns   string   `xml:"xmlns:tds,attr"`

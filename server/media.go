@@ -7,13 +7,13 @@ import (
 
 // Media service SOAP message types
 
-// GetProfilesResponse represents GetProfiles response
+// GetProfilesResponse represents GetProfiles response.
 type GetProfilesResponse struct {
 	XMLName  xml.Name       `xml:"http://www.onvif.org/ver10/media/wsdl GetProfilesResponse"`
 	Profiles []MediaProfile `xml:"Profiles"`
 }
 
-// MediaProfile represents a media profile
+// MediaProfile represents a media profile.
 type MediaProfile struct {
 	Token                       string                       `xml:"token,attr"`
 	Fixed                       bool                         `xml:"fixed,attr"`
@@ -27,7 +27,7 @@ type MediaProfile struct {
 	MetadataConfiguration       *MetadataConfiguration       `xml:"MetadataConfiguration,omitempty"`
 }
 
-// VideoSourceConfiguration represents video source configuration
+// VideoSourceConfiguration represents video source configuration.
 type VideoSourceConfiguration struct {
 	Token       string       `xml:"token,attr"`
 	Name        string       `xml:"Name"`
@@ -36,7 +36,7 @@ type VideoSourceConfiguration struct {
 	Bounds      IntRectangle `xml:"Bounds"`
 }
 
-// AudioSourceConfiguration represents audio source configuration
+// AudioSourceConfiguration represents audio source configuration.
 type AudioSourceConfiguration struct {
 	Token       string `xml:"token,attr"`
 	Name        string `xml:"Name"`
@@ -44,7 +44,7 @@ type AudioSourceConfiguration struct {
 	SourceToken string `xml:"SourceToken"`
 }
 
-// VideoEncoderConfiguration represents video encoder configuration
+// VideoEncoderConfiguration represents video encoder configuration.
 type VideoEncoderConfiguration struct {
 	Token          string                  `xml:"token,attr"`
 	Name           string                  `xml:"Name"`
@@ -58,7 +58,7 @@ type VideoEncoderConfiguration struct {
 	SessionTimeout string                  `xml:"SessionTimeout"`
 }
 
-// AudioEncoderConfiguration represents audio encoder configuration
+// AudioEncoderConfiguration represents audio encoder configuration.
 type AudioEncoderConfiguration struct {
 	Token          string                  `xml:"token,attr"`
 	Name           string                  `xml:"Name"`
@@ -70,14 +70,14 @@ type AudioEncoderConfiguration struct {
 	SessionTimeout string                  `xml:"SessionTimeout"`
 }
 
-// VideoAnalyticsConfiguration represents video analytics configuration
+// VideoAnalyticsConfiguration represents video analytics configuration.
 type VideoAnalyticsConfiguration struct {
 	Token    string `xml:"token,attr"`
 	Name     string `xml:"Name"`
 	UseCount int    `xml:"UseCount"`
 }
 
-// PTZConfiguration represents PTZ configuration
+// PTZConfiguration represents PTZ configuration.
 type PTZConfiguration struct {
 	Token     string `xml:"token,attr"`
 	Name      string `xml:"Name"`
@@ -85,7 +85,7 @@ type PTZConfiguration struct {
 	NodeToken string `xml:"NodeToken"`
 }
 
-// MetadataConfiguration represents metadata configuration
+// MetadataConfiguration represents metadata configuration.
 type MetadataConfiguration struct {
 	Token          string `xml:"token,attr"`
 	Name           string `xml:"Name"`
@@ -93,7 +93,7 @@ type MetadataConfiguration struct {
 	SessionTimeout string `xml:"SessionTimeout"`
 }
 
-// IntRectangle represents a rectangle with integer coordinates
+// IntRectangle represents a rectangle with integer coordinates.
 type IntRectangle struct {
 	X      int `xml:"x,attr"`
 	Y      int `xml:"y,attr"`
@@ -101,26 +101,26 @@ type IntRectangle struct {
 	Height int `xml:"height,attr"`
 }
 
-// VideoResolution represents video resolution
+// VideoResolution represents video resolution.
 type VideoResolution struct {
 	Width  int `xml:"Width"`
 	Height int `xml:"Height"`
 }
 
-// VideoRateControl represents video rate control
+// VideoRateControl represents video rate control.
 type VideoRateControl struct {
 	FrameRateLimit   int `xml:"FrameRateLimit"`
 	EncodingInterval int `xml:"EncodingInterval"`
 	BitrateLimit     int `xml:"BitrateLimit"`
 }
 
-// H264Configuration represents H264 configuration
+// H264Configuration represents H264 configuration.
 type H264Configuration struct {
 	GovLength   int    `xml:"GovLength"`
 	H264Profile string `xml:"H264Profile"`
 }
 
-// MulticastConfiguration represents multicast configuration
+// MulticastConfiguration represents multicast configuration.
 type MulticastConfiguration struct {
 	Address   IPAddress `xml:"Address"`
 	Port      int       `xml:"Port"`
@@ -128,20 +128,20 @@ type MulticastConfiguration struct {
 	AutoStart bool      `xml:"AutoStart"`
 }
 
-// IPAddress represents an IP address
+// IPAddress represents an IP address.
 type IPAddress struct {
 	Type        string `xml:"Type"`
 	IPv4Address string `xml:"IPv4Address,omitempty"`
 	IPv6Address string `xml:"IPv6Address,omitempty"`
 }
 
-// GetStreamURIResponse represents GetStreamURI response
+// GetStreamURIResponse represents GetStreamURI response.
 type GetStreamURIResponse struct {
 	XMLName  xml.Name `xml:"http://www.onvif.org/ver10/media/wsdl GetStreamURIResponse"`
 	MediaUri MediaUri `xml:"MediaUri"`
 }
 
-// MediaUri represents a media URI
+// MediaUri represents a media URI.
 type MediaUri struct {
 	Uri                 string `xml:"Uri"`
 	InvalidAfterConnect bool   `xml:"InvalidAfterConnect"`
@@ -149,19 +149,19 @@ type MediaUri struct {
 	Timeout             string `xml:"Timeout"`
 }
 
-// GetSnapshotURIResponse represents GetSnapshotURI response
+// GetSnapshotURIResponse represents GetSnapshotURI response.
 type GetSnapshotURIResponse struct {
 	XMLName  xml.Name `xml:"http://www.onvif.org/ver10/media/wsdl GetSnapshotURIResponse"`
 	MediaUri MediaUri `xml:"MediaUri"`
 }
 
-// GetVideoSourcesResponse represents GetVideoSources response
+// GetVideoSourcesResponse represents GetVideoSources response.
 type GetVideoSourcesResponse struct {
 	XMLName      xml.Name      `xml:"http://www.onvif.org/ver10/media/wsdl GetVideoSourcesResponse"`
 	VideoSources []VideoSource `xml:"VideoSources"`
 }
 
-// VideoSource represents a video source
+// VideoSource represents a video source.
 type VideoSource struct {
 	Token      string          `xml:"token,attr"`
 	Framerate  float64         `xml:"Framerate"`
@@ -170,10 +170,11 @@ type VideoSource struct {
 
 // Media service handlers
 
-// HandleGetProfiles handles GetProfiles request
+// HandleGetProfiles handles GetProfiles request.
 func (s *Server) HandleGetProfiles(body interface{}) (interface{}, error) {
 	profiles := make([]MediaProfile, len(s.config.Profiles))
 
+	//nolint:gocritic // Range value copy is acceptable for small structs
 	for i, profileCfg := range s.config.Profiles {
 		profile := MediaProfile{
 			Token: profileCfg.Token,
@@ -258,7 +259,7 @@ func (s *Server) HandleGetProfiles(body interface{}) (interface{}, error) {
 	}, nil
 }
 
-// HandleGetStreamURI handles GetStreamURI request
+// HandleGetStreamURI handles GetStreamURI request.
 func (s *Server) HandleGetStreamURI(body interface{}) (interface{}, error) {
 	var req struct {
 		ProfileToken string `xml:"ProfileToken"`
@@ -271,7 +272,7 @@ func (s *Server) HandleGetStreamURI(body interface{}) (interface{}, error) {
 	// Find the stream configuration for this profile
 	streamCfg, ok := s.streams[req.ProfileToken]
 	if !ok {
-		return nil, fmt.Errorf("profile not found: %s", req.ProfileToken)
+		return nil, fmt.Errorf("%w: %s", ErrProfileNotFound, req.ProfileToken)
 	}
 
 	// Build RTSP URI
@@ -295,7 +296,7 @@ func (s *Server) HandleGetStreamURI(body interface{}) (interface{}, error) {
 	}, nil
 }
 
-// HandleGetSnapshotURI handles GetSnapshotURI request
+// HandleGetSnapshotURI handles GetSnapshotURI request.
 func (s *Server) HandleGetSnapshotURI(body interface{}) (interface{}, error) {
 	var req struct {
 		ProfileToken string `xml:"ProfileToken"`
@@ -310,16 +311,17 @@ func (s *Server) HandleGetSnapshotURI(body interface{}) (interface{}, error) {
 	for i := range s.config.Profiles {
 		if s.config.Profiles[i].Token == req.ProfileToken {
 			profileCfg = &s.config.Profiles[i]
+
 			break
 		}
 	}
 
 	if profileCfg == nil {
-		return nil, fmt.Errorf("profile not found: %s", req.ProfileToken)
+		return nil, fmt.Errorf("%w: %s", ErrProfileNotFound, req.ProfileToken)
 	}
 
 	if !profileCfg.Snapshot.Enabled {
-		return nil, fmt.Errorf("snapshot not supported for profile: %s", req.ProfileToken)
+		return nil, fmt.Errorf("%w: %s", ErrSnapshotNotSupported, req.ProfileToken)
 	}
 
 	// Build snapshot URI
@@ -340,12 +342,13 @@ func (s *Server) HandleGetSnapshotURI(body interface{}) (interface{}, error) {
 	}, nil
 }
 
-// HandleGetVideoSources handles GetVideoSources request
+// HandleGetVideoSources handles GetVideoSources request.
 func (s *Server) HandleGetVideoSources(body interface{}) (interface{}, error) {
 	sources := make([]VideoSource, 0)
 
 	// Collect unique video sources from profiles
 	seenSources := make(map[string]bool)
+	//nolint:gocritic // Range value copy is acceptable for small structs
 	for _, profileCfg := range s.config.Profiles {
 		if !seenSources[profileCfg.VideoSource.Token] {
 			sources = append(sources, VideoSource{
@@ -365,8 +368,8 @@ func (s *Server) HandleGetVideoSources(body interface{}) (interface{}, error) {
 	}, nil
 }
 
-// unmarshalBody is a helper to unmarshal SOAP body content
-func unmarshalBody(body interface{}, target interface{}) error {
+// unmarshalBody is a helper to unmarshal SOAP body content.
+func unmarshalBody(body, target interface{}) error {
 	var bodyXML []byte
 	var err error
 
@@ -379,5 +382,10 @@ func unmarshalBody(body interface{}, target interface{}) error {
 			return fmt.Errorf("failed to marshal XML: %w", err)
 		}
 	}
-	return xml.Unmarshal(bodyXML, target)
+
+	if err := xml.Unmarshal(bodyXML, target); err != nil {
+		return fmt.Errorf("failed to unmarshal XML: %w", err)
+	}
+
+	return nil
 }

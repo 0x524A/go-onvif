@@ -102,11 +102,13 @@ func TestNormalizeEndpoint(t *testing.T) {
 				if err == nil {
 					t.Errorf("normalizeEndpoint() expected error but got none")
 				}
+
 				return
 			}
 
 			if err != nil {
 				t.Errorf("normalizeEndpoint() unexpected error: %v", err)
+
 				return
 			}
 
@@ -170,7 +172,7 @@ func TestNewClientWithVariousEndpoints(t *testing.T) {
 	}
 }
 
-// Mock ONVIF server for comprehensive testing
+// Mock ONVIF server for comprehensive testing.
 type MockONVIFServer struct {
 	server     *httptest.Server
 	responses  map[string]string
@@ -208,7 +210,7 @@ func (m *MockONVIFServer) SetAuthFailure(fail bool) {
 	m.authFailed = fail
 }
 
-func (m *MockONVIFServer) SetResponse(action string, response string) {
+func (m *MockONVIFServer) SetResponse(action, response string) {
 	m.responses[action] = response
 }
 
@@ -233,6 +235,7 @@ func (m *MockONVIFServer) handleRequest(w http.ResponseWriter, r *http.Request) 
 	// Simple auth check
 	if m.authFailed && strings.Contains(requestBody, "UsernameToken") {
 		w.WriteHeader(http.StatusUnauthorized)
+
 		return
 	}
 
@@ -360,6 +363,7 @@ func TestNewClient(t *testing.T) {
 			client, err := NewClient(tt.endpoint)
 			if (err != nil) != tt.wantError {
 				t.Errorf("NewClient() error = %v, wantError %v", err, tt.wantError)
+
 				return
 			}
 			if !tt.wantError && client == nil {
@@ -620,7 +624,7 @@ func BenchmarkGetDeviceInformation(b *testing.B) {
 	}
 }
 
-// Example test
+// Example test.
 func ExampleClient_GetDeviceInformation() {
 	// Create client
 	client, err := NewClient(
@@ -797,13 +801,14 @@ func TestInitializeWithLocalhostURLs(t *testing.T) {
 	}
 }
 
-// TestDownloadFileWithBasicAuth tests DownloadFile with basic authentication
+// TestDownloadFileWithBasicAuth tests DownloadFile with basic authentication.
 func TestDownloadFileWithBasicAuth(t *testing.T) {
 	// Create a mock server that requires basic auth
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
 		if !ok || username != "admin" || password != "password" {
 			w.WriteHeader(http.StatusUnauthorized)
+
 			return
 		}
 		w.Header().Set("Content-Type", "image/jpeg")
@@ -831,7 +836,7 @@ func TestDownloadFileWithBasicAuth(t *testing.T) {
 	}
 }
 
-// TestDownloadFileWithDigestAuth tests DownloadFile with digest authentication
+// TestDownloadFileWithDigestAuth tests DownloadFile with digest authentication.
 func TestDownloadFileWithDigestAuth(t *testing.T) {
 	nonce := "test-nonce-12345"
 	realm := "test-realm"
@@ -843,9 +848,10 @@ func TestDownloadFileWithDigestAuth(t *testing.T) {
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Digest ") {
 			// First request - return 401 with digest challenge
 			w.Header().Set("WWW-Authenticate", fmt.Sprintf(
-				`Digest realm="%s", nonce="%s", opaque="%s", qop="auth"`,
+				`Digest realm=%q, nonce=%q, opaque=%q, qop="auth"`,
 				realm, nonce, opaque))
 			w.WriteHeader(http.StatusUnauthorized)
+
 			return
 		}
 		// Second request with auth - accept it
@@ -874,7 +880,7 @@ func TestDownloadFileWithDigestAuth(t *testing.T) {
 	}
 }
 
-// TestDownloadFileUnauthorized tests DownloadFile with invalid credentials
+// TestDownloadFileUnauthorized tests DownloadFile with invalid credentials.
 func TestDownloadFileUnauthorized(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -899,7 +905,7 @@ func TestDownloadFileUnauthorized(t *testing.T) {
 	}
 }
 
-// TestDownloadFileNotFound tests DownloadFile with 404 response
+// TestDownloadFileNotFound tests DownloadFile with 404 response.
 func TestDownloadFileNotFound(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
@@ -922,7 +928,7 @@ func TestDownloadFileNotFound(t *testing.T) {
 	}
 }
 
-// TestDownloadFileForbidden tests DownloadFile with 403 response
+// TestDownloadFileForbidden tests DownloadFile with 403 response.
 func TestDownloadFileForbidden(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
@@ -944,7 +950,7 @@ func TestDownloadFileForbidden(t *testing.T) {
 	}
 }
 
-// TestDownloadFileNetworkError tests DownloadFile with network error
+// TestDownloadFileNetworkError tests DownloadFile with network error.
 func TestDownloadFileNetworkError(t *testing.T) {
 	client, err := NewClient("http://192.168.999.999/onvif")
 	if err != nil {
@@ -960,7 +966,7 @@ func TestDownloadFileNetworkError(t *testing.T) {
 	}
 }
 
-// TestDigestAuthTransport tests the digest authentication transport
+// TestDigestAuthTransport tests the digest authentication transport.
 func TestDigestAuthTransport(t *testing.T) {
 	nonce := "test-nonce"
 	realm := "test-realm"
@@ -970,9 +976,10 @@ func TestDigestAuthTransport(t *testing.T) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Digest ") {
 			w.Header().Set("WWW-Authenticate", fmt.Sprintf(
-				`Digest realm="%s", nonce="%s", opaque="%s", qop="auth"`,
+				`Digest realm=%q, nonce=%q, opaque=%q, qop="auth"`,
 				realm, nonce, opaque))
 			w.WriteHeader(http.StatusUnauthorized)
+
 			return
 		}
 		// Verify digest auth header contains required fields
@@ -1006,7 +1013,7 @@ func TestDigestAuthTransport(t *testing.T) {
 		Timeout: DefaultTimeout,
 	}
 
-	req, err := http.NewRequest("GET", server.URL, nil)
+	req, err := http.NewRequest("GET", server.URL, http.NoBody)
 	if err != nil {
 		t.Fatalf("NewRequest() failed: %v", err)
 	}
@@ -1022,7 +1029,7 @@ func TestDigestAuthTransport(t *testing.T) {
 	}
 }
 
-// TestExtractParam tests the extractParam helper function
+// TestExtractParam tests the extractParam helper function.
 func TestExtractParam(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -1072,7 +1079,7 @@ func TestExtractParam(t *testing.T) {
 	}
 }
 
-// TestGenerateNonce tests nonce generation
+// TestGenerateNonce tests nonce generation.
 func TestGenerateNonce(t *testing.T) {
 	// Generate multiple nonces and verify they're different and valid hex
 	nonces := make(map[string]bool)
@@ -1095,7 +1102,7 @@ func TestGenerateNonce(t *testing.T) {
 	}
 }
 
-// TestMd5Hash tests MD5 hash function
+// TestMd5Hash tests MD5 hash function.
 func TestMd5Hash(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -1124,7 +1131,7 @@ func TestMd5Hash(t *testing.T) {
 	}
 }
 
-// TestErrorTypes tests error type checking
+// TestErrorTypes tests error type checking.
 func TestErrorTypes(t *testing.T) {
 	t.Run("IsONVIFError with ONVIFError", func(t *testing.T) {
 		err := NewONVIFError("Sender", "InvalidArgs", "test message")
@@ -1134,7 +1141,7 @@ func TestErrorTypes(t *testing.T) {
 	})
 
 	t.Run("IsONVIFError with regular error", func(t *testing.T) {
-		err := fmt.Errorf("regular error")
+		err := ErrRegularError
 		if IsONVIFError(err) {
 			t.Error("IsONVIFError() returned true for regular error")
 		}
@@ -1149,7 +1156,7 @@ func TestErrorTypes(t *testing.T) {
 	})
 }
 
-// TestClientConcurrency tests concurrent access to client
+// TestClientConcurrency tests concurrent access to client.
 func TestClientConcurrency(t *testing.T) {
 	client, err := NewClient("http://192.168.1.100/onvif")
 	if err != nil {
@@ -1175,7 +1182,7 @@ func TestClientConcurrency(t *testing.T) {
 	}
 }
 
-// TestNormalizeEndpointErrorCases tests error cases for normalizeEndpoint
+// TestNormalizeEndpointErrorCases tests error cases for normalizeEndpoint.
 func TestNormalizeEndpointErrorCases(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -1209,7 +1216,7 @@ func TestNormalizeEndpointErrorCases(t *testing.T) {
 	}
 }
 
-// TestFixLocalhostURLEdgeCases tests edge cases for fixLocalhostURL
+// TestFixLocalhostURLEdgeCases tests edge cases for fixLocalhostURL.
 func TestFixLocalhostURLEdgeCases(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -1251,7 +1258,7 @@ func TestFixLocalhostURLEdgeCases(t *testing.T) {
 	}
 }
 
-// TestWithInsecureSkipVerify tests the WithInsecureSkipVerify option
+// TestWithInsecureSkipVerify tests the WithInsecureSkipVerify option.
 func TestWithInsecureSkipVerify(t *testing.T) {
 	client, err := NewClient(
 		"https://192.168.1.100/onvif",
@@ -1273,7 +1280,7 @@ func TestWithInsecureSkipVerify(t *testing.T) {
 	}
 }
 
-// TestDownloadFileContextCancellation tests context cancellation
+// TestDownloadFileContextCancellation tests context cancellation.
 func TestDownloadFileContextCancellation(t *testing.T) {
 	// Create a slow server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -1300,8 +1307,7 @@ func TestDownloadFileContextCancellation(t *testing.T) {
 	}
 }
 
-// TestDigestAuthTransportConcurrency tests concurrent access to digestAuthTransport
-// This verifies that the nc field is properly protected from race conditions
+// This verifies that the nc field is properly protected from race conditions.
 func TestDigestAuthTransportConcurrency(t *testing.T) {
 	nonce := "test-nonce"
 	realm := "test-realm"
@@ -1311,9 +1317,10 @@ func TestDigestAuthTransportConcurrency(t *testing.T) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Digest ") {
 			w.Header().Set("WWW-Authenticate", fmt.Sprintf(
-				`Digest realm="%s", nonce="%s", opaque="%s", qop="auth"`,
+				`Digest realm=%q, nonce=%q, opaque=%q, qop="auth"`,
 				realm, nonce, opaque))
 			w.WriteHeader(http.StatusUnauthorized)
+
 			return
 		}
 		// Verify nc (nonce count) is present and valid
@@ -1351,23 +1358,25 @@ func TestDigestAuthTransportConcurrency(t *testing.T) {
 
 	for i := 0; i < numRequests; i++ {
 		go func(id int) {
-			req, err := http.NewRequest("GET", server.URL, nil)
+			req, err := http.NewRequest("GET", server.URL, http.NoBody)
 			if err != nil {
-				errors <- fmt.Errorf("request %d: NewRequest failed: %v", id, err)
+				errors <- fmt.Errorf("request %d: %w", id, fmt.Errorf("%w", ErrTestRequestNewFailed))
 				done <- true
+
 				return
 			}
 
 			resp, err := digestClient.Do(req)
 			if err != nil {
-				errors <- fmt.Errorf("request %d: Do failed: %v", id, err)
+				errors <- fmt.Errorf("request %d: %w", id, fmt.Errorf("%w", ErrTestRequestDoFailed))
 				done <- true
+
 				return
 			}
 			defer func() { _ = resp.Body.Close() }()
 
 			if resp.StatusCode != http.StatusOK {
-				errors <- fmt.Errorf("request %d: expected 200, got %d", id, resp.StatusCode)
+				errors <- fmt.Errorf("request %d: expected 200, got %d: %w", id, resp.StatusCode, ErrTestRequestUnexpectedStatus)
 			}
 			done <- true
 		}(i)

@@ -66,6 +66,7 @@ func TestGetDeviceInformation(t *testing.T) {
 			deviceInfo, err := client.GetDeviceInformation(context.Background())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDeviceInformation() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 

@@ -17,6 +17,8 @@ func TestNewHandler(t *testing.T) {
 
 	if handler == nil {
 		t.Error("NewHandler returned nil")
+
+		return
 	}
 	if handler.username != "admin" {
 		t.Errorf("Username mismatch: got %s, want admin", handler.username)
@@ -46,7 +48,7 @@ func TestRegisterHandler(t *testing.T) {
 func TestServeHTTPMethodNotAllowed(t *testing.T) {
 	handler := NewHandler("admin", "password")
 
-	req := httptest.NewRequest("GET", "/", nil)
+	req := httptest.NewRequest("GET", "/", http.NoBody)
 	w := httptest.NewRecorder()
 
 	handler.ServeHTTP(w, req)

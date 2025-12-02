@@ -108,10 +108,9 @@ func main() {
 	fmt.Println("✅ Server stopped")
 }
 
-// buildConfig creates a server configuration from command-line arguments
+// buildConfig creates a server configuration from command-line arguments.
 func buildConfig(host string, port int, username, password, manufacturer, model,
 	firmware, serial string, numProfiles int, ptz, imaging, events bool) *server.Config {
-
 	config := &server.Config{
 		Host:     host,
 		Port:     port,
@@ -216,7 +215,7 @@ func buildConfig(host string, port int, username, password, manufacturer, model,
 	return config
 }
 
-// printBanner prints the application banner
+// printBanner prints the application banner.
 func printBanner() {
 	banner := `
 ╔═══════════════════════════════════════════════════════════╗

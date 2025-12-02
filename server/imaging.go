@@ -8,19 +8,19 @@ import (
 
 // Imaging service SOAP message types
 
-// GetImagingSettingsRequest represents GetImagingSettings request
+// GetImagingSettingsRequest represents GetImagingSettings request.
 type GetImagingSettingsRequest struct {
 	XMLName          xml.Name `xml:"http://www.onvif.org/ver20/imaging/wsdl GetImagingSettings"`
 	VideoSourceToken string   `xml:"VideoSourceToken"`
 }
 
-// GetImagingSettingsResponse represents GetImagingSettings response
+// GetImagingSettingsResponse represents GetImagingSettings response.
 type GetImagingSettingsResponse struct {
 	XMLName         xml.Name         `xml:"http://www.onvif.org/ver20/imaging/wsdl GetImagingSettingsResponse"`
 	ImagingSettings *ImagingSettings `xml:"ImagingSettings"`
 }
 
-// ImagingSettings represents imaging settings
+// ImagingSettings represents imaging settings.
 type ImagingSettings struct {
 	BacklightCompensation *BacklightCompensationSettings `xml:"BacklightCompensation,omitempty"`
 	Brightness            *float64                       `xml:"Brightness,omitempty"`
@@ -34,13 +34,13 @@ type ImagingSettings struct {
 	WhiteBalance          *WhiteBalanceSettings20        `xml:"WhiteBalance,omitempty"`
 }
 
-// BacklightCompensationSettings represents backlight compensation settings
+// BacklightCompensationSettings represents backlight compensation settings.
 type BacklightCompensationSettings struct {
 	Mode  string   `xml:"Mode"`
 	Level *float64 `xml:"Level,omitempty"`
 }
 
-// ExposureSettings20 represents exposure settings for ONVIF 2.0
+// ExposureSettings20 represents exposure settings for ONVIF 2.0.
 type ExposureSettings20 struct {
 	Mode            string     `xml:"Mode"`
 	Priority        *string    `xml:"Priority,omitempty"`
@@ -56,7 +56,7 @@ type ExposureSettings20 struct {
 	Iris            *float64   `xml:"Iris,omitempty"`
 }
 
-// FocusConfiguration20 represents focus configuration for ONVIF 2.0
+// FocusConfiguration20 represents focus configuration for ONVIF 2.0.
 type FocusConfiguration20 struct {
 	AutoFocusMode string   `xml:"AutoFocusMode"`
 	DefaultSpeed  *float64 `xml:"DefaultSpeed,omitempty"`
@@ -64,20 +64,20 @@ type FocusConfiguration20 struct {
 	FarLimit      *float64 `xml:"FarLimit,omitempty"`
 }
 
-// WideDynamicRangeSettings represents WDR settings
+// WideDynamicRangeSettings represents WDR settings.
 type WideDynamicRangeSettings struct {
 	Mode  string   `xml:"Mode"`
 	Level *float64 `xml:"Level,omitempty"`
 }
 
-// WhiteBalanceSettings20 represents white balance settings for ONVIF 2.0
+// WhiteBalanceSettings20 represents white balance settings for ONVIF 2.0.
 type WhiteBalanceSettings20 struct {
 	Mode   string   `xml:"Mode"`
 	CrGain *float64 `xml:"CrGain,omitempty"`
 	CbGain *float64 `xml:"CbGain,omitempty"`
 }
 
-// Rectangle represents a rectangle
+// Rectangle represents a rectangle.
 type Rectangle struct {
 	Bottom float64 `xml:"bottom,attr"`
 	Top    float64 `xml:"top,attr"`
@@ -85,7 +85,7 @@ type Rectangle struct {
 	Left   float64 `xml:"left,attr"`
 }
 
-// SetImagingSettingsRequest represents SetImagingSettings request
+// SetImagingSettingsRequest represents SetImagingSettings request.
 type SetImagingSettingsRequest struct {
 	XMLName          xml.Name         `xml:"http://www.onvif.org/ver20/imaging/wsdl SetImagingSettings"`
 	VideoSourceToken string           `xml:"VideoSourceToken"`
@@ -93,24 +93,24 @@ type SetImagingSettingsRequest struct {
 	ForcePersistence bool             `xml:"ForcePersistence,omitempty"`
 }
 
-// SetImagingSettingsResponse represents SetImagingSettings response
+// SetImagingSettingsResponse represents SetImagingSettings response.
 type SetImagingSettingsResponse struct {
 	XMLName xml.Name `xml:"http://www.onvif.org/ver20/imaging/wsdl SetImagingSettingsResponse"`
 }
 
-// GetOptionsRequest represents GetOptions request
+// GetOptionsRequest represents GetOptions request.
 type GetOptionsRequest struct {
 	XMLName          xml.Name `xml:"http://www.onvif.org/ver20/imaging/wsdl GetOptions"`
 	VideoSourceToken string   `xml:"VideoSourceToken"`
 }
 
-// GetOptionsResponse represents GetOptions response
+// GetOptionsResponse represents GetOptions response.
 type GetOptionsResponse struct {
 	XMLName        xml.Name        `xml:"http://www.onvif.org/ver20/imaging/wsdl GetOptionsResponse"`
 	ImagingOptions *ImagingOptions `xml:"ImagingOptions"`
 }
 
-// ImagingOptions represents imaging options/capabilities
+// ImagingOptions represents imaging options/capabilities.
 type ImagingOptions struct {
 	BacklightCompensation *BacklightCompensationOptions `xml:"BacklightCompensation,omitempty"`
 	Brightness            *FloatRange                   `xml:"Brightness,omitempty"`
@@ -124,13 +124,13 @@ type ImagingOptions struct {
 	WhiteBalance          *WhiteBalanceOptions          `xml:"WhiteBalance,omitempty"`
 }
 
-// BacklightCompensationOptions represents backlight compensation options
+// BacklightCompensationOptions represents backlight compensation options.
 type BacklightCompensationOptions struct {
 	Mode  []string    `xml:"Mode"`
 	Level *FloatRange `xml:"Level,omitempty"`
 }
 
-// ExposureOptions represents exposure options
+// ExposureOptions represents exposure options.
 type ExposureOptions struct {
 	Mode            []string    `xml:"Mode"`
 	Priority        []string    `xml:"Priority,omitempty"`
@@ -145,7 +145,7 @@ type ExposureOptions struct {
 	Iris            *FloatRange `xml:"Iris,omitempty"`
 }
 
-// FocusOptions represents focus options
+// FocusOptions represents focus options.
 type FocusOptions struct {
 	AutoFocusModes []string    `xml:"AutoFocusModes"`
 	DefaultSpeed   *FloatRange `xml:"DefaultSpeed,omitempty"`
@@ -153,51 +153,51 @@ type FocusOptions struct {
 	FarLimit       *FloatRange `xml:"FarLimit,omitempty"`
 }
 
-// WideDynamicRangeOptions represents WDR options
+// WideDynamicRangeOptions represents WDR options.
 type WideDynamicRangeOptions struct {
 	Mode  []string    `xml:"Mode"`
 	Level *FloatRange `xml:"Level,omitempty"`
 }
 
-// WhiteBalanceOptions represents white balance options
+// WhiteBalanceOptions represents white balance options.
 type WhiteBalanceOptions struct {
 	Mode   []string    `xml:"Mode"`
 	YrGain *FloatRange `xml:"YrGain,omitempty"`
 	YbGain *FloatRange `xml:"YbGain,omitempty"`
 }
 
-// MoveRequest represents Move (focus) request
+// MoveRequest represents Move (focus) request.
 type MoveRequest struct {
 	XMLName          xml.Name   `xml:"http://www.onvif.org/ver20/imaging/wsdl Move"`
 	VideoSourceToken string     `xml:"VideoSourceToken"`
 	Focus            *FocusMove `xml:"Focus"`
 }
 
-// FocusMove represents focus move parameters
+// FocusMove represents focus move parameters.
 type FocusMove struct {
 	Absolute   *AbsoluteFocus   `xml:"Absolute,omitempty"`
 	Relative   *RelativeFocus   `xml:"Relative,omitempty"`
 	Continuous *ContinuousFocus `xml:"Continuous,omitempty"`
 }
 
-// AbsoluteFocus represents absolute focus
+// AbsoluteFocus represents absolute focus.
 type AbsoluteFocus struct {
 	Position float64  `xml:"Position"`
 	Speed    *float64 `xml:"Speed,omitempty"`
 }
 
-// RelativeFocus represents relative focus
+// RelativeFocus represents relative focus.
 type RelativeFocus struct {
 	Distance float64  `xml:"Distance"`
 	Speed    *float64 `xml:"Speed,omitempty"`
 }
 
-// ContinuousFocus represents continuous focus
+// ContinuousFocus represents continuous focus.
 type ContinuousFocus struct {
 	Speed float64 `xml:"Speed"`
 }
 
-// MoveResponse represents Move response
+// MoveResponse represents Move response.
 type MoveResponse struct {
 	XMLName xml.Name `xml:"http://www.onvif.org/ver20/imaging/wsdl MoveResponse"`
 }
@@ -206,7 +206,7 @@ type MoveResponse struct {
 
 var imagingMutex sync.RWMutex
 
-// HandleGetImagingSettings handles GetImagingSettings request
+// HandleGetImagingSettings handles GetImagingSettings request.
 func (s *Server) HandleGetImagingSettings(body interface{}) (interface{}, error) {
 	var req GetImagingSettingsRequest
 	if err := unmarshalBody(body, &req); err != nil {
@@ -219,7 +219,7 @@ func (s *Server) HandleGetImagingSettings(body interface{}) (interface{}, error)
 
 	state, ok := s.imagingState[req.VideoSourceToken]
 	if !ok {
-		return nil, fmt.Errorf("video source not found: %s", req.VideoSourceToken)
+		return nil, fmt.Errorf("%w: %s", ErrVideoSourceNotFound, req.VideoSourceToken)
 	}
 
 	// Build imaging settings response
@@ -265,7 +265,7 @@ func (s *Server) HandleGetImagingSettings(body interface{}) (interface{}, error)
 	}, nil
 }
 
-// HandleSetImagingSettings handles SetImagingSettings request
+// HandleSetImagingSettings handles SetImagingSettings request.
 func (s *Server) HandleSetImagingSettings(body interface{}) (interface{}, error) {
 	var req SetImagingSettingsRequest
 	if err := unmarshalBody(body, &req); err != nil {
@@ -278,7 +278,7 @@ func (s *Server) HandleSetImagingSettings(body interface{}) (interface{}, error)
 
 	state, ok := s.imagingState[req.VideoSourceToken]
 	if !ok {
-		return nil, fmt.Errorf("video source not found: %s", req.VideoSourceToken)
+		return nil, fmt.Errorf("%w: %s", ErrVideoSourceNotFound, req.VideoSourceToken)
 	}
 
 	// Update settings
@@ -342,7 +342,7 @@ func (s *Server) HandleSetImagingSettings(body interface{}) (interface{}, error)
 	return &SetImagingSettingsResponse{}, nil
 }
 
-// HandleGetOptions handles GetOptions request
+// HandleGetOptions handles GetOptions request.
 func (s *Server) HandleGetOptions(body interface{}) (interface{}, error) {
 	// Return available imaging options/capabilities
 	options := &ImagingOptions{
@@ -387,7 +387,7 @@ func (s *Server) HandleGetOptions(body interface{}) (interface{}, error) {
 	}, nil
 }
 
-// HandleMove handles Move (focus) request
+// HandleMove handles Move (focus) request.
 func (s *Server) HandleMove(body interface{}) (interface{}, error) {
 	var req MoveRequest
 	if err := unmarshalBody(body, &req); err != nil {
@@ -400,7 +400,7 @@ func (s *Server) HandleMove(body interface{}) (interface{}, error) {
 
 	state, ok := s.imagingState[req.VideoSourceToken]
 	if !ok {
-		return nil, fmt.Errorf("video source not found: %s", req.VideoSourceToken)
+		return nil, fmt.Errorf("%w: %s", ErrVideoSourceNotFound, req.VideoSourceToken)
 	}
 
 	// Process focus move

@@ -10,7 +10,7 @@ import (
 
 // Device service SOAP message types
 
-// GetDeviceInformationResponse represents GetDeviceInformation response
+// GetDeviceInformationResponse represents GetDeviceInformation response.
 type GetDeviceInformationResponse struct {
 	XMLName         xml.Name `xml:"http://www.onvif.org/ver10/device/wsdl GetDeviceInformationResponse"`
 	Manufacturer    string   `xml:"Manufacturer"`
@@ -20,13 +20,13 @@ type GetDeviceInformationResponse struct {
 	HardwareId      string   `xml:"HardwareId"`
 }
 
-// GetCapabilitiesResponse represents GetCapabilities response
+// GetCapabilitiesResponse represents GetCapabilities response.
 type GetCapabilitiesResponse struct {
 	XMLName      xml.Name      `xml:"http://www.onvif.org/ver10/device/wsdl GetCapabilitiesResponse"`
 	Capabilities *Capabilities `xml:"Capabilities"`
 }
 
-// Capabilities represents device capabilities
+// Capabilities represents device capabilities.
 type Capabilities struct {
 	Analytics *AnalyticsCapabilities `xml:"Analytics,omitempty"`
 	Device    *DeviceCapabilities    `xml:"Device"`
@@ -36,14 +36,14 @@ type Capabilities struct {
 	PTZ       *PTZCapabilities       `xml:"PTZ,omitempty"`
 }
 
-// AnalyticsCapabilities represents analytics service capabilities
+// AnalyticsCapabilities represents analytics service capabilities.
 type AnalyticsCapabilities struct {
 	XAddr                  string `xml:"XAddr"`
 	RuleSupport            bool   `xml:"RuleSupport,attr"`
 	AnalyticsModuleSupport bool   `xml:"AnalyticsModuleSupport,attr"`
 }
 
-// DeviceCapabilities represents device service capabilities
+// DeviceCapabilities represents device service capabilities.
 type DeviceCapabilities struct {
 	XAddr    string                `xml:"XAddr"`
 	Network  *NetworkCapabilities  `xml:"Network,omitempty"`
@@ -52,7 +52,7 @@ type DeviceCapabilities struct {
 	Security *SecurityCapabilities `xml:"Security,omitempty"`
 }
 
-// NetworkCapabilities represents network capabilities
+// NetworkCapabilities represents network capabilities.
 type NetworkCapabilities struct {
 	IPFilter          bool `xml:"IPFilter,attr"`
 	ZeroConfiguration bool `xml:"ZeroConfiguration,attr"`
@@ -60,7 +60,7 @@ type NetworkCapabilities struct {
 	DynDNS            bool `xml:"DynDNS,attr"`
 }
 
-// SystemCapabilities represents system capabilities
+// SystemCapabilities represents system capabilities.
 type SystemCapabilities struct {
 	DiscoveryResolve bool `xml:"DiscoveryResolve,attr"`
 	DiscoveryBye     bool `xml:"DiscoveryBye,attr"`
@@ -70,13 +70,13 @@ type SystemCapabilities struct {
 	FirmwareUpgrade  bool `xml:"FirmwareUpgrade,attr"`
 }
 
-// IOCapabilities represents I/O capabilities
+// IOCapabilities represents I/O capabilities.
 type IOCapabilities struct {
 	InputConnectors int `xml:"InputConnectors,attr"`
 	RelayOutputs    int `xml:"RelayOutputs,attr"`
 }
 
-// SecurityCapabilities represents security capabilities
+// SecurityCapabilities represents security capabilities.
 type SecurityCapabilities struct {
 	TLS11                bool `xml:"TLS1.1,attr"`
 	TLS12                bool `xml:"TLS1.2,attr"`
@@ -88,7 +88,7 @@ type SecurityCapabilities struct {
 	RELToken             bool `xml:"RELToken,attr"`
 }
 
-// EventCapabilities represents event service capabilities
+// EventCapabilities represents event service capabilities.
 type EventCapabilities struct {
 	XAddr                         string `xml:"XAddr"`
 	WSSubscriptionPolicySupport   bool   `xml:"WSSubscriptionPolicySupport,attr"`
@@ -96,49 +96,49 @@ type EventCapabilities struct {
 	WSPausableSubscriptionSupport bool   `xml:"WSPausableSubscriptionManagerInterfaceSupport,attr"`
 }
 
-// ImagingCapabilities represents imaging service capabilities
+// ImagingCapabilities represents imaging service capabilities.
 type ImagingCapabilities struct {
 	XAddr string `xml:"XAddr"`
 }
 
-// MediaCapabilities represents media service capabilities
+// MediaCapabilities represents media service capabilities.
 type MediaCapabilities struct {
 	XAddr                 string                 `xml:"XAddr"`
 	StreamingCapabilities *StreamingCapabilities `xml:"StreamingCapabilities"`
 }
 
-// StreamingCapabilities represents streaming capabilities
+// StreamingCapabilities represents streaming capabilities.
 type StreamingCapabilities struct {
 	RTPMulticast bool `xml:"RTPMulticast,attr"`
 	RTP_TCP      bool `xml:"RTP_TCP,attr"`
 	RTP_RTSP_TCP bool `xml:"RTP_RTSP_TCP,attr"`
 }
 
-// PTZCapabilities represents PTZ service capabilities
+// PTZCapabilities represents PTZ service capabilities.
 type PTZCapabilities struct {
 	XAddr string `xml:"XAddr"`
 }
 
-// GetServicesResponse represents GetServices response
+// GetServicesResponse represents GetServices response.
 type GetServicesResponse struct {
 	XMLName xml.Name  `xml:"http://www.onvif.org/ver10/device/wsdl GetServicesResponse"`
 	Service []Service `xml:"Service"`
 }
 
-// Service represents a service
+// Service represents a service.
 type Service struct {
 	Namespace string  `xml:"Namespace"`
 	XAddr     string  `xml:"XAddr"`
 	Version   Version `xml:"Version"`
 }
 
-// Version represents service version
+// Version represents service version.
 type Version struct {
 	Major int `xml:"Major"`
 	Minor int `xml:"Minor"`
 }
 
-// SystemRebootResponse represents SystemReboot response
+// SystemRebootResponse represents SystemReboot response.
 type SystemRebootResponse struct {
 	XMLName xml.Name `xml:"http://www.onvif.org/ver10/device/wsdl SystemRebootResponse"`
 	Message string   `xml:"Message"`
@@ -146,7 +146,7 @@ type SystemRebootResponse struct {
 
 // Device service handlers
 
-// HandleGetDeviceInformation handles GetDeviceInformation request
+// HandleGetDeviceInformation handles GetDeviceInformation request.
 func (s *Server) HandleGetDeviceInformation(body interface{}) (interface{}, error) {
 	return &GetDeviceInformationResponse{
 		Manufacturer:    s.config.DeviceInfo.Manufacturer,
@@ -157,7 +157,7 @@ func (s *Server) HandleGetDeviceInformation(body interface{}) (interface{}, erro
 	}, nil
 }
 
-// HandleGetCapabilities handles GetCapabilities request
+// HandleGetCapabilities handles GetCapabilities request.
 func (s *Server) HandleGetCapabilities(body interface{}) (interface{}, error) {
 	// Get the host from the request (in a real implementation)
 	// For now, use a placeholder
@@ -236,7 +236,7 @@ func (s *Server) HandleGetCapabilities(body interface{}) (interface{}, error) {
 	}, nil
 }
 
-// HandleGetSystemDateAndTime handles GetSystemDateAndTime request
+// HandleGetSystemDateAndTime handles GetSystemDateAndTime request.
 func (s *Server) HandleGetSystemDateAndTime(body interface{}) (interface{}, error) {
 	now := time.Now().UTC()
 
@@ -253,7 +253,7 @@ func (s *Server) HandleGetSystemDateAndTime(body interface{}) (interface{}, erro
 	}, nil
 }
 
-// HandleGetServices handles GetServices request
+// HandleGetServices handles GetServices request.
 func (s *Server) HandleGetServices(body interface{}) (interface{}, error) {
 	host := s.config.Host
 	if host == "0.0.0.0" || host == "" {
@@ -296,7 +296,7 @@ func (s *Server) HandleGetServices(body interface{}) (interface{}, error) {
 	}, nil
 }
 
-// HandleSystemReboot handles SystemReboot request
+// HandleSystemReboot handles SystemReboot request.
 func (s *Server) HandleSystemReboot(body interface{}) (interface{}, error) {
 	return &SystemRebootResponse{
 		Message: "Device rebooting",

@@ -54,6 +54,7 @@ func TestHandleGetCapabilities(t *testing.T) {
 
 	if capsResp.Capabilities == nil {
 		t.Error("Capabilities is nil")
+
 		return
 	}
 
@@ -90,6 +91,7 @@ func TestHandleGetSystemDateAndTime(t *testing.T) {
 	// Response should be a map or interface
 	if resp == nil {
 		t.Error("Response is nil")
+
 		return
 	}
 }
@@ -110,6 +112,7 @@ func TestHandleGetServices(t *testing.T) {
 
 	if len(servicesResp.Service) == 0 {
 		t.Error("No services returned")
+
 		return
 	}
 
@@ -265,6 +268,7 @@ func TestHandleSnapshot(t *testing.T) {
 	profiles := server.ListProfiles()
 	if len(profiles) == 0 {
 		t.Error("No profiles available for snapshot")
+
 		return
 	}
 
@@ -289,6 +293,7 @@ func TestHandleGetCapabilitiesDetails(t *testing.T) {
 
 	if capsResp.Capabilities == nil {
 		t.Error("Capabilities is nil")
+
 		return
 	}
 
@@ -327,8 +332,9 @@ func TestHandleGetServicesDetails(t *testing.T) {
 		t.Fatalf("Response is not GetServicesResponse: %T", resp)
 	}
 
-	if servResp.Service == nil || len(servResp.Service) == 0 {
+	if len(servResp.Service) == 0 {
 		t.Error("No services returned")
+
 		return
 	}
 
@@ -337,7 +343,7 @@ func TestHandleGetServicesDetails(t *testing.T) {
 		if svc.Namespace == "" {
 			t.Error("Service Namespace is empty")
 		}
-		if len(svc.XAddr) == 0 {
+		if svc.XAddr == "" {
 			t.Error("Service XAddr is empty")
 		}
 	}

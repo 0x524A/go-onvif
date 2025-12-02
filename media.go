@@ -8,7 +8,7 @@ import (
 	"github.com/0x524a/onvif-go/internal/soap"
 )
 
-// Media service namespace
+// Media service namespace.
 const mediaNamespace = "http://www.onvif.org/ver10/media/wsdl"
 
 // getMediaEndpoint returns the media endpoint, falling back to the default endpoint if not set.
@@ -16,16 +16,18 @@ func (c *Client) getMediaEndpoint() string {
 	if c.mediaEndpoint != "" {
 		return c.mediaEndpoint
 	}
+
 	return c.endpoint
 }
 
 // getMediaSoapClient creates a new SOAP client for media operations.
 func (c *Client) getMediaSoapClient() *soap.Client {
 	username, password := c.GetCredentials()
+
 	return soap.NewClient(c.httpClient, username, password)
 }
 
-// GetProfiles retrieves all media profiles
+// GetProfiles retrieves all media profiles.
 func (c *Client) GetProfiles(ctx context.Context) ([]*Profile, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -154,7 +156,7 @@ func (c *Client) GetProfiles(ctx context.Context) ([]*Profile, error) {
 	return profiles, nil
 }
 
-// GetStreamURI retrieves the stream URI for a profile
+// GetStreamURI retrieves the stream URI for a profile.
 func (c *Client) GetStreamURI(ctx context.Context, profileToken string) (*MediaURI, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -208,7 +210,7 @@ func (c *Client) GetStreamURI(ctx context.Context, profileToken string) (*MediaU
 	}, nil
 }
 
-// GetSnapshotURI retrieves the snapshot URI for a profile
+// GetSnapshotURI retrieves the snapshot URI for a profile.
 func (c *Client) GetSnapshotURI(ctx context.Context, profileToken string) (*MediaURI, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -252,8 +254,11 @@ func (c *Client) GetSnapshotURI(ctx context.Context, profileToken string) (*Medi
 	}, nil
 }
 
-// GetVideoEncoderConfiguration retrieves video encoder configuration
-func (c *Client) GetVideoEncoderConfiguration(ctx context.Context, configurationToken string) (*VideoEncoderConfiguration, error) {
+// GetVideoEncoderConfiguration retrieves video encoder configuration.
+func (c *Client) GetVideoEncoderConfiguration(
+	ctx context.Context,
+	configurationToken string,
+) (*VideoEncoderConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -325,7 +330,7 @@ func (c *Client) GetVideoEncoderConfiguration(ctx context.Context, configuration
 	return config, nil
 }
 
-// GetVideoSources retrieves all video sources
+// GetVideoSources retrieves all video sources.
 func (c *Client) GetVideoSources(ctx context.Context) ([]*VideoSource, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -377,7 +382,7 @@ func (c *Client) GetVideoSources(ctx context.Context) ([]*VideoSource, error) {
 	return sources, nil
 }
 
-// GetAudioSources retrieves all audio sources
+// GetAudioSources retrieves all audio sources.
 func (c *Client) GetAudioSources(ctx context.Context) ([]*AudioSource, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -421,7 +426,7 @@ func (c *Client) GetAudioSources(ctx context.Context) ([]*AudioSource, error) {
 	return sources, nil
 }
 
-// GetAudioOutputs retrieves all audio outputs
+// GetAudioOutputs retrieves all audio outputs.
 func (c *Client) GetAudioOutputs(ctx context.Context) ([]*AudioOutput, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -463,7 +468,7 @@ func (c *Client) GetAudioOutputs(ctx context.Context) ([]*AudioOutput, error) {
 	return outputs, nil
 }
 
-// CreateProfile creates a new media profile
+// CreateProfile creates a new media profile.
 func (c *Client) CreateProfile(ctx context.Context, name, token string) (*Profile, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -508,7 +513,7 @@ func (c *Client) CreateProfile(ctx context.Context, name, token string) (*Profil
 	}, nil
 }
 
-// DeleteProfile deletes a media profile
+// DeleteProfile deletes a media profile.
 func (c *Client) DeleteProfile(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -536,8 +541,12 @@ func (c *Client) DeleteProfile(ctx context.Context, profileToken string) error {
 	return nil
 }
 
-// SetVideoEncoderConfiguration sets video encoder configuration
-func (c *Client) SetVideoEncoderConfiguration(ctx context.Context, config *VideoEncoderConfiguration, forcePersistence bool) error {
+// SetVideoEncoderConfiguration sets video encoder configuration.
+func (c *Client) SetVideoEncoderConfiguration(
+	ctx context.Context,
+	config *VideoEncoderConfiguration,
+	forcePersistence bool,
+) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -613,7 +622,7 @@ func (c *Client) SetVideoEncoderConfiguration(ctx context.Context, config *Video
 	return nil
 }
 
-// GetMediaServiceCapabilities retrieves media service capabilities
+// GetMediaServiceCapabilities retrieves media service capabilities.
 func (c *Client) GetMediaServiceCapabilities(ctx context.Context) (*MediaServiceCapabilities, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -680,7 +689,7 @@ func (c *Client) GetMediaServiceCapabilities(ctx context.Context) (*MediaService
 	return caps, nil
 }
 
-// GetVideoEncoderConfigurationOptions retrieves available options for video encoder configuration
+// GetVideoEncoderConfigurationOptions retrieves available options for video encoder configuration.
 func (c *Client) GetVideoEncoderConfigurationOptions(ctx context.Context, configurationToken string) (*VideoEncoderConfigurationOptions, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -819,8 +828,11 @@ func (c *Client) GetVideoEncoderConfigurationOptions(ctx context.Context, config
 	return options, nil
 }
 
-// GetAudioEncoderConfiguration retrieves audio encoder configuration
-func (c *Client) GetAudioEncoderConfiguration(ctx context.Context, configurationToken string) (*AudioEncoderConfiguration, error) {
+// GetAudioEncoderConfiguration retrieves audio encoder configuration.
+func (c *Client) GetAudioEncoderConfiguration(
+	ctx context.Context,
+	configurationToken string,
+) (*AudioEncoderConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -896,8 +908,12 @@ func (c *Client) GetAudioEncoderConfiguration(ctx context.Context, configuration
 	return config, nil
 }
 
-// SetAudioEncoderConfiguration sets audio encoder configuration
-func (c *Client) SetAudioEncoderConfiguration(ctx context.Context, config *AudioEncoderConfiguration, forcePersistence bool) error {
+// SetAudioEncoderConfiguration sets audio encoder configuration.
+func (c *Client) SetAudioEncoderConfiguration(
+	ctx context.Context,
+	config *AudioEncoderConfiguration,
+	forcePersistence bool,
+) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -984,8 +1000,11 @@ func (c *Client) SetAudioEncoderConfiguration(ctx context.Context, config *Audio
 	return nil
 }
 
-// GetMetadataConfiguration retrieves metadata configuration
-func (c *Client) GetMetadataConfiguration(ctx context.Context, configurationToken string) (*MetadataConfiguration, error) {
+// GetMetadataConfiguration retrieves metadata configuration.
+func (c *Client) GetMetadataConfiguration(
+	ctx context.Context,
+	configurationToken string,
+) (*MetadataConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -1073,8 +1092,12 @@ func (c *Client) GetMetadataConfiguration(ctx context.Context, configurationToke
 	return config, nil
 }
 
-// SetMetadataConfiguration sets metadata configuration
-func (c *Client) SetMetadataConfiguration(ctx context.Context, config *MetadataConfiguration, forcePersistence bool) error {
+// SetMetadataConfiguration sets metadata configuration.
+func (c *Client) SetMetadataConfiguration(
+	ctx context.Context,
+	config *MetadataConfiguration,
+	forcePersistence bool,
+) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -1172,7 +1195,7 @@ func (c *Client) SetMetadataConfiguration(ctx context.Context, config *MetadataC
 	return nil
 }
 
-// GetVideoSourceModes retrieves available video source modes
+// GetVideoSourceModes retrieves available video source modes.
 func (c *Client) GetVideoSourceModes(ctx context.Context, videoSourceToken string) ([]*VideoSourceMode, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1226,7 +1249,7 @@ func (c *Client) GetVideoSourceModes(ctx context.Context, videoSourceToken strin
 	return modes, nil
 }
 
-// SetVideoSourceMode sets the video source mode
+// SetVideoSourceMode sets the video source mode.
 func (c *Client) SetVideoSourceMode(ctx context.Context, videoSourceToken, modeToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1256,7 +1279,7 @@ func (c *Client) SetVideoSourceMode(ctx context.Context, videoSourceToken, modeT
 	return nil
 }
 
-// SetSynchronizationPoint sets a synchronization point for the stream
+// SetSynchronizationPoint sets a synchronization point for the stream.
 func (c *Client) SetSynchronizationPoint(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1284,7 +1307,7 @@ func (c *Client) SetSynchronizationPoint(ctx context.Context, profileToken strin
 	return nil
 }
 
-// GetOSDs retrieves all OSD configurations
+// GetOSDs retrieves all OSD configurations.
 func (c *Client) GetOSDs(ctx context.Context, configurationToken string) ([]*OSDConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1330,7 +1353,7 @@ func (c *Client) GetOSDs(ctx context.Context, configurationToken string) ([]*OSD
 	return osds, nil
 }
 
-// GetOSD retrieves a specific OSD configuration
+// GetOSD retrieves a specific OSD configuration.
 func (c *Client) GetOSD(ctx context.Context, osdToken string) (*OSDConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1369,7 +1392,7 @@ func (c *Client) GetOSD(ctx context.Context, osdToken string) (*OSDConfiguration
 	}, nil
 }
 
-// SetOSD sets OSD configuration
+// SetOSD sets OSD configuration.
 func (c *Client) SetOSD(ctx context.Context, osd *OSDConfiguration) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1401,8 +1424,12 @@ func (c *Client) SetOSD(ctx context.Context, osd *OSDConfiguration) error {
 	return nil
 }
 
-// CreateOSD creates a new OSD configuration
-func (c *Client) CreateOSD(ctx context.Context, videoSourceConfigurationToken string, osd *OSDConfiguration) (*OSDConfiguration, error) {
+// CreateOSD creates a new OSD configuration.
+func (c *Client) CreateOSD(
+	ctx context.Context,
+	videoSourceConfigurationToken string,
+	osd *OSDConfiguration,
+) (*OSDConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -1448,7 +1475,7 @@ func (c *Client) CreateOSD(ctx context.Context, videoSourceConfigurationToken st
 	}, nil
 }
 
-// DeleteOSD deletes an OSD configuration
+// DeleteOSD deletes an OSD configuration.
 func (c *Client) DeleteOSD(ctx context.Context, osdToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1476,7 +1503,7 @@ func (c *Client) DeleteOSD(ctx context.Context, osdToken string) error {
 	return nil
 }
 
-// StartMulticastStreaming starts multicast streaming
+// StartMulticastStreaming starts multicast streaming.
 func (c *Client) StartMulticastStreaming(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1504,7 +1531,7 @@ func (c *Client) StartMulticastStreaming(ctx context.Context, profileToken strin
 	return nil
 }
 
-// StopMulticastStreaming stops multicast streaming
+// StopMulticastStreaming stops multicast streaming.
 func (c *Client) StopMulticastStreaming(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1532,7 +1559,7 @@ func (c *Client) StopMulticastStreaming(ctx context.Context, profileToken string
 	return nil
 }
 
-// GetProfile retrieves a specific media profile
+// GetProfile retrieves a specific media profile.
 func (c *Client) GetProfile(ctx context.Context, profileToken string) (*Profile, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1573,7 +1600,7 @@ func (c *Client) GetProfile(ctx context.Context, profileToken string) (*Profile,
 	}, nil
 }
 
-// SetProfile sets profile configuration
+// SetProfile sets profile configuration.
 func (c *Client) SetProfile(ctx context.Context, profile *Profile) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1607,7 +1634,7 @@ func (c *Client) SetProfile(ctx context.Context, profile *Profile) error {
 	return nil
 }
 
-// AddVideoEncoderConfiguration adds video encoder configuration to a profile
+// AddVideoEncoderConfiguration adds video encoder configuration to a profile.
 func (c *Client) AddVideoEncoderConfiguration(ctx context.Context, profileToken, configurationToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1637,7 +1664,7 @@ func (c *Client) AddVideoEncoderConfiguration(ctx context.Context, profileToken,
 	return nil
 }
 
-// RemoveVideoEncoderConfiguration removes video encoder configuration from a profile
+// RemoveVideoEncoderConfiguration removes video encoder configuration from a profile.
 func (c *Client) RemoveVideoEncoderConfiguration(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1665,7 +1692,7 @@ func (c *Client) RemoveVideoEncoderConfiguration(ctx context.Context, profileTok
 	return nil
 }
 
-// AddAudioEncoderConfiguration adds audio encoder configuration to a profile
+// AddAudioEncoderConfiguration adds audio encoder configuration to a profile.
 func (c *Client) AddAudioEncoderConfiguration(ctx context.Context, profileToken, configurationToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1695,7 +1722,7 @@ func (c *Client) AddAudioEncoderConfiguration(ctx context.Context, profileToken,
 	return nil
 }
 
-// RemoveAudioEncoderConfiguration removes audio encoder configuration from a profile
+// RemoveAudioEncoderConfiguration removes audio encoder configuration from a profile.
 func (c *Client) RemoveAudioEncoderConfiguration(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1723,7 +1750,7 @@ func (c *Client) RemoveAudioEncoderConfiguration(ctx context.Context, profileTok
 	return nil
 }
 
-// AddAudioSourceConfiguration adds audio source configuration to a profile
+// AddAudioSourceConfiguration adds audio source configuration to a profile.
 func (c *Client) AddAudioSourceConfiguration(ctx context.Context, profileToken, configurationToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1753,7 +1780,7 @@ func (c *Client) AddAudioSourceConfiguration(ctx context.Context, profileToken, 
 	return nil
 }
 
-// RemoveAudioSourceConfiguration removes audio source configuration from a profile
+// RemoveAudioSourceConfiguration removes audio source configuration from a profile.
 func (c *Client) RemoveAudioSourceConfiguration(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1781,7 +1808,7 @@ func (c *Client) RemoveAudioSourceConfiguration(ctx context.Context, profileToke
 	return nil
 }
 
-// AddVideoSourceConfiguration adds video source configuration to a profile
+// AddVideoSourceConfiguration adds video source configuration to a profile.
 func (c *Client) AddVideoSourceConfiguration(ctx context.Context, profileToken, configurationToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1811,7 +1838,7 @@ func (c *Client) AddVideoSourceConfiguration(ctx context.Context, profileToken, 
 	return nil
 }
 
-// RemoveVideoSourceConfiguration removes video source configuration from a profile
+// RemoveVideoSourceConfiguration removes video source configuration from a profile.
 func (c *Client) RemoveVideoSourceConfiguration(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1839,7 +1866,7 @@ func (c *Client) RemoveVideoSourceConfiguration(ctx context.Context, profileToke
 	return nil
 }
 
-// AddPTZConfiguration adds PTZ configuration to a profile
+// AddPTZConfiguration adds PTZ configuration to a profile.
 func (c *Client) AddPTZConfiguration(ctx context.Context, profileToken, configurationToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1869,7 +1896,7 @@ func (c *Client) AddPTZConfiguration(ctx context.Context, profileToken, configur
 	return nil
 }
 
-// RemovePTZConfiguration removes PTZ configuration from a profile
+// RemovePTZConfiguration removes PTZ configuration from a profile.
 func (c *Client) RemovePTZConfiguration(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1897,7 +1924,7 @@ func (c *Client) RemovePTZConfiguration(ctx context.Context, profileToken string
 	return nil
 }
 
-// AddMetadataConfiguration adds metadata configuration to a profile
+// AddMetadataConfiguration adds metadata configuration to a profile.
 func (c *Client) AddMetadataConfiguration(ctx context.Context, profileToken, configurationToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1927,7 +1954,7 @@ func (c *Client) AddMetadataConfiguration(ctx context.Context, profileToken, con
 	return nil
 }
 
-// RemoveMetadataConfiguration removes metadata configuration from a profile
+// RemoveMetadataConfiguration removes metadata configuration from a profile.
 func (c *Client) RemoveMetadataConfiguration(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -1955,8 +1982,11 @@ func (c *Client) RemoveMetadataConfiguration(ctx context.Context, profileToken s
 	return nil
 }
 
-// GetAudioEncoderConfigurationOptions retrieves available options for audio encoder configuration
-func (c *Client) GetAudioEncoderConfigurationOptions(ctx context.Context, configurationToken, profileToken string) (*AudioEncoderConfigurationOptions, error) {
+// GetAudioEncoderConfigurationOptions retrieves available options for audio encoder configuration.
+func (c *Client) GetAudioEncoderConfigurationOptions(
+	ctx context.Context,
+	configurationToken, profileToken string,
+) (*AudioEncoderConfigurationOptions, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -2004,8 +2034,11 @@ func (c *Client) GetAudioEncoderConfigurationOptions(ctx context.Context, config
 	}, nil
 }
 
-// GetMetadataConfigurationOptions retrieves available options for metadata configuration
-func (c *Client) GetMetadataConfigurationOptions(ctx context.Context, configurationToken, profileToken string) (*MetadataConfigurationOptions, error) {
+// GetMetadataConfigurationOptions retrieves available options for metadata configuration.
+func (c *Client) GetMetadataConfigurationOptions(
+	ctx context.Context,
+	configurationToken, profileToken string,
+) (*MetadataConfigurationOptions, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -2059,7 +2092,7 @@ func (c *Client) GetMetadataConfigurationOptions(ctx context.Context, configurat
 	return options, nil
 }
 
-// GetAudioOutputConfiguration retrieves audio output configuration
+// GetAudioOutputConfiguration retrieves audio output configuration.
 func (c *Client) GetAudioOutputConfiguration(ctx context.Context, configurationToken string) (*AudioOutputConfiguration, error) {
 	endpoint := c.getMediaEndpoint()
 
@@ -2099,7 +2132,7 @@ func (c *Client) GetAudioOutputConfiguration(ctx context.Context, configurationT
 	}, nil
 }
 
-// SetAudioOutputConfiguration sets audio output configuration
+// SetAudioOutputConfiguration sets audio output configuration.
 func (c *Client) SetAudioOutputConfiguration(ctx context.Context, config *AudioOutputConfiguration, forcePersistence bool) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -2140,8 +2173,11 @@ func (c *Client) SetAudioOutputConfiguration(ctx context.Context, config *AudioO
 	return nil
 }
 
-// GetAudioOutputConfigurationOptions retrieves available options for audio output configuration
-func (c *Client) GetAudioOutputConfigurationOptions(ctx context.Context, configurationToken string) (*AudioOutputConfigurationOptions, error) {
+// GetAudioOutputConfigurationOptions retrieves available options for audio output configuration.
+func (c *Client) GetAudioOutputConfigurationOptions(
+	ctx context.Context,
+	configurationToken string,
+) (*AudioOutputConfigurationOptions, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -2181,8 +2217,11 @@ func (c *Client) GetAudioOutputConfigurationOptions(ctx context.Context, configu
 	}, nil
 }
 
-// GetAudioDecoderConfigurationOptions retrieves available options for audio decoder configuration
-func (c *Client) GetAudioDecoderConfigurationOptions(ctx context.Context, configurationToken string) (*AudioDecoderConfigurationOptions, error) {
+// GetAudioDecoderConfigurationOptions retrieves available options for audio decoder configuration.
+func (c *Client) GetAudioDecoderConfigurationOptions(
+	ctx context.Context,
+	configurationToken string,
+) (*AudioDecoderConfigurationOptions, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -2247,8 +2286,11 @@ func (c *Client) GetAudioDecoderConfigurationOptions(ctx context.Context, config
 	return options, nil
 }
 
-// GetGuaranteedNumberOfVideoEncoderInstances retrieves the guaranteed number of video encoder instances
-func (c *Client) GetGuaranteedNumberOfVideoEncoderInstances(ctx context.Context, configurationToken string) (*GuaranteedNumberOfVideoEncoderInstances, error) {
+// GetGuaranteedNumberOfVideoEncoderInstances retrieves the guaranteed number of video encoder instances.
+func (c *Client) GetGuaranteedNumberOfVideoEncoderInstances(
+	ctx context.Context,
+	configurationToken string,
+) (*GuaranteedNumberOfVideoEncoderInstances, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -2290,7 +2332,7 @@ func (c *Client) GetGuaranteedNumberOfVideoEncoderInstances(ctx context.Context,
 	}, nil
 }
 
-// GetOSDOptions retrieves available options for OSD configuration
+// GetOSDOptions retrieves available options for OSD configuration.
 func (c *Client) GetOSDOptions(ctx context.Context, configurationToken string) (*OSDConfigurationOptions, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -2331,7 +2373,7 @@ func (c *Client) GetOSDOptions(ctx context.Context, configurationToken string) (
 	}, nil
 }
 
-// GetVideoSourceConfigurations retrieves all video source configurations
+// GetVideoSourceConfigurations retrieves all video source configurations.
 func (c *Client) GetVideoSourceConfigurations(ctx context.Context) ([]*VideoSourceConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -2394,7 +2436,7 @@ func (c *Client) GetVideoSourceConfigurations(ctx context.Context) ([]*VideoSour
 	return configs, nil
 }
 
-// GetAudioSourceConfigurations retrieves all audio source configurations
+// GetAudioSourceConfigurations retrieves all audio source configurations.
 func (c *Client) GetAudioSourceConfigurations(ctx context.Context) ([]*AudioSourceConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -2442,7 +2484,7 @@ func (c *Client) GetAudioSourceConfigurations(ctx context.Context) ([]*AudioSour
 	return configs, nil
 }
 
-// GetVideoEncoderConfigurations retrieves all video encoder configurations
+// GetVideoEncoderConfigurations retrieves all video encoder configurations.
 func (c *Client) GetVideoEncoderConfigurations(ctx context.Context) ([]*VideoEncoderConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -2566,7 +2608,7 @@ func (c *Client) GetVideoEncoderConfigurations(ctx context.Context) ([]*VideoEnc
 	return configs, nil
 }
 
-// GetAudioEncoderConfigurations retrieves all audio encoder configurations
+// GetAudioEncoderConfigurations retrieves all audio encoder configurations.
 func (c *Client) GetAudioEncoderConfigurations(ctx context.Context) ([]*AudioEncoderConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -2646,8 +2688,11 @@ func (c *Client) GetAudioEncoderConfigurations(ctx context.Context) ([]*AudioEnc
 	return configs, nil
 }
 
-// GetVideoSourceConfiguration retrieves a specific video source configuration
-func (c *Client) GetVideoSourceConfiguration(ctx context.Context, configurationToken string) (*VideoSourceConfiguration, error) {
+// GetVideoSourceConfiguration retrieves a specific video source configuration.
+func (c *Client) GetVideoSourceConfiguration(
+	ctx context.Context,
+	configurationToken string,
+) (*VideoSourceConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint
@@ -2708,7 +2753,7 @@ func (c *Client) GetVideoSourceConfiguration(ctx context.Context, configurationT
 	return config, nil
 }
 
-// GetAudioSourceConfiguration retrieves a specific audio source configuration
+// GetAudioSourceConfiguration retrieves a specific audio source configuration.
 func (c *Client) GetAudioSourceConfiguration(ctx context.Context, configurationToken string) (*AudioSourceConfiguration, error) {
 	endpoint := c.getMediaEndpoint()
 
@@ -2748,7 +2793,7 @@ func (c *Client) GetAudioSourceConfiguration(ctx context.Context, configurationT
 	}, nil
 }
 
-// GetVideoSourceConfigurationOptions retrieves available options for video source configuration
+// GetVideoSourceConfigurationOptions retrieves available options for video source configuration.
 func (c *Client) GetVideoSourceConfigurationOptions(
 	ctx context.Context,
 	configurationToken, profileToken string,
@@ -2811,7 +2856,7 @@ func (c *Client) GetVideoSourceConfigurationOptions(
 	return options, nil
 }
 
-// GetAudioSourceConfigurationOptions retrieves available options for audio source configuration
+// GetAudioSourceConfigurationOptions retrieves available options for audio source configuration.
 func (c *Client) GetAudioSourceConfigurationOptions(
 	ctx context.Context,
 	configurationToken, profileToken string,
@@ -2859,7 +2904,7 @@ func (c *Client) GetAudioSourceConfigurationOptions(
 	}, nil
 }
 
-// SetVideoSourceConfiguration sets video source configuration
+// SetVideoSourceConfiguration sets video source configuration.
 func (c *Client) SetVideoSourceConfiguration(
 	ctx context.Context,
 	config *VideoSourceConfiguration,
@@ -2924,7 +2969,7 @@ func (c *Client) SetVideoSourceConfiguration(
 	return nil
 }
 
-// SetAudioSourceConfiguration sets audio source configuration
+// SetAudioSourceConfiguration sets audio source configuration.
 func (c *Client) SetAudioSourceConfiguration(ctx context.Context, config *AudioSourceConfiguration, forcePersistence bool) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -2965,7 +3010,7 @@ func (c *Client) SetAudioSourceConfiguration(ctx context.Context, config *AudioS
 	return nil
 }
 
-// GetCompatibleVideoEncoderConfigurations retrieves compatible video encoder configurations for a profile
+// GetCompatibleVideoEncoderConfigurations retrieves compatible video encoder configurations for a profile.
 func (c *Client) GetCompatibleVideoEncoderConfigurations(
 	ctx context.Context,
 	profileToken string,
@@ -3046,7 +3091,7 @@ func (c *Client) GetCompatibleVideoEncoderConfigurations(
 	return configs, nil
 }
 
-// GetCompatibleVideoSourceConfigurations retrieves compatible video source configurations for a profile
+// GetCompatibleVideoSourceConfigurations retrieves compatible video source configurations for a profile.
 func (c *Client) GetCompatibleVideoSourceConfigurations(
 	ctx context.Context,
 	profileToken string,
@@ -3114,7 +3159,7 @@ func (c *Client) GetCompatibleVideoSourceConfigurations(
 	return configs, nil
 }
 
-// GetCompatibleAudioEncoderConfigurations retrieves compatible audio encoder configurations for a profile
+// GetCompatibleAudioEncoderConfigurations retrieves compatible audio encoder configurations for a profile.
 func (c *Client) GetCompatibleAudioEncoderConfigurations(
 	ctx context.Context,
 	profileToken string,
@@ -3171,7 +3216,7 @@ func (c *Client) GetCompatibleAudioEncoderConfigurations(
 	return configs, nil
 }
 
-// GetCompatibleAudioSourceConfigurations retrieves compatible audio source configurations for a profile
+// GetCompatibleAudioSourceConfigurations retrieves compatible audio source configurations for a profile.
 func (c *Client) GetCompatibleAudioSourceConfigurations(ctx context.Context, profileToken string) ([]*AudioSourceConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3221,7 +3266,7 @@ func (c *Client) GetCompatibleAudioSourceConfigurations(ctx context.Context, pro
 	return configs, nil
 }
 
-// GetCompatiblePTZConfigurations retrieves compatible PTZ configurations for a profile
+// GetCompatiblePTZConfigurations retrieves compatible PTZ configurations for a profile.
 func (c *Client) GetCompatiblePTZConfigurations(ctx context.Context, profileToken string) ([]*PTZConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3271,7 +3316,7 @@ func (c *Client) GetCompatiblePTZConfigurations(ctx context.Context, profileToke
 	return configs, nil
 }
 
-// GetCompatibleMetadataConfigurations retrieves compatible metadata configurations for a profile
+// GetCompatibleMetadataConfigurations retrieves compatible metadata configurations for a profile.
 func (c *Client) GetCompatibleMetadataConfigurations(ctx context.Context, profileToken string) ([]*MetadataConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3321,7 +3366,7 @@ func (c *Client) GetCompatibleMetadataConfigurations(ctx context.Context, profil
 	return configs, nil
 }
 
-// GetCompatibleAudioOutputConfigurations retrieves compatible audio output configurations for a profile
+// GetCompatibleAudioOutputConfigurations retrieves compatible audio output configurations for a profile.
 func (c *Client) GetCompatibleAudioOutputConfigurations(ctx context.Context, profileToken string) ([]*AudioOutputConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3371,7 +3416,7 @@ func (c *Client) GetCompatibleAudioOutputConfigurations(ctx context.Context, pro
 	return configs, nil
 }
 
-// GetCompatibleAudioDecoderConfigurations retrieves compatible audio decoder configurations for a profile
+// GetCompatibleAudioDecoderConfigurations retrieves compatible audio decoder configurations for a profile.
 func (c *Client) GetCompatibleAudioDecoderConfigurations(ctx context.Context, profileToken string) ([]*AudioDecoderConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3419,7 +3464,7 @@ func (c *Client) GetCompatibleAudioDecoderConfigurations(ctx context.Context, pr
 	return configs, nil
 }
 
-// GetMetadataConfigurations retrieves all metadata configurations
+// GetMetadataConfigurations retrieves all metadata configurations.
 func (c *Client) GetMetadataConfigurations(ctx context.Context) ([]*MetadataConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3467,7 +3512,7 @@ func (c *Client) GetMetadataConfigurations(ctx context.Context) ([]*MetadataConf
 	return configs, nil
 }
 
-// GetAudioOutputConfigurations retrieves all audio output configurations
+// GetAudioOutputConfigurations retrieves all audio output configurations.
 func (c *Client) GetAudioOutputConfigurations(ctx context.Context) ([]*AudioOutputConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3515,7 +3560,7 @@ func (c *Client) GetAudioOutputConfigurations(ctx context.Context) ([]*AudioOutp
 	return configs, nil
 }
 
-// GetAudioDecoderConfigurations retrieves all audio decoder configurations
+// GetAudioDecoderConfigurations retrieves all audio decoder configurations.
 func (c *Client) GetAudioDecoderConfigurations(ctx context.Context) ([]*AudioDecoderConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3561,7 +3606,7 @@ func (c *Client) GetAudioDecoderConfigurations(ctx context.Context) ([]*AudioDec
 	return configs, nil
 }
 
-// GetAudioDecoderConfiguration retrieves a specific audio decoder configuration
+// GetAudioDecoderConfiguration retrieves a specific audio decoder configuration.
 func (c *Client) GetAudioDecoderConfiguration(
 	ctx context.Context,
 	configurationToken string,
@@ -3607,7 +3652,7 @@ func (c *Client) GetAudioDecoderConfiguration(
 	}, nil
 }
 
-// SetAudioDecoderConfiguration sets audio decoder configuration
+// SetAudioDecoderConfiguration sets audio decoder configuration.
 func (c *Client) SetAudioDecoderConfiguration(ctx context.Context, config *AudioDecoderConfiguration, forcePersistence bool) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3646,7 +3691,7 @@ func (c *Client) SetAudioDecoderConfiguration(ctx context.Context, config *Audio
 	return nil
 }
 
-// GetVideoAnalyticsConfigurations retrieves all video analytics configurations
+// GetVideoAnalyticsConfigurations retrieves all video analytics configurations.
 func (c *Client) GetVideoAnalyticsConfigurations(ctx context.Context) ([]*VideoAnalyticsConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3692,7 +3737,7 @@ func (c *Client) GetVideoAnalyticsConfigurations(ctx context.Context) ([]*VideoA
 	return configs, nil
 }
 
-// GetVideoAnalyticsConfiguration retrieves a specific video analytics configuration
+// GetVideoAnalyticsConfiguration retrieves a specific video analytics configuration.
 func (c *Client) GetVideoAnalyticsConfiguration(
 	ctx context.Context,
 	configurationToken string,
@@ -3738,7 +3783,7 @@ func (c *Client) GetVideoAnalyticsConfiguration(
 	}, nil
 }
 
-// GetCompatibleVideoAnalyticsConfigurations retrieves compatible video analytics configurations for a profile
+// GetCompatibleVideoAnalyticsConfigurations retrieves compatible video analytics configurations for a profile.
 func (c *Client) GetCompatibleVideoAnalyticsConfigurations(ctx context.Context, profileToken string) ([]*VideoAnalyticsConfiguration, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3786,7 +3831,7 @@ func (c *Client) GetCompatibleVideoAnalyticsConfigurations(ctx context.Context, 
 	return configs, nil
 }
 
-// SetVideoAnalyticsConfiguration sets video analytics configuration
+// SetVideoAnalyticsConfiguration sets video analytics configuration.
 func (c *Client) SetVideoAnalyticsConfiguration(ctx context.Context, config *VideoAnalyticsConfiguration, forcePersistence bool) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3825,7 +3870,7 @@ func (c *Client) SetVideoAnalyticsConfiguration(ctx context.Context, config *Vid
 	return nil
 }
 
-// GetVideoAnalyticsConfigurationOptions retrieves available options for video analytics configuration
+// GetVideoAnalyticsConfigurationOptions retrieves available options for video analytics configuration.
 func (c *Client) GetVideoAnalyticsConfigurationOptions(
 	ctx context.Context,
 	configurationToken, profileToken string,
@@ -3869,7 +3914,7 @@ func (c *Client) GetVideoAnalyticsConfigurationOptions(
 	return &VideoAnalyticsConfigurationOptions{}, nil
 }
 
-// AddVideoAnalyticsConfiguration adds a video analytics configuration to a profile
+// AddVideoAnalyticsConfiguration adds a video analytics configuration to a profile.
 func (c *Client) AddVideoAnalyticsConfiguration(ctx context.Context, profileToken, configurationToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3899,7 +3944,7 @@ func (c *Client) AddVideoAnalyticsConfiguration(ctx context.Context, profileToke
 	return nil
 }
 
-// RemoveVideoAnalyticsConfiguration removes a video analytics configuration from a profile
+// RemoveVideoAnalyticsConfiguration removes a video analytics configuration from a profile.
 func (c *Client) RemoveVideoAnalyticsConfiguration(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3927,7 +3972,7 @@ func (c *Client) RemoveVideoAnalyticsConfiguration(ctx context.Context, profileT
 	return nil
 }
 
-// AddAudioOutputConfiguration adds an audio output configuration to a profile
+// AddAudioOutputConfiguration adds an audio output configuration to a profile.
 func (c *Client) AddAudioOutputConfiguration(ctx context.Context, profileToken, configurationToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3957,7 +4002,7 @@ func (c *Client) AddAudioOutputConfiguration(ctx context.Context, profileToken, 
 	return nil
 }
 
-// RemoveAudioOutputConfiguration removes an audio output configuration from a profile
+// RemoveAudioOutputConfiguration removes an audio output configuration from a profile.
 func (c *Client) RemoveAudioOutputConfiguration(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -3985,7 +4030,7 @@ func (c *Client) RemoveAudioOutputConfiguration(ctx context.Context, profileToke
 	return nil
 }
 
-// AddAudioDecoderConfiguration adds an audio decoder configuration to a profile
+// AddAudioDecoderConfiguration adds an audio decoder configuration to a profile.
 func (c *Client) AddAudioDecoderConfiguration(ctx context.Context, profileToken, configurationToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
@@ -4015,7 +4060,7 @@ func (c *Client) AddAudioDecoderConfiguration(ctx context.Context, profileToken,
 	return nil
 }
 
-// RemoveAudioDecoderConfiguration removes an audio decoder configuration from a profile
+// RemoveAudioDecoderConfiguration removes an audio decoder configuration from a profile.
 func (c *Client) RemoveAudioDecoderConfiguration(ctx context.Context, profileToken string) error {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {

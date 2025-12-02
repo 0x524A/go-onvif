@@ -1,9 +1,11 @@
+// Package onviftesting provides testing utilities for ONVIF client testing.
 package onviftesting
 
 import (
 	"archive/tar"
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,7 +15,7 @@ import (
 	"strings"
 )
 
-// CapturedExchange represents a single SOAP request/response pair
+// CapturedExchange represents a single SOAP request/response pair.
 type CapturedExchange struct {
 	Timestamp     string `json:"timestamp"`
 	Operation     int    `json:"operation"`
@@ -25,25 +27,31 @@ type CapturedExchange struct {
 	Error         string `json:"error,omitempty"`
 }
 
-// CameraCapture holds all captured exchanges for a camera
+// CameraCapture holds all captured exchanges for a camera.
 type CameraCapture struct {
 	CameraName string
 	Exchanges  []CapturedExchange
 }
 
-// LoadCaptureFromArchive loads all captured exchanges from a tar.gz archive
+// LoadCaptureFromArchive loads all captured exchanges from a tar.gz archive.
 func LoadCaptureFromArchive(archivePath string) (*CameraCapture, error) {
 	file, err := os.Open(archivePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open archive: %w", err)
 	}
-	defer func() { _ = file.Close() }()
+	defer func() {
+		//nolint:errcheck // Close error is not critical for cleanup
+		_ = file.Close()
+	}()
 
 	gzr, err := gzip.NewReader(file)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gzip reader: %w", err)
 	}
-	defer func() { _ = gzr.Close() }()
+	defer func() {
+		//nolint:errcheck // Close error is not critical for cleanup
+		_ = gzr.Close()
+	}()
 
 	tr := tar.NewReader(gzr)
 
@@ -55,7 +63,7 @@ func LoadCaptureFromArchive(archivePath string) (*CameraCapture, error) {
 	// Read all .json files from the archive
 	for {
 		header, err := tr.Next()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
@@ -83,13 +91,13 @@ func LoadCaptureFromArchive(archivePath string) (*CameraCapture, error) {
 	return capture, nil
 }
 
-// MockSOAPServer creates a test HTTP server that replays captured SOAP responses
+// MockSOAPServer creates a test HTTP server that replays captured SOAP responses.
 type MockSOAPServer struct {
 	Server  *httptest.Server
 	Capture *CameraCapture
 }
 
-// NewMockSOAPServer creates a new mock server from a capture archive
+// NewMockSOAPServer creates a new mock server from a capture archive.
 func NewMockSOAPServer(archivePath string) (*MockSOAPServer, error) {
 	capture, err := LoadCaptureFromArchive(archivePath)
 	if err != nil {
@@ -106,12 +114,13 @@ func NewMockSOAPServer(archivePath string) (*MockSOAPServer, error) {
 	return mock, nil
 }
 
-// handleRequest matches incoming requests to captured responses
+// handleRequest matches incoming requests to captured responses.
 func (m *MockSOAPServer) handleRequest(w http.ResponseWriter, r *http.Request) {
 	// Read request body
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Failed to read request", http.StatusBadRequest)
+
 		return
 	}
 
@@ -126,6 +135,7 @@ func (m *MockSOAPServer) handleRequest(w http.ResponseWriter, r *http.Request) {
 		for i := range m.Capture.Exchanges {
 			if m.Capture.Exchanges[i].OperationName == operationName {
 				exchange = &m.Capture.Exchanges[i]
+
 				break
 			}
 		}
@@ -136,6 +146,7 @@ func (m *MockSOAPServer) handleRequest(w http.ResponseWriter, r *http.Request) {
 				capturedOp := extractOperationFromSOAP(m.Capture.Exchanges[i].RequestBody)
 				if capturedOp == operationName {
 					exchange = &m.Capture.Exchanges[i]
+
 					break
 				}
 			}
@@ -144,26 +155,28 @@ func (m *MockSOAPServer) handleRequest(w http.ResponseWriter, r *http.Request) {
 
 	if exchange == nil {
 		http.Error(w, fmt.Sprintf("No matching capture found for operation: %s", operationName), http.StatusNotFound)
+
 		return
 	}
 
 	// Return the captured response
 	w.Header().Set("Content-Type", "application/soap+xml; charset=utf-8")
 	w.WriteHeader(exchange.StatusCode)
+	//nolint:errcheck // Write error is not critical after WriteHeader
 	_, _ = w.Write([]byte(exchange.ResponseBody))
 }
 
-// Close shuts down the mock server
+// Close shuts down the mock server.
 func (m *MockSOAPServer) Close() {
 	m.Server.Close()
 }
 
-// URL returns the mock server's URL
+// URL returns the mock server's URL.
 func (m *MockSOAPServer) URL() string {
 	return m.Server.URL
 }
 
-// extractOperationFromSOAP extracts the SOAP operation name from request body
+// extractOperationFromSOAP extracts the SOAP operation name from request body.
 func extractOperationFromSOAP(soapBody string) string {
 	// Find the Body element
 	bodyStart := strings.Index(soapBody, "<Body")
@@ -200,6 +213,7 @@ func extractOperationFromSOAP(soapBody string) string {
 		if colonIdx := strings.Index(tagName, ":"); colonIdx != -1 {
 			return tagName[colonIdx+1:]
 		}
+
 		return tagName
 	}
 

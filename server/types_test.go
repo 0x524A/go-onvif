@@ -19,6 +19,7 @@ func TestDefaultConfig(t *testing.T) {
 				if c.Host == "" {
 					return errorf("Host is empty")
 				}
+
 				return nil
 			},
 		},
@@ -28,6 +29,7 @@ func TestDefaultConfig(t *testing.T) {
 				if c.Port <= 0 || c.Port > 65535 {
 					return errorf("Port is invalid: %d", c.Port)
 				}
+
 				return nil
 			},
 		},
@@ -37,6 +39,7 @@ func TestDefaultConfig(t *testing.T) {
 				if c.BasePath == "" {
 					return errorf("BasePath is empty")
 				}
+
 				return nil
 			},
 		},
@@ -46,6 +49,7 @@ func TestDefaultConfig(t *testing.T) {
 				if c.Timeout <= 0 {
 					return errorf("Timeout is not positive: %v", c.Timeout)
 				}
+
 				return nil
 			},
 		},
@@ -61,6 +65,7 @@ func TestDefaultConfig(t *testing.T) {
 				if c.DeviceInfo.FirmwareVersion == "" {
 					return errorf("FirmwareVersion is empty")
 				}
+
 				return nil
 			},
 		},
@@ -70,6 +75,7 @@ func TestDefaultConfig(t *testing.T) {
 				if len(c.Profiles) == 0 {
 					return errorf("No profiles configured")
 				}
+
 				return nil
 			},
 		},
@@ -79,6 +85,7 @@ func TestDefaultConfig(t *testing.T) {
 				if c.Profiles[0].Token == "" {
 					return errorf("Profile token is empty")
 				}
+
 				return nil
 			},
 		},
@@ -88,6 +95,7 @@ func TestDefaultConfig(t *testing.T) {
 				if c.Profiles[0].Name == "" {
 					return errorf("Profile name is empty")
 				}
+
 				return nil
 			},
 		},
@@ -103,6 +111,7 @@ func TestDefaultConfig(t *testing.T) {
 				if c.Profiles[0].VideoSource.Resolution.Height == 0 {
 					return errorf("Video resolution height is 0")
 				}
+
 				return nil
 			},
 		},
@@ -115,6 +124,7 @@ func TestDefaultConfig(t *testing.T) {
 				if c.Profiles[0].VideoEncoder.Framerate == 0 {
 					return errorf("Video framerate is 0")
 				}
+
 				return nil
 			},
 		},

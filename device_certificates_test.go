@@ -1,6 +1,7 @@
 package onvif
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"net/http"
@@ -415,7 +416,7 @@ func TestGetPkcs10Request(t *testing.T) {
 
 	// Check that data was decoded from base64
 	expectedData := []byte("PKCS#10 CSR DATA")
-	if len(csr.Data) > 0 && string(csr.Data) != string(expectedData) {
+	if len(csr.Data) > 0 && !bytes.Equal(csr.Data, expectedData) {
 		t.Logf("CSR data length: %d, expected: %d", len(csr.Data), len(expectedData))
 		t.Logf("CSR data: %q, expected: %q", string(csr.Data), string(expectedData))
 	}

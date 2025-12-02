@@ -171,16 +171,18 @@ func main() {
 	if len(capture.Exchanges) > 0 {
 		// Try to parse device info from response
 		for _, ex := range capture.Exchanges {
-			if strings.Contains(ex.RequestBody, "GetDeviceInformation") {
-				// Extract manufacturer and model from response
-				manufacturer := extractXMLValue(ex.ResponseBody, "Manufacturer")
-				model := extractXMLValue(ex.ResponseBody, "Model")
-				firmware := extractXMLValue(ex.ResponseBody, "FirmwareVersion")
-				if manufacturer != "" && model != "" {
-					cameraDesc = fmt.Sprintf("%s %s (Firmware: %s)", manufacturer, model, firmware)
-				}
-				break
+			if !strings.Contains(ex.RequestBody, "GetDeviceInformation") {
+				continue
 			}
+			// Extract manufacturer and model from response
+			manufacturer := extractXMLValue(ex.ResponseBody, "Manufacturer")
+			model := extractXMLValue(ex.ResponseBody, "Model")
+			firmware := extractXMLValue(ex.ResponseBody, "FirmwareVersion")
+			if manufacturer != "" && model != "" {
+				cameraDesc = fmt.Sprintf("%s %s (Firmware: %s)", manufacturer, model, firmware)
+			}
+
+			break
 		}
 	}
 
@@ -217,9 +219,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create output file: %v", err)
 	}
-	defer f.Close()
+	defer func() {
+		//nolint:errcheck // Close error is not critical, file is already written
+		_ = f.Close()
+	}()
 
 	if err := tmpl.Execute(f, testData); err != nil {
+		//nolint:errcheck // Close error is not critical before fatal exit
+		_ = f.Close()
+		//nolint:gocritic // Fatalf exits, defer won't run - this is acceptable
 		log.Fatalf("Failed to execute template: %v", err)
 	}
 

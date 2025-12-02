@@ -28,7 +28,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.23'
+        go-version: '1.24'
     
     - name: Cache Go modules
       uses: actions/cache@v4
@@ -74,7 +74,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.23'
+        go-version: '1.24'
     
     - name: Cache Go modules
       uses: actions/cache@v4
@@ -82,9 +82,9 @@ jobs:
         path: |
           ~/.cache/go-build
           ~/go/pkg/mod
-        key: ${{ runner.os }}-go-1.23-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-go-1.24-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          ${{ runner.os }}-go-1.23-
+          ${{ runner.os }}-go-1.24-
     
     - name: Download dependencies
       run: go mod download
@@ -123,13 +123,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        go-version: ['1.21', '1.22', '1.23']
-        exclude:
-          # Skip older Go versions on macOS and Windows to save CI time
-          - os: macos-latest
-            go-version: '1.21'
-          - os: windows-latest
-            go-version: '1.21'
+        go-version: ['1.24']
     
     steps:
     - name: Checkout code
@@ -169,7 +163,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.23'
+        go-version: '1.24'
     
     - name: Cache Go modules
       uses: actions/cache@v4
@@ -177,9 +171,9 @@ jobs:
         path: |
           ~/.cache/go-build
           ~/go/pkg/mod
-        key: ${{ runner.os }}-go-1.23-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-go-1.24-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          ${{ runner.os }}-go-1.23-
+          ${{ runner.os }}-go-1.24-
     
     - name: Download dependencies
       run: go mod download

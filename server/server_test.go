@@ -31,10 +31,12 @@ func TestNew(t *testing.T) {
 			server, err := New(tt.config)
 			if (err != nil) != tt.expectError {
 				t.Errorf("New() error = %v, expectError %v", err, tt.expectError)
+
 				return
 			}
 			if server == nil && !tt.expectError {
 				t.Error("New() returned nil server")
+
 				return
 			}
 			if server != nil && server.config == nil {
@@ -61,6 +63,7 @@ func TestNewInitializesStreamsAndState(t *testing.T) {
 		stream, ok := server.streams[profile.Token]
 		if !ok {
 			t.Errorf("Stream not found for profile %s", profile.Token)
+
 			continue
 		}
 		if stream.ProfileToken != profile.Token {
@@ -120,6 +123,7 @@ func TestGetStreamConfig(t *testing.T) {
 				if sc.StreamURI == "" {
 					return errorf("StreamURI is empty")
 				}
+
 				return nil
 			},
 		},
@@ -135,6 +139,7 @@ func TestGetStreamConfig(t *testing.T) {
 			stream, ok := server.GetStreamConfig(tt.token)
 			if ok != tt.expectOk {
 				t.Errorf("GetStreamConfig() ok = %v, expectOk %v", ok, tt.expectOk)
+
 				return
 			}
 			if ok && tt.checkFunc != nil {
@@ -176,6 +181,7 @@ func TestUpdateStreamURI(t *testing.T) {
 			err := server.UpdateStreamURI(tt.token, tt.newURI)
 			if (err != nil) != tt.expectError {
 				t.Errorf("UpdateStreamURI() error = %v, expectError %v", err, tt.expectError)
+
 				return
 			}
 			if !tt.expectError {
@@ -217,6 +223,7 @@ func TestGetPTZState(t *testing.T) {
 	for _, profile := range config.Profiles {
 		if profile.PTZ != nil {
 			profileWithPTZ = profile.Token
+
 			break
 		}
 	}
@@ -255,6 +262,7 @@ func TestGetPTZState(t *testing.T) {
 			state, ok := server.GetPTZState(tt.token)
 			if ok != tt.expectOk {
 				t.Errorf("GetPTZState() ok = %v, expectOk %v", ok, tt.expectOk)
+
 				return
 			}
 			if ok && state == nil {
@@ -287,6 +295,7 @@ func TestGetImagingState(t *testing.T) {
 				if state.Contrast < 0 || state.Contrast > 100 {
 					return errorf("contrast out of range: %f", state.Contrast)
 				}
+
 				return nil
 			},
 		},
@@ -302,6 +311,7 @@ func TestGetImagingState(t *testing.T) {
 			state, ok := server.GetImagingState(tt.token)
 			if ok != tt.expectOk {
 				t.Errorf("GetImagingState() ok = %v, expectOk %v", ok, tt.expectOk)
+
 				return
 			}
 			if ok && tt.checkFunc != nil {
@@ -416,6 +426,7 @@ func contains(s, substr string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 

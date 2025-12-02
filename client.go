@@ -16,21 +16,21 @@ import (
 	"time"
 )
 
-// Default client configuration constants
+// Default client configuration constants.
 const (
-	// DefaultTimeout is the default HTTP client timeout
+	// DefaultTimeout is the default HTTP client timeout.
 	DefaultTimeout = 30 * time.Second
-	// DefaultIdleConnTimeout is the default idle connection timeout
+	// DefaultIdleConnTimeout is the default idle connection timeout.
 	DefaultIdleConnTimeout = 90 * time.Second
-	// DefaultMaxIdleConns is the default maximum idle connections
+	// DefaultMaxIdleConns is the default maximum idle connections.
 	DefaultMaxIdleConns = 10
-	// DefaultMaxIdleConnsPerHost is the default maximum idle connections per host
+	// DefaultMaxIdleConnsPerHost is the default maximum idle connections per host.
 	DefaultMaxIdleConnsPerHost = 5
-	// NonceSize is the size of the nonce for digest authentication
+	// NonceSize is the size of the nonce for digest authentication.
 	NonceSize = 16
 )
 
-// Client represents an ONVIF client for communicating with IP cameras
+// Client represents an ONVIF client for communicating with IP cameras.
 type Client struct {
 	endpoint   string
 	username   string
@@ -45,25 +45,24 @@ type Client struct {
 	eventEndpoint   string
 }
 
-// ClientOption is a functional option for configuring the Client
+// ClientOption is a functional option for configuring the Client.
 type ClientOption func(*Client)
 
-// WithTimeout sets the HTTP client timeout
+// WithTimeout sets the HTTP client timeout.
 func WithTimeout(timeout time.Duration) ClientOption {
 	return func(c *Client) {
 		c.httpClient.Timeout = timeout
 	}
 }
 
-// WithHTTPClient sets a custom HTTP client
+// WithHTTPClient sets a custom HTTP client.
 func WithHTTPClient(httpClient *http.Client) ClientOption {
 	return func(c *Client) {
 		c.httpClient = httpClient
 	}
 }
 
-// WithInsecureSkipVerify disables TLS certificate verification
-// WARNING: Only use this for testing or with trusted cameras on private networks
+// WARNING: Only use this for testing or with trusted cameras on private networks.
 func WithInsecureSkipVerify() ClientOption {
 	return func(c *Client) {
 		if transport, ok := c.httpClient.Transport.(*http.Transport); ok {
@@ -75,7 +74,7 @@ func WithInsecureSkipVerify() ClientOption {
 	}
 }
 
-// WithCredentials sets the authentication credentials
+// WithCredentials sets the authentication credentials.
 func WithCredentials(username, password string) ClientOption {
 	return func(c *Client) {
 		c.username = username
@@ -120,7 +119,7 @@ func NewClient(endpoint string, opts ...ClientOption) (*Client, error) {
 	return client, nil
 }
 
-// normalizeEndpoint converts various endpoint formats to a full ONVIF URL
+// normalizeEndpoint converts various endpoint formats to a full ONVIF URL.
 func normalizeEndpoint(endpoint string) (string, error) {
 	// Check if endpoint starts with a scheme
 	if strings.HasPrefix(endpoint, "http://") || strings.HasPrefix(endpoint, "https://") {
@@ -130,12 +129,13 @@ func normalizeEndpoint(endpoint string) (string, error) {
 			return "", fmt.Errorf("failed to parse endpoint URL: %w", err)
 		}
 		if parsedURL.Host == "" {
-			return "", fmt.Errorf("URL missing host")
+			return "", fmt.Errorf("%w", ErrURLMissingHost)
 		}
 		// If path is empty or just "/", add default ONVIF path
 		if parsedURL.Path == "" || parsedURL.Path == "/" {
 			parsedURL.Path = "/onvif/device_service"
 		}
+
 		return parsedURL.String(), nil
 	}
 
@@ -148,14 +148,13 @@ func normalizeEndpoint(endpoint string) (string, error) {
 	}
 
 	if parsedURL.Host == "" {
-		return "", fmt.Errorf("invalid endpoint format")
+		return "", fmt.Errorf("%w", ErrInvalidEndpointFormat)
 	}
 
 	return fullURL, nil
 }
 
-// fixLocalhostURL replaces localhost/loopback addresses in service URLs with the actual camera host
-// Some cameras incorrectly report localhost (127.0.0.1, 0.0.0.0, localhost) in their capability URLs
+// Some cameras incorrectly report localhost (127.0.0.1, 0.0.0.0, localhost) in their capability URLs.
 func (c *Client) fixLocalhostURL(serviceURL string) string {
 	if serviceURL == "" {
 		return serviceURL
@@ -194,7 +193,7 @@ func (c *Client) fixLocalhostURL(serviceURL string) string {
 	return serviceURL
 }
 
-// Initialize discovers and initializes service endpoints
+// Initialize discovers and initializes service endpoints.
 func (c *Client) Initialize(ctx context.Context) error {
 	// Get device information and capabilities
 	capabilities, err := c.GetCapabilities(ctx)
@@ -220,12 +219,12 @@ func (c *Client) Initialize(ctx context.Context) error {
 	return nil
 }
 
-// Endpoint returns the device endpoint
+// Endpoint returns the device endpoint.
 func (c *Client) Endpoint() string {
 	return c.endpoint
 }
 
-// SetCredentials updates the authentication credentials
+// SetCredentials updates the authentication credentials.
 func (c *Client) SetCredentials(username, password string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -233,16 +232,15 @@ func (c *Client) SetCredentials(username, password string) {
 	c.password = password
 }
 
-// GetCredentials returns the current credentials
-func (c *Client) GetCredentials() (string, string) {
+// GetCredentials returns the current credentials.
+func (c *Client) GetCredentials() (username, password string) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+
 	return c.username, c.password
 }
 
-// DownloadFile downloads a file from the given URL with authentication
-// Returns the raw file bytes
-// Supports both Basic and Digest authentication (tries basic first, falls back to digest)
+// Supports both Basic and Digest authentication (tries basic first, falls back to digest).
 func (c *Client) DownloadFile(ctx context.Context, downloadURL string) ([]byte, error) {
 	// Try basic auth first
 	data, err := c.downloadWithBasicAuth(ctx, downloadURL)
@@ -260,15 +258,16 @@ func (c *Client) DownloadFile(ctx context.Context, downloadURL string) ([]byte, 
 		if strings.Contains(digestErr.Error(), "401") {
 			return nil, err // Return original error (both auth methods failed)
 		}
+
 		return nil, digestErr
 	}
 
 	return nil, err
 }
 
-// downloadWithBasicAuth performs an HTTP download with Basic authentication
+// downloadWithBasicAuth performs an HTTP download with Basic authentication.
 func (c *Client) downloadWithBasicAuth(ctx context.Context, downloadURL string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -312,7 +311,7 @@ func (c *Client) downloadWithBasicAuth(ctx context.Context, downloadURL string) 
 			errorMsg += fmt.Sprintf("; response: %s", bodyStr)
 		}
 
-		return nil, fmt.Errorf("%s", errorMsg)
+		return nil, fmt.Errorf("%w: %s", ErrDownloadFailed, errorMsg)
 	}
 
 	data, err := io.ReadAll(resp.Body)
@@ -323,10 +322,10 @@ func (c *Client) downloadWithBasicAuth(ctx context.Context, downloadURL string) 
 	return data, nil
 }
 
-// downloadWithDigestAuth performs an HTTP download with Digest authentication
+// downloadWithDigestAuth performs an HTTP download with Digest authentication.
 func (c *Client) downloadWithDigestAuth(ctx context.Context, downloadURL string) ([]byte, error) {
 	if c.username == "" {
-		return nil, fmt.Errorf("digest auth requires credentials")
+		return nil, fmt.Errorf("%w", ErrDigestAuthRequiresCredentials)
 	}
 
 	// Create a custom transport with digest auth
@@ -350,7 +349,7 @@ func (c *Client) downloadWithDigestAuth(ctx context.Context, downloadURL string)
 		Timeout: DefaultTimeout,
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -388,7 +387,7 @@ func (c *Client) downloadWithDigestAuth(ctx context.Context, downloadURL string)
 			errorMsg += fmt.Sprintf("; response: %s", bodyStr)
 		}
 
-		return nil, fmt.Errorf("%s", errorMsg)
+		return nil, fmt.Errorf("%w: %s", ErrDownloadFailed, errorMsg)
 	}
 
 	data, err := io.ReadAll(resp.Body)
@@ -399,7 +398,7 @@ func (c *Client) downloadWithDigestAuth(ctx context.Context, downloadURL string)
 	return data, nil
 }
 
-// digestAuthTransport implements digest authentication for HTTP transport
+// digestAuthTransport implements digest authentication for HTTP transport.
 type digestAuthTransport struct {
 	transport *http.Transport
 	username  string
@@ -408,7 +407,7 @@ type digestAuthTransport struct {
 	ncMu      sync.Mutex // Protects nc field from concurrent access
 }
 
-// RoundTrip implements http.RoundTripper with digest auth support
+// RoundTrip implements http.RoundTripper with digest auth support.
 func (d *digestAuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	// First request without auth to get the challenge
 	resp, err := d.transport.RoundTrip(req)
@@ -433,6 +432,7 @@ func (d *digestAuthTransport) RoundTrip(req *http.Request) (*http.Response, erro
 			if err != nil {
 				return resp, fmt.Errorf("transport round trip with auth failed: %w", err)
 			}
+
 			return resp, nil
 		}
 	}
@@ -440,7 +440,7 @@ func (d *digestAuthTransport) RoundTrip(req *http.Request) (*http.Response, erro
 	return resp, nil
 }
 
-// createDigestAuthHeader creates a digest auth header from the challenge
+// createDigestAuthHeader creates a digest auth header from the challenge.
 func (d *digestAuthTransport) createDigestAuthHeader(req *http.Request, authHeader string) string {
 	// Simple digest auth implementation - parse challenge and create response
 	// This is a basic implementation that handles most ONVIF cameras
@@ -477,18 +477,18 @@ func (d *digestAuthTransport) createDigestAuthHeader(req *http.Request, authHead
 	}
 
 	// Build Authorization header
-	authHeaderValue := fmt.Sprintf(`Digest username="%s", realm="%s", nonce="%s", uri="%s", response="%s"`,
+	authHeaderValue := fmt.Sprintf(`Digest username=%q, realm=%q, nonce=%q, uri=%q, response=%q`,
 		d.username, realm, nonce, uri, responseStr)
 
 	if qop == "auth" {
-		authHeaderValue += fmt.Sprintf(`, opaque="%s", qop=%s, nc=%s, cnonce="%s"`,
+		authHeaderValue += fmt.Sprintf(`, opaque=%q, qop=%s, nc=%s, cnonce=%q`,
 			extractParam(authHeader, "opaque"), qop, ncStr, cnonce)
 	}
 
 	return authHeaderValue
 }
 
-// Helper functions for digest auth
+// Helper functions for digest auth.
 func extractParam(authHeader, param string) string {
 	prefix := param + `="`
 	idx := strings.Index(authHeader, prefix)
@@ -500,6 +500,7 @@ func extractParam(authHeader, param string) string {
 	if end == -1 {
 		return ""
 	}
+
 	return authHeader[start : start+end]
 }
 
@@ -511,15 +512,17 @@ func md5sum(s string) interface{} {
 	// Use crypto/md5 - import it if not already present
 	h := md5.New()
 	h.Write([]byte(s))
+
 	return h.Sum(nil)
 }
 
-// generateNonce generates a cryptographically secure random nonce for digest authentication
+// generateNonce generates a cryptographically secure random nonce for digest authentication.
 func generateNonce() string {
 	bytes := make([]byte, NonceSize)
 	if _, err := rand.Read(bytes); err != nil {
 		// Fallback to time-based nonce if crypto/rand fails (shouldn't happen)
 		return fmt.Sprintf("%d", time.Now().UnixNano())
 	}
+
 	return hex.EncodeToString(bytes)
 }

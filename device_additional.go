@@ -8,10 +8,7 @@ import (
 	"github.com/0x524a/onvif-go/internal/soap"
 )
 
-// GetGeoLocation retrieves the current geographic location of the device.
-// This includes latitude, longitude, and elevation if GPS is available.
-//
-// ONVIF Specification: GetGeoLocation operation
+// ONVIF Specification: GetGeoLocation operation.
 func (c *Client) GetGeoLocation(ctx context.Context) ([]LocationEntity, error) {
 	type GetGeoLocationBody struct {
 		XMLName xml.Name `xml:"tds:GetGeoLocation"`
@@ -38,10 +35,7 @@ func (c *Client) GetGeoLocation(ctx context.Context) ([]LocationEntity, error) {
 	return response.Location, nil
 }
 
-// SetGeoLocation sets the geographic location of the device.
-// Latitude and longitude are in degrees, elevation is in meters.
-//
-// ONVIF Specification: SetGeoLocation operation
+// ONVIF Specification: SetGeoLocation operation.
 func (c *Client) SetGeoLocation(ctx context.Context, location []LocationEntity) error {
 	type SetGeoLocationBody struct {
 		XMLName  xml.Name         `xml:"tds:SetGeoLocation"`
@@ -69,9 +63,7 @@ func (c *Client) SetGeoLocation(ctx context.Context, location []LocationEntity) 
 	return nil
 }
 
-// DeleteGeoLocation removes geographic location information from the device.
-//
-// ONVIF Specification: DeleteGeoLocation operation
+// ONVIF Specification: DeleteGeoLocation operation.
 func (c *Client) DeleteGeoLocation(ctx context.Context, location []LocationEntity) error {
 	type DeleteGeoLocationBody struct {
 		XMLName  xml.Name         `xml:"tds:DeleteGeoLocation"`
@@ -99,10 +91,7 @@ func (c *Client) DeleteGeoLocation(ctx context.Context, location []LocationEntit
 	return nil
 }
 
-// GetDPAddresses retrieves the discovery protocol (DP) multicast addresses.
-// These addresses are used for WS-Discovery.
-//
-// ONVIF Specification: GetDPAddresses operation
+// ONVIF Specification: GetDPAddresses operation.
 func (c *Client) GetDPAddresses(ctx context.Context) ([]NetworkHost, error) {
 	type GetDPAddressesBody struct {
 		XMLName xml.Name `xml:"tds:GetDPAddresses"`
@@ -129,10 +118,7 @@ func (c *Client) GetDPAddresses(ctx context.Context) ([]NetworkHost, error) {
 	return response.DPAddress, nil
 }
 
-// SetDPAddresses sets the discovery protocol (DP) multicast addresses.
-// These addresses are used for WS-Discovery. Setting to empty list restores defaults.
-//
-// ONVIF Specification: SetDPAddresses operation
+// ONVIF Specification: SetDPAddresses operation.
 func (c *Client) SetDPAddresses(ctx context.Context, dpAddress []NetworkHost) error {
 	type SetDPAddressesBody struct {
 		XMLName   xml.Name      `xml:"tds:SetDPAddresses"`
@@ -160,10 +146,7 @@ func (c *Client) SetDPAddresses(ctx context.Context, dpAddress []NetworkHost) er
 	return nil
 }
 
-// GetAccessPolicy retrieves the device's access policy configuration.
-// The access policy defines rules for accessing the device.
-//
-// ONVIF Specification: GetAccessPolicy operation
+// ONVIF Specification: GetAccessPolicy operation.
 func (c *Client) GetAccessPolicy(ctx context.Context) (*AccessPolicy, error) {
 	type GetAccessPolicyBody struct {
 		XMLName xml.Name `xml:"tds:GetAccessPolicy"`
@@ -190,10 +173,7 @@ func (c *Client) GetAccessPolicy(ctx context.Context) (*AccessPolicy, error) {
 	return &AccessPolicy{PolicyFile: response.PolicyFile}, nil
 }
 
-// SetAccessPolicy sets the device's access policy configuration.
-// The policy defines rules for who can access the device and what operations they can perform.
-//
-// ONVIF Specification: SetAccessPolicy operation
+// ONVIF Specification: SetAccessPolicy operation.
 func (c *Client) SetAccessPolicy(ctx context.Context, policy *AccessPolicy) error {
 	type SetAccessPolicyBody struct {
 		XMLName    xml.Name    `xml:"tds:SetAccessPolicy"`
@@ -221,10 +201,7 @@ func (c *Client) SetAccessPolicy(ctx context.Context, policy *AccessPolicy) erro
 	return nil
 }
 
-// GetWsdlUrl retrieves the URL of the device's WSDL file.
-// Note: This operation is deprecated in newer ONVIF specifications.
-//
-// ONVIF Specification: GetWsdlUrl operation (deprecated)
+// ONVIF Specification: GetWsdlUrl operation (deprecated).
 func (c *Client) GetWsdlUrl(ctx context.Context) (string, error) {
 	type GetWsdlUrlBody struct {
 		XMLName xml.Name `xml:"tds:GetWsdlUrl"`

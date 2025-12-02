@@ -160,7 +160,9 @@ func main() {
 		flag.PrintDefaults()
 		fmt.Println()
 		fmt.Println("Example:")
-		fmt.Println("  ./onvif-diagnostics -endpoint http://192.168.1.201/onvif/device_service -username service -password Service.1234")
+		fmt.Println("  ./onvif-diagnostics -endpoint " +
+			"http://192.168.1.201/onvif/device_service " +
+			"-username service -password Service.1234")
 		os.Exit(1)
 	}
 
@@ -240,67 +242,67 @@ func main() {
 	fmt.Println()
 
 	// Test 1: Get Device Information
-	logStep("1. Getting device information...")
+	logStepf("1. Getting device information...")
 	report.DeviceInfo = testGetDeviceInformation(ctx, client, report)
 
 	// Test 2: Get System Date and Time
-	logStep("2. Getting system date and time...")
+	logStepf("2. Getting system date and time...")
 	report.SystemDateTime = testGetSystemDateTime(ctx, client, report)
 
 	// Test 3: Get Capabilities
-	logStep("3. Getting capabilities...")
+	logStepf("3. Getting capabilities...")
 	report.Capabilities = testGetCapabilities(ctx, client, report)
 
 	// Test 4: Initialize (discover services)
-	logStep("4. Discovering service endpoints...")
+	logStepf("4. Discovering service endpoints...")
 	if err := client.Initialize(ctx); err != nil {
-		logError("Service discovery failed: %v", err)
+		logErrorf("Service discovery failed: %v", err)
 		report.Errors = append(report.Errors, ErrorLog{
 			Operation: "Initialize",
 			Error:     err.Error(),
 			Timestamp: time.Now().Format(time.RFC3339),
 		})
 	} else {
-		logSuccess("Service endpoints discovered")
+		logSuccessf("Service endpoints discovered")
 	}
 
 	// Test 5: Get Profiles
-	logStep("5. Getting media profiles...")
+	logStepf("5. Getting media profiles...")
 	report.Profiles = testGetProfiles(ctx, client, report)
 
 	// Test 6: Get Stream URIs (for each profile)
 	if report.Profiles != nil && report.Profiles.Success {
-		logStep("6. Getting stream URIs for all profiles...")
+		logStepf("6. Getting stream URIs for all profiles...")
 		report.StreamURIs = testGetStreamURIs(ctx, client, report.Profiles.Data, report)
 	}
 
 	// Test 7: Get Snapshot URIs (for each profile)
 	if report.Profiles != nil && report.Profiles.Success {
-		logStep("7. Getting snapshot URIs for all profiles...")
+		logStepf("7. Getting snapshot URIs for all profiles...")
 		report.SnapshotURIs = testGetSnapshotURIs(ctx, client, report.Profiles.Data, report)
 	}
 
 	// Test 8: Get Video Encoder Configurations
 	if report.Profiles != nil && report.Profiles.Success {
-		logStep("8. Getting video encoder configurations...")
+		logStepf("8. Getting video encoder configurations...")
 		report.VideoEncoders = testGetVideoEncoders(ctx, client, report.Profiles.Data, report)
 	}
 
 	// Test 9: Get Imaging Settings
 	if report.Profiles != nil && report.Profiles.Success {
-		logStep("9. Getting imaging settings...")
+		logStepf("9. Getting imaging settings...")
 		report.ImagingSettings = testGetImagingSettings(ctx, client, report.Profiles.Data, report)
 	}
 
 	// Test 10: Get PTZ Status (if PTZ is available)
 	if report.Profiles != nil && report.Profiles.Success {
-		logStep("10. Getting PTZ status...")
+		logStepf("10. Getting PTZ status...")
 		report.PTZStatus = testGetPTZStatus(ctx, client, report.Profiles.Data, report)
 	}
 
 	// Test 11: Get PTZ Presets (if PTZ is available)
 	if report.Profiles != nil && report.Profiles.Success {
-		logStep("11. Getting PTZ presets...")
+		logStepf("11. Getting PTZ presets...")
 		report.PTZPresets = testGetPTZPresets(ctx, client, report.Profiles.Data, report)
 	}
 
@@ -309,7 +311,7 @@ func main() {
 	outputPath := filepath.Join(*outputDir, filename)
 
 	// Save report
-	logStep("Saving diagnostic report...")
+	logStepf("Saving diagnostic report...")
 	if err := saveReport(report, outputPath); err != nil {
 		log.Fatalf("Failed to save report: %v", err)
 	}
@@ -317,7 +319,7 @@ func main() {
 	// Create XML archive if capture was enabled
 	if *captureXML && loggingTransport != nil {
 		fmt.Println()
-		logStep("Creating XML capture archive...")
+		logStepf("Creating XML capture archive...")
 
 		// Generate archive name based on device info
 		var archiveName string
@@ -335,14 +337,14 @@ func main() {
 		archivePath := filepath.Join(*outputDir, archiveName)
 
 		if err := createTarGz(xmlCaptureDir, archivePath); err != nil {
-			logError("Failed to create XML archive: %v", err)
+			logErrorf("Failed to create XML archive: %v", err)
 		} else {
-			logSuccess("XML archive created: %s", archiveName)
-			logSuccess("Total SOAP calls captured: %d", loggingTransport.Counter)
+			logSuccessf("XML archive created: %s", archiveName)
+			logSuccessf("Total SOAP calls captured: %d", loggingTransport.Counter)
 
 			// Remove temporary directory
 			if err := os.RemoveAll(xmlCaptureDir); err != nil {
-				logError("Warning: Failed to remove temp directory: %v", err)
+				logErrorf("Warning: Failed to remove temp directory: %v", err)
 			}
 		}
 	}
@@ -383,7 +385,7 @@ func testGetDeviceInformation(ctx context.Context, client *onvif.Client, report 
 	if err != nil {
 		result.Success = false
 		result.Error = err.Error()
-		logError("Failed: %v", err)
+		logErrorf("Failed: %v", err)
 		report.Errors = append(report.Errors, ErrorLog{
 			Operation: "GetDeviceInformation",
 			Error:     err.Error(),
@@ -392,7 +394,7 @@ func testGetDeviceInformation(ctx context.Context, client *onvif.Client, report 
 	} else {
 		result.Success = true
 		result.Data = info
-		logSuccess("Manufacturer: %s, Model: %s", info.Manufacturer, info.Model)
+		logSuccessf("Manufacturer: %s, Model: %s", info.Manufacturer, info.Model)
 	}
 
 	return result
@@ -408,7 +410,7 @@ func testGetSystemDateTime(ctx context.Context, client *onvif.Client, report *Ca
 	if err != nil {
 		result.Success = false
 		result.Error = err.Error()
-		logError("Failed: %v", err)
+		logErrorf("Failed: %v", err)
 		report.Errors = append(report.Errors, ErrorLog{
 			Operation: "GetSystemDateAndTime",
 			Error:     err.Error(),
@@ -417,7 +419,7 @@ func testGetSystemDateTime(ctx context.Context, client *onvif.Client, report *Ca
 	} else {
 		result.Success = true
 		result.Data = dateTime
-		logSuccess("Retrieved")
+		logSuccessf("Retrieved")
 	}
 
 	return result
@@ -433,7 +435,7 @@ func testGetCapabilities(ctx context.Context, client *onvif.Client, report *Came
 	if err != nil {
 		result.Success = false
 		result.Error = err.Error()
-		logError("Failed: %v", err)
+		logErrorf("Failed: %v", err)
 		report.Errors = append(report.Errors, ErrorLog{
 			Operation: "GetCapabilities",
 			Error:     err.Error(),
@@ -463,7 +465,7 @@ func testGetCapabilities(ctx context.Context, client *onvif.Client, report *Came
 			services = append(services, "Analytics")
 		}
 
-		logSuccess("Services: %s", strings.Join(services, ", "))
+		logSuccessf("Services: %s", strings.Join(services, ", "))
 	}
 
 	return result
@@ -479,7 +481,7 @@ func testGetProfiles(ctx context.Context, client *onvif.Client, report *CameraRe
 	if err != nil {
 		result.Success = false
 		result.Error = err.Error()
-		logError("Failed: %v", err)
+		logErrorf("Failed: %v", err)
 		report.Errors = append(report.Errors, ErrorLog{
 			Operation: "GetProfiles",
 			Error:     err.Error(),
@@ -489,7 +491,7 @@ func testGetProfiles(ctx context.Context, client *onvif.Client, report *CameraRe
 		result.Success = true
 		result.Data = profiles
 		result.Count = len(profiles)
-		logSuccess("Found %d profile(s)", len(profiles))
+		logSuccessf("Found %d profile(s)", len(profiles))
 
 		for i, profile := range profiles {
 			if *verbose {
@@ -524,7 +526,7 @@ func testGetStreamURIs(ctx context.Context, client *onvif.Client, profiles []*on
 			result.Success = false
 			result.Error = err.Error()
 			if *verbose {
-				logError("  Profile %s: %v", profile.Name, err)
+				logErrorf("  Profile %s: %v", profile.Name, err)
 			}
 			report.Errors = append(report.Errors, ErrorLog{
 				Operation: fmt.Sprintf("GetStreamURI[%s]", profile.Token),
@@ -535,7 +537,7 @@ func testGetStreamURIs(ctx context.Context, client *onvif.Client, profiles []*on
 			result.Success = true
 			result.Data = streamURI
 			if *verbose {
-				logSuccess("  Profile %s: %s", profile.Name, streamURI.URI)
+				logSuccessf("  Profile %s: %s", profile.Name, streamURI.URI)
 			}
 		}
 
@@ -548,7 +550,7 @@ func testGetStreamURIs(ctx context.Context, client *onvif.Client, profiles []*on
 			successCount++
 		}
 	}
-	logSuccess("Retrieved %d/%d stream URIs", successCount, len(results))
+	logSuccessf("Retrieved %d/%d stream URIs", successCount, len(results))
 
 	return results
 }
@@ -570,7 +572,7 @@ func testGetSnapshotURIs(ctx context.Context, client *onvif.Client, profiles []*
 			result.Success = false
 			result.Error = err.Error()
 			if *verbose {
-				logError("  Profile %s: %v", profile.Name, err)
+				logErrorf("  Profile %s: %v", profile.Name, err)
 			}
 			report.Errors = append(report.Errors, ErrorLog{
 				Operation: fmt.Sprintf("GetSnapshotURI[%s]", profile.Token),
@@ -581,7 +583,7 @@ func testGetSnapshotURIs(ctx context.Context, client *onvif.Client, profiles []*
 			result.Success = true
 			result.Data = snapshotURI
 			if *verbose {
-				logSuccess("  Profile %s: %s", profile.Name, snapshotURI.URI)
+				logSuccessf("  Profile %s: %s", profile.Name, snapshotURI.URI)
 			}
 		}
 
@@ -594,12 +596,17 @@ func testGetSnapshotURIs(ctx context.Context, client *onvif.Client, profiles []*
 			successCount++
 		}
 	}
-	logSuccess("Retrieved %d/%d snapshot URIs", successCount, len(results))
+	logSuccessf("Retrieved %d/%d snapshot URIs", successCount, len(results))
 
 	return results
 }
 
-func testGetVideoEncoders(ctx context.Context, client *onvif.Client, profiles []*onvif.Profile, report *CameraReport) []VideoEncoderResult {
+func testGetVideoEncoders(
+	ctx context.Context,
+	client *onvif.Client,
+	profiles []*onvif.Profile,
+	report *CameraReport,
+) []VideoEncoderResult {
 	results := make([]VideoEncoderResult, 0)
 
 	for _, profile := range profiles {
@@ -620,7 +627,7 @@ func testGetVideoEncoders(ctx context.Context, client *onvif.Client, profiles []
 			result.Success = false
 			result.Error = err.Error()
 			if *verbose {
-				logError("  Profile %s: %v", profile.Name, err)
+				logErrorf("  Profile %s: %v", profile.Name, err)
 			}
 			report.Errors = append(report.Errors, ErrorLog{
 				Operation: fmt.Sprintf("GetVideoEncoderConfiguration[%s]", profile.Token),
@@ -631,7 +638,7 @@ func testGetVideoEncoders(ctx context.Context, client *onvif.Client, profiles []
 			result.Success = true
 			result.Data = config
 			if *verbose && config.Resolution != nil && config.RateControl != nil {
-				logSuccess("  Profile %s: %s %dx%d @ %dfps",
+				logSuccessf("  Profile %s: %s %dx%d @ %dfps",
 					profile.Name, config.Encoding,
 					config.Resolution.Width, config.Resolution.Height,
 					config.RateControl.FrameRateLimit)
@@ -647,12 +654,17 @@ func testGetVideoEncoders(ctx context.Context, client *onvif.Client, profiles []
 			successCount++
 		}
 	}
-	logSuccess("Retrieved %d/%d video encoder configs", successCount, len(results))
+	logSuccessf("Retrieved %d/%d video encoder configs", successCount, len(results))
 
 	return results
 }
 
-func testGetImagingSettings(ctx context.Context, client *onvif.Client, profiles []*onvif.Profile, report *CameraReport) []ImagingSettingsResult {
+func testGetImagingSettings(
+	ctx context.Context,
+	client *onvif.Client,
+	profiles []*onvif.Profile,
+	report *CameraReport,
+) []ImagingSettingsResult {
 	results := make([]ImagingSettingsResult, 0)
 	processed := make(map[string]bool)
 
@@ -679,7 +691,7 @@ func testGetImagingSettings(ctx context.Context, client *onvif.Client, profiles 
 			result.Success = false
 			result.Error = err.Error()
 			if *verbose {
-				logError("  Video source %s: %v", token, err)
+				logErrorf("  Video source %s: %v", token, err)
 			}
 			report.Errors = append(report.Errors, ErrorLog{
 				Operation: fmt.Sprintf("GetImagingSettings[%s]", token),
@@ -703,12 +715,17 @@ func testGetImagingSettings(ctx context.Context, client *onvif.Client, profiles 
 			successCount++
 		}
 	}
-	logSuccess("Retrieved %d/%d imaging settings", successCount, len(results))
+	logSuccessf("Retrieved %d/%d imaging settings", successCount, len(results))
 
 	return results
 }
 
-func testGetPTZStatus(ctx context.Context, client *onvif.Client, profiles []*onvif.Profile, report *CameraReport) []PTZStatusResult {
+func testGetPTZStatus(
+	ctx context.Context,
+	client *onvif.Client,
+	profiles []*onvif.Profile,
+	report *CameraReport,
+) []PTZStatusResult {
 	results := make([]PTZStatusResult, 0)
 
 	for _, profile := range profiles {
@@ -729,7 +746,7 @@ func testGetPTZStatus(ctx context.Context, client *onvif.Client, profiles []*onv
 			result.Success = false
 			result.Error = err.Error()
 			if *verbose {
-				logError("  Profile %s: %v", profile.Name, err)
+				logErrorf("  Profile %s: %v", profile.Name, err)
 			}
 			report.Errors = append(report.Errors, ErrorLog{
 				Operation: fmt.Sprintf("GetPTZStatus[%s]", profile.Token),
@@ -740,7 +757,7 @@ func testGetPTZStatus(ctx context.Context, client *onvif.Client, profiles []*onv
 			result.Success = true
 			result.Data = status
 			if *verbose {
-				logSuccess("  Profile %s: Retrieved", profile.Name)
+				logSuccessf("  Profile %s: Retrieved", profile.Name)
 			}
 		}
 
@@ -748,7 +765,7 @@ func testGetPTZStatus(ctx context.Context, client *onvif.Client, profiles []*onv
 	}
 
 	if len(results) == 0 {
-		logInfo("No PTZ configurations found")
+		logInfof("No PTZ configurations found")
 	} else {
 		successCount := 0
 		for _, r := range results {
@@ -756,13 +773,18 @@ func testGetPTZStatus(ctx context.Context, client *onvif.Client, profiles []*onv
 				successCount++
 			}
 		}
-		logSuccess("Retrieved %d/%d PTZ status", successCount, len(results))
+		logSuccessf("Retrieved %d/%d PTZ status", successCount, len(results))
 	}
 
 	return results
 }
 
-func testGetPTZPresets(ctx context.Context, client *onvif.Client, profiles []*onvif.Profile, report *CameraReport) []PTZPresetsResult {
+func testGetPTZPresets(
+	ctx context.Context,
+	client *onvif.Client,
+	profiles []*onvif.Profile,
+	report *CameraReport,
+) []PTZPresetsResult {
 	results := make([]PTZPresetsResult, 0)
 
 	for _, profile := range profiles {
@@ -783,7 +805,7 @@ func testGetPTZPresets(ctx context.Context, client *onvif.Client, profiles []*on
 			result.Success = false
 			result.Error = err.Error()
 			if *verbose {
-				logError("  Profile %s: %v", profile.Name, err)
+				logErrorf("  Profile %s: %v", profile.Name, err)
 			}
 			report.Errors = append(report.Errors, ErrorLog{
 				Operation: fmt.Sprintf("GetPTZPresets[%s]", profile.Token),
@@ -795,7 +817,7 @@ func testGetPTZPresets(ctx context.Context, client *onvif.Client, profiles []*on
 			result.Data = presets
 			result.Count = len(presets)
 			if *verbose {
-				logSuccess("  Profile %s: %d preset(s)", profile.Name, len(presets))
+				logSuccessf("  Profile %s: %d preset(s)", profile.Name, len(presets))
 			}
 		}
 
@@ -803,7 +825,7 @@ func testGetPTZPresets(ctx context.Context, client *onvif.Client, profiles []*on
 	}
 
 	if len(results) == 0 {
-		logInfo("No PTZ configurations found")
+		logInfof("No PTZ configurations found")
 	} else {
 		successCount := 0
 		totalPresets := 0
@@ -813,7 +835,7 @@ func testGetPTZPresets(ctx context.Context, client *onvif.Client, profiles []*on
 				totalPresets += r.Count
 			}
 		}
-		logSuccess("Retrieved presets from %d/%d PTZ profiles (%d total presets)", successCount, len(results), totalPresets)
+		logSuccessf("Retrieved presets from %d/%d PTZ profiles (%d total presets)", successCount, len(results), totalPresets)
 	}
 
 	return results
@@ -844,6 +866,7 @@ func sanitizeFilename(s string) string {
 	s = strings.ReplaceAll(s, "<", "-")
 	s = strings.ReplaceAll(s, ">", "-")
 	s = strings.ReplaceAll(s, "|", "-")
+
 	return s
 }
 
@@ -860,25 +883,25 @@ func saveReport(report *CameraReport, filename string) error {
 	return nil
 }
 
-func logStep(format string, args ...interface{}) {
+func logStepf(format string, args ...interface{}) {
 	fmt.Printf("→ "+format+"\n", args...)
 }
 
-func logSuccess(format string, args ...interface{}) {
+func logSuccessf(format string, args ...interface{}) {
 	fmt.Printf("  ✓ "+format+"\n", args...)
 }
 
-func logError(format string, args ...interface{}) {
+func logErrorf(format string, args ...interface{}) {
 	fmt.Printf("  ✗ "+format+"\n", args...)
 }
 
-func logInfo(format string, args ...interface{}) {
+func logInfof(format string, args ...interface{}) {
 	fmt.Printf("  ℹ "+format+"\n", args...)
 }
 
 // XML Capture functionality
 
-// XMLCapture stores a request/response pair
+// XMLCapture stores a request/response pair.
 type XMLCapture struct {
 	Timestamp     string `json:"timestamp"`
 	Operation     int    `json:"operation"`
@@ -890,7 +913,7 @@ type XMLCapture struct {
 	Error         string `json:"error,omitempty"`
 }
 
-// LoggingTransport wraps http.RoundTripper to log requests and responses
+// LoggingTransport wraps http.RoundTripper to log requests and responses.
 type LoggingTransport struct {
 	Transport http.RoundTripper
 	LogDir    string
@@ -921,8 +944,9 @@ func (t *LoggingTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	resp, err := t.Transport.RoundTrip(req)
 	if err != nil {
 		capture.Error = err.Error()
-		t.saveCapture(capture)
-		return nil, err
+		t.saveCapture(&capture)
+
+		return nil, fmt.Errorf("round trip failed: %w", err)
 	}
 
 	// Capture response
@@ -936,11 +960,12 @@ func (t *LoggingTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		}
 	}
 
-	t.saveCapture(capture)
+	t.saveCapture(&capture)
+
 	return resp, nil
 }
 
-// prettyPrintXML formats XML with proper indentation using a simple algorithm
+// prettyPrintXML formats XML with proper indentation using a simple algorithm.
 func prettyPrintXML(xmlStr string) string {
 	if xmlStr == "" {
 		return ""
@@ -973,7 +998,7 @@ func prettyPrintXML(xmlStr string) string {
 	return formatted.String()
 }
 
-func (t *LoggingTransport) saveCapture(capture XMLCapture) {
+func (t *LoggingTransport) saveCapture(capture *XMLCapture) {
 	// Create filename base using operation name
 	baseFilename := fmt.Sprintf("capture_%03d_%s", capture.Operation, capture.OperationName)
 
@@ -982,6 +1007,7 @@ func (t *LoggingTransport) saveCapture(capture XMLCapture) {
 	data, err := json.MarshalIndent(capture, "", "  ")
 	if err != nil {
 		log.Printf("Failed to marshal capture: %v", err)
+
 		return
 	}
 
@@ -1003,7 +1029,7 @@ func (t *LoggingTransport) saveCapture(capture XMLCapture) {
 	}
 }
 
-// extractSOAPOperation extracts the operation name from a SOAP request body
+// extractSOAPOperation extracts the operation name from a SOAP request body.
 func extractSOAPOperation(soapBody string) string {
 	// Look for the operation element in the SOAP Body
 	// Typical format: <Body><GetDeviceInformation xmlns="...">...</GetDeviceInformation></Body>
@@ -1044,31 +1070,41 @@ func extractSOAPOperation(soapBody string) string {
 		if colonIdx := strings.Index(tagName, ":"); colonIdx != -1 {
 			return tagName[colonIdx+1:]
 		}
+
 		return tagName
 	}
 
 	return "Unknown"
 }
 
-// createTarGz creates a tar.gz archive from a directory
+// createTarGz creates a tar.gz archive from a directory.
 func createTarGz(sourceDir, archivePath string) error {
 	// Create archive file
 	archiveFile, err := os.Create(archivePath)
 	if err != nil {
 		return fmt.Errorf("failed to create archive file: %w", err)
 	}
-	defer archiveFile.Close()
+	defer func() {
+		//nolint:errcheck // Close error is not critical for cleanup
+		_ = archiveFile.Close()
+	}()
 
 	// Create gzip writer
 	gzWriter := gzip.NewWriter(archiveFile)
-	defer gzWriter.Close()
+	defer func() {
+		//nolint:errcheck // Close error is not critical for cleanup
+		_ = gzWriter.Close()
+	}()
 
 	// Create tar writer
 	tarWriter := tar.NewWriter(gzWriter)
-	defer tarWriter.Close()
+	defer func() {
+		//nolint:errcheck // Close error is not critical for cleanup
+		_ = tarWriter.Close()
+	}()
 
 	// Walk through source directory
-	return filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -1102,7 +1138,10 @@ func createTarGz(sourceDir, archivePath string) error {
 			if err != nil {
 				return fmt.Errorf("failed to open file: %w", err)
 			}
-			defer file.Close()
+			defer func() {
+				//nolint:errcheck // Close error is not critical for cleanup
+				_ = file.Close()
+			}()
 
 			if _, err := io.Copy(tarWriter, file); err != nil {
 				return fmt.Errorf("failed to write file to tar: %w", err)
@@ -1110,5 +1149,9 @@ func createTarGz(sourceDir, archivePath string) error {
 		}
 
 		return nil
-	})
+	}); err != nil {
+		return fmt.Errorf("failed to walk source directory: %w", err)
+	}
+
+	return nil
 }

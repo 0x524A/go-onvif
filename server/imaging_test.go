@@ -24,6 +24,7 @@ func TestHandleGetImagingSettings(t *testing.T) {
 
 	if settingsResp.ImagingSettings == nil {
 		t.Error("ImagingSettings is nil")
+
 		return
 	}
 
@@ -107,6 +108,7 @@ func TestHandleGetOptions(t *testing.T) {
 
 	if optionsResp.ImagingOptions == nil {
 		t.Error("ImagingOptions is nil")
+
 		return
 	}
 
@@ -119,7 +121,7 @@ func TestHandleGetOptions(t *testing.T) {
 	}
 }
 
-// TestHandleMove - DISABLED due to SOAP namespace requirements
+// TestHandleMove - DISABLED due to SOAP namespace requirements.
 func _DisabledTestHandleMove(t *testing.T) {
 	config := createTestConfig()
 	server, _ := New(config)

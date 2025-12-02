@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// ASCIIConfig controls ASCII art generation parameters
+// ASCIIConfig controls ASCII art generation parameters.
 type ASCIIConfig struct {
 	Width   int    // Output width in characters
 	Height  int    // Output height in characters
@@ -17,7 +17,7 @@ type ASCIIConfig struct {
 	Quality string // "high", "medium", "low"
 }
 
-// DefaultASCIIConfig returns a sensible default configuration
+// DefaultASCIIConfig returns a sensible default configuration.
 func DefaultASCIIConfig() ASCIIConfig {
 	return ASCIIConfig{
 		Width:   120,
@@ -27,27 +27,26 @@ func DefaultASCIIConfig() ASCIIConfig {
 	}
 }
 
-// ASCIICharsets define different character options
+// ASCIICharsets define different character options.
 var (
-	// Full charset with many shades
+	// Full charset with many shades.
 	charsetFull = []rune{' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'}
 
-	// Medium charset - balanced
+	// Medium charset - balanced.
 	charsetMedium = []rune{' ', '.', '-', '=', '+', '#', '@'}
 
-	// Simple charset - just a few chars
+	// Simple charset - just a few chars.
 	charsetSimple = []rune{' ', '-', '#', '@'}
 
-	// Block charset - using block characters
+	// Block charset - using block characters.
 	charsetBlock = []rune{' ', '░', '▒', '▓', '█'}
 
-	// Detailed charset
+	// Detailed charset.
 	charsetDetailed = []rune{' ', '`', '.', ',', ':', ';', '!', 'i', 'l', 'I',
 		'o', 'O', '0', 'e', 'E', 'p', 'P', 'x', 'X', '$', 'D', 'W', 'M', '@', '#'}
 )
 
-// ImageToASCII converts image bytes to ASCII art
-// Supports JPEG and PNG formats
+// Supports JPEG and PNG formats.
 func ImageToASCII(imageData []byte, config ASCIIConfig) (string, error) {
 	// Decode image from bytes
 	img, _, err := image.Decode(bytes.NewReader(imageData))
@@ -58,7 +57,7 @@ func ImageToASCII(imageData []byte, config ASCIIConfig) (string, error) {
 	return imageToASCIIFromImage(img, config, "unknown")
 }
 
-// imageToASCIIFromImage is the core conversion function
+// imageToASCIIFromImage is the core conversion function.
 func imageToASCIIFromImage(img image.Image, config ASCIIConfig, format string) (string, error) {
 	// Validate configuration
 	if config.Width <= 0 {
@@ -139,8 +138,7 @@ func imageToASCIIFromImage(img image.Image, config ASCIIConfig, format string) (
 	return result.String(), nil
 }
 
-// calculateBrightness converts RGB to brightness (0-255)
-// Uses standard luminance formula
+// Uses standard luminance formula.
 func calculateBrightness(r, g, b uint32) int {
 	// Convert 16-bit color to 8-bit
 	r8 := uint8(r >> 8)
@@ -161,7 +159,7 @@ func calculateBrightness(r, g, b uint32) int {
 	return brightness
 }
 
-// FormatASCIIOutput formats ASCII art with header and footer info
+// FormatASCIIOutput formats ASCII art with header and footer info.
 func FormatASCIIOutput(ascii string, imageInfo ImageInfo) string {
 	var result strings.Builder
 
@@ -199,7 +197,7 @@ func FormatASCIIOutput(ascii string, imageInfo ImageInfo) string {
 	return result.String()
 }
 
-// ImageInfo holds metadata about the snapshot
+// ImageInfo holds metadata about the snapshot.
 type ImageInfo struct {
 	Width       int    // Original width in pixels
 	Height      int    // Original height in pixels
@@ -208,7 +206,7 @@ type ImageInfo struct {
 	CaptureTime string // Capture timestamp
 }
 
-// formatBytes converts bytes to human-readable format
+// formatBytes converts bytes to human-readable format.
 func formatBytes(bytes int64) string {
 	if bytes < 1024 {
 		return fmt.Sprintf("%d B", bytes)
@@ -216,10 +214,11 @@ func formatBytes(bytes int64) string {
 	if bytes < 1024*1024 {
 		return fmt.Sprintf("%.1f KB", float64(bytes)/1024)
 	}
+
 	return fmt.Sprintf("%.1f MB", float64(bytes)/(1024*1024))
 }
 
-// CreateASCIIHighQuality creates a high-quality ASCII representation
+// CreateASCIIHighQuality creates a high-quality ASCII representation.
 func CreateASCIIHighQuality(imageData []byte) (string, error) {
 	config := ASCIIConfig{
 		Width:   160,
@@ -227,5 +226,6 @@ func CreateASCIIHighQuality(imageData []byte) (string, error) {
 		Invert:  false,
 		Quality: "high",
 	}
+
 	return ImageToASCII(imageData, config)
 }

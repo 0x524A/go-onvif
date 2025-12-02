@@ -8,7 +8,7 @@ import (
 	"github.com/0x524a/onvif-go/internal/soap"
 )
 
-// GetRemoteUser returns the configured remote user
+// GetRemoteUser returns the configured remote user.
 func (c *Client) GetRemoteUser(ctx context.Context) (*RemoteUser, error) {
 	type GetRemoteUser struct {
 		XMLName xml.Name `xml:"tds:GetRemoteUser"`
@@ -48,7 +48,7 @@ func (c *Client) GetRemoteUser(ctx context.Context) (*RemoteUser, error) {
 	}, nil
 }
 
-// SetRemoteUser sets the remote user
+// SetRemoteUser sets the remote user.
 func (c *Client) SetRemoteUser(ctx context.Context, remoteUser *RemoteUser) error {
 	type SetRemoteUser struct {
 		XMLName    xml.Name `xml:"tds:SetRemoteUser"`
@@ -86,7 +86,7 @@ func (c *Client) SetRemoteUser(ctx context.Context, remoteUser *RemoteUser) erro
 	return nil
 }
 
-// GetIPAddressFilter gets the IP address filter settings from a device
+// GetIPAddressFilter gets the IP address filter settings from a device.
 func (c *Client) GetIPAddressFilter(ctx context.Context) (*IPAddressFilter, error) {
 	type GetIPAddressFilter struct {
 		XMLName xml.Name `xml:"tds:GetIPAddressFilter"`
@@ -252,7 +252,7 @@ func (c *Client) AddIPAddressFilter(ctx context.Context, filter *IPAddressFilter
 	return nil
 }
 
-// RemoveIPAddressFilter deletes an IP filter address from a device
+// RemoveIPAddressFilter deletes an IP filter address from a device.
 func (c *Client) RemoveIPAddressFilter(ctx context.Context, filter *IPAddressFilter) error {
 	type RemoveIPAddressFilter struct {
 		XMLName         xml.Name `xml:"tds:RemoveIPAddressFilter"`
@@ -305,7 +305,7 @@ func (c *Client) RemoveIPAddressFilter(ctx context.Context, filter *IPAddressFil
 	return nil
 }
 
-// GetZeroConfiguration gets the zero-configuration from a device
+// GetZeroConfiguration gets the zero-configuration from a device.
 func (c *Client) GetZeroConfiguration(ctx context.Context) (*NetworkZeroConfiguration, error) {
 	type GetZeroConfiguration struct {
 		XMLName xml.Name `xml:"tds:GetZeroConfiguration"`
@@ -341,7 +341,7 @@ func (c *Client) GetZeroConfiguration(ctx context.Context) (*NetworkZeroConfigur
 	}, nil
 }
 
-// SetZeroConfiguration sets the zero-configuration
+// SetZeroConfiguration sets the zero-configuration.
 func (c *Client) SetZeroConfiguration(ctx context.Context, interfaceToken string, enabled bool) error {
 	type SetZeroConfiguration struct {
 		XMLName        xml.Name `xml:"tds:SetZeroConfiguration"`
@@ -366,7 +366,7 @@ func (c *Client) SetZeroConfiguration(ctx context.Context, interfaceToken string
 	return nil
 }
 
-// GetDynamicDNS gets the dynamic DNS settings from a device
+// GetDynamicDNS gets the dynamic DNS settings from a device.
 func (c *Client) GetDynamicDNS(ctx context.Context) (*DynamicDNSInformation, error) {
 	type GetDynamicDNS struct {
 		XMLName xml.Name `xml:"tds:GetDynamicDNS"`
@@ -402,7 +402,7 @@ func (c *Client) GetDynamicDNS(ctx context.Context) (*DynamicDNSInformation, err
 	}, nil
 }
 
-// SetDynamicDNS sets the dynamic DNS settings on a device
+// SetDynamicDNS sets the dynamic DNS settings on a device.
 func (c *Client) SetDynamicDNS(ctx context.Context, dnsType DynamicDNSType, name string) error {
 	type SetDynamicDNS struct {
 		XMLName xml.Name       `xml:"tds:SetDynamicDNS"`
@@ -427,7 +427,7 @@ func (c *Client) SetDynamicDNS(ctx context.Context, dnsType DynamicDNSType, name
 	return nil
 }
 
-// GetPasswordComplexityConfiguration retrieves the current password complexity configuration settings
+// GetPasswordComplexityConfiguration retrieves the current password complexity configuration settings.
 func (c *Client) GetPasswordComplexityConfiguration(ctx context.Context) (*PasswordComplexityConfiguration, error) {
 	type GetPasswordComplexityConfiguration struct {
 		XMLName xml.Name `xml:"tds:GetPasswordComplexityConfiguration"`
@@ -467,8 +467,11 @@ func (c *Client) GetPasswordComplexityConfiguration(ctx context.Context) (*Passw
 	}, nil
 }
 
-// SetPasswordComplexityConfiguration allows setting of the password complexity configuration
-func (c *Client) SetPasswordComplexityConfiguration(ctx context.Context, config *PasswordComplexityConfiguration) error {
+// SetPasswordComplexityConfiguration allows setting of the password complexity configuration.
+func (c *Client) SetPasswordComplexityConfiguration(
+	ctx context.Context,
+	config *PasswordComplexityConfiguration,
+) error {
 	type SetPasswordComplexityConfiguration struct {
 		XMLName                   xml.Name `xml:"tds:SetPasswordComplexityConfiguration"`
 		Xmlns                     string   `xml:"xmlns:tds,attr"`
@@ -500,7 +503,7 @@ func (c *Client) SetPasswordComplexityConfiguration(ctx context.Context, config 
 	return nil
 }
 
-// GetPasswordHistoryConfiguration retrieves the current password history configuration settings
+// GetPasswordHistoryConfiguration retrieves the current password history configuration settings.
 func (c *Client) GetPasswordHistoryConfiguration(ctx context.Context) (*PasswordHistoryConfiguration, error) {
 	type GetPasswordHistoryConfiguration struct {
 		XMLName xml.Name `xml:"tds:GetPasswordHistoryConfiguration"`
@@ -532,7 +535,7 @@ func (c *Client) GetPasswordHistoryConfiguration(ctx context.Context) (*Password
 	}, nil
 }
 
-// SetPasswordHistoryConfiguration allows setting of the password history configuration
+// SetPasswordHistoryConfiguration allows setting of the password history configuration.
 func (c *Client) SetPasswordHistoryConfiguration(ctx context.Context, config *PasswordHistoryConfiguration) error {
 	type SetPasswordHistoryConfiguration struct {
 		XMLName xml.Name `xml:"tds:SetPasswordHistoryConfiguration"`
@@ -557,7 +560,7 @@ func (c *Client) SetPasswordHistoryConfiguration(ctx context.Context, config *Pa
 	return nil
 }
 
-// GetAuthFailureWarningConfiguration retrieves the current authentication failure warning configuration
+// GetAuthFailureWarningConfiguration retrieves the current authentication failure warning configuration.
 func (c *Client) GetAuthFailureWarningConfiguration(ctx context.Context) (*AuthFailureWarningConfiguration, error) {
 	type GetAuthFailureWarningConfiguration struct {
 		XMLName xml.Name `xml:"tds:GetAuthFailureWarningConfiguration"`
@@ -591,8 +594,11 @@ func (c *Client) GetAuthFailureWarningConfiguration(ctx context.Context) (*AuthF
 	}, nil
 }
 
-// SetAuthFailureWarningConfiguration allows setting of the authentication failure warning configuration
-func (c *Client) SetAuthFailureWarningConfiguration(ctx context.Context, config *AuthFailureWarningConfiguration) error {
+// SetAuthFailureWarningConfiguration allows setting of the authentication failure warning configuration.
+func (c *Client) SetAuthFailureWarningConfiguration(
+	ctx context.Context,
+	config *AuthFailureWarningConfiguration,
+) error {
 	type SetAuthFailureWarningConfiguration struct {
 		XMLName         xml.Name `xml:"tds:SetAuthFailureWarningConfiguration"`
 		Xmlns           string   `xml:"xmlns:tds,attr"`

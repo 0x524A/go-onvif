@@ -9,7 +9,7 @@ import (
 
 // PTZ service SOAP message types
 
-// ContinuousMoveRequest represents ContinuousMove request
+// ContinuousMoveRequest represents ContinuousMove request.
 type ContinuousMoveRequest struct {
 	XMLName      xml.Name  `xml:"http://www.onvif.org/ver20/ptz/wsdl ContinuousMove"`
 	ProfileToken string    `xml:"ProfileToken"`
@@ -17,12 +17,12 @@ type ContinuousMoveRequest struct {
 	Timeout      string    `xml:"Timeout,omitempty"`
 }
 
-// ContinuousMoveResponse represents ContinuousMove response
+// ContinuousMoveResponse represents ContinuousMove response.
 type ContinuousMoveResponse struct {
 	XMLName xml.Name `xml:"http://www.onvif.org/ver20/ptz/wsdl ContinuousMoveResponse"`
 }
 
-// AbsoluteMoveRequest represents AbsoluteMove request
+// AbsoluteMoveRequest represents AbsoluteMove request.
 type AbsoluteMoveRequest struct {
 	XMLName      xml.Name  `xml:"http://www.onvif.org/ver20/ptz/wsdl AbsoluteMove"`
 	ProfileToken string    `xml:"ProfileToken"`
@@ -30,12 +30,12 @@ type AbsoluteMoveRequest struct {
 	Speed        PTZVector `xml:"Speed,omitempty"`
 }
 
-// AbsoluteMoveResponse represents AbsoluteMove response
+// AbsoluteMoveResponse represents AbsoluteMove response.
 type AbsoluteMoveResponse struct {
 	XMLName xml.Name `xml:"http://www.onvif.org/ver20/ptz/wsdl AbsoluteMoveResponse"`
 }
 
-// RelativeMoveRequest represents RelativeMove request
+// RelativeMoveRequest represents RelativeMove request.
 type RelativeMoveRequest struct {
 	XMLName      xml.Name  `xml:"http://www.onvif.org/ver20/ptz/wsdl RelativeMove"`
 	ProfileToken string    `xml:"ProfileToken"`
@@ -43,12 +43,12 @@ type RelativeMoveRequest struct {
 	Speed        PTZVector `xml:"Speed,omitempty"`
 }
 
-// RelativeMoveResponse represents RelativeMove response
+// RelativeMoveResponse represents RelativeMove response.
 type RelativeMoveResponse struct {
 	XMLName xml.Name `xml:"http://www.onvif.org/ver20/ptz/wsdl RelativeMoveResponse"`
 }
 
-// StopRequest represents Stop request
+// StopRequest represents Stop request.
 type StopRequest struct {
 	XMLName      xml.Name `xml:"http://www.onvif.org/ver20/ptz/wsdl Stop"`
 	ProfileToken string   `xml:"ProfileToken"`
@@ -56,75 +56,75 @@ type StopRequest struct {
 	Zoom         bool     `xml:"Zoom,omitempty"`
 }
 
-// StopResponse represents Stop response
+// StopResponse represents Stop response.
 type StopResponse struct {
 	XMLName xml.Name `xml:"http://www.onvif.org/ver20/ptz/wsdl StopResponse"`
 }
 
-// GetStatusRequest represents GetStatus request
+// GetStatusRequest represents GetStatus request.
 type GetStatusRequest struct {
 	XMLName      xml.Name `xml:"http://www.onvif.org/ver20/ptz/wsdl GetStatus"`
 	ProfileToken string   `xml:"ProfileToken"`
 }
 
-// GetStatusResponse represents GetStatus response
+// GetStatusResponse represents GetStatus response.
 type GetStatusResponse struct {
 	XMLName   xml.Name   `xml:"http://www.onvif.org/ver20/ptz/wsdl GetStatusResponse"`
 	PTZStatus *PTZStatus `xml:"PTZStatus"`
 }
 
-// PTZStatus represents PTZ status
+// PTZStatus represents PTZ status.
 type PTZStatus struct {
 	Position   PTZVector     `xml:"Position"`
 	MoveStatus PTZMoveStatus `xml:"MoveStatus"`
 	UTCTime    string        `xml:"UtcTime"`
 }
 
-// PTZMoveStatus represents PTZ movement status
+// PTZMoveStatus represents PTZ movement status.
 type PTZMoveStatus struct {
 	PanTilt string `xml:"PanTilt,omitempty"`
 	Zoom    string `xml:"Zoom,omitempty"`
 }
 
-// PTZVector represents PTZ position/velocity
+// PTZVector represents PTZ position/velocity.
 type PTZVector struct {
 	PanTilt *Vector2D `xml:"PanTilt,omitempty"`
 	Zoom    *Vector1D `xml:"Zoom,omitempty"`
 }
 
-// Vector2D represents a 2D vector
+// Vector2D represents a 2D vector.
 type Vector2D struct {
 	X     float64 `xml:"x,attr"`
 	Y     float64 `xml:"y,attr"`
 	Space string  `xml:"space,attr,omitempty"`
 }
 
-// Vector1D represents a 1D vector
+// Vector1D represents a 1D vector.
 type Vector1D struct {
 	X     float64 `xml:"x,attr"`
 	Space string  `xml:"space,attr,omitempty"`
 }
 
-// GetPresetsRequest represents GetPresets request
+// GetPresetsRequest represents GetPresets request.
 type GetPresetsRequest struct {
 	XMLName      xml.Name `xml:"http://www.onvif.org/ver20/ptz/wsdl GetPresets"`
 	ProfileToken string   `xml:"ProfileToken"`
 }
 
-// GetPresetsResponse represents GetPresets response
+// GetPresetsResponse represents GetPresets response.
 type GetPresetsResponse struct {
 	XMLName xml.Name    `xml:"http://www.onvif.org/ver20/ptz/wsdl GetPresetsResponse"`
 	Preset  []PTZPreset `xml:"Preset"`
 }
 
-// PTZPreset represents a PTZ preset
+// PTZPreset represents a PTZ preset.
 type PTZPreset struct {
 	Token       string     `xml:"token,attr"`
 	Name        string     `xml:"Name"`
 	PTZPosition *PTZVector `xml:"PTZPosition,omitempty"`
 }
 
-// GotoPresetRequest represents GotoPreset request
+// GotoPresetRequest represents GotoPreset request.
 type GotoPresetRequest struct {
 	XMLName      xml.Name  `xml:"http://www.onvif.org/ver20/ptz/wsdl GotoPreset"`
 	ProfileToken string    `xml:"ProfileToken"`
@@ -132,12 +132,12 @@ type GotoPresetRequest struct {
 	Speed        PTZVector `xml:"Speed,omitempty"`
 }
 
-// GotoPresetResponse represents GotoPreset response
+// GotoPresetResponse represents GotoPreset response.
 type GotoPresetResponse struct {
 	XMLName xml.Name `xml:"http://www.onvif.org/ver20/ptz/wsdl GotoPresetResponse"`
 }
 
-// SetPresetRequest represents SetPreset request
+// SetPresetRequest represents SetPreset request.
 type SetPresetRequest struct {
 	XMLName      xml.Name `xml:"http://www.onvif.org/ver20/ptz/wsdl SetPreset"`
 	ProfileToken string   `xml:"ProfileToken"`
@@ -145,19 +145,19 @@ type SetPresetRequest struct {
 	PresetToken  string   `xml:"PresetToken,omitempty"`
 }
 
-// SetPresetResponse represents SetPreset response
+// SetPresetResponse represents SetPreset response.
 type SetPresetResponse struct {
 	XMLName     xml.Name `xml:"http://www.onvif.org/ver20/ptz/wsdl SetPresetResponse"`
 	PresetToken string   `xml:"PresetToken"`
 }
 
-// GetConfigurationsResponse represents GetConfigurations response
+// GetConfigurationsResponse represents GetConfigurations response.
 type GetConfigurationsResponse struct {
 	XMLName          xml.Name              `xml:"http://www.onvif.org/ver20/ptz/wsdl GetConfigurationsResponse"`
 	PTZConfiguration []PTZConfigurationExt `xml:"PTZConfiguration"`
 }
 
-// PTZConfigurationExt represents PTZ configuration with extensions
+// PTZConfigurationExt represents PTZ configuration with extensions.
 type PTZConfigurationExt struct {
 	Token         string         `xml:"token,attr"`
 	Name          string         `xml:"Name"`
@@ -167,30 +167,30 @@ type PTZConfigurationExt struct {
 	ZoomLimits    *ZoomLimits    `xml:"ZoomLimits,omitempty"`
 }
 
-// PanTiltLimits represents pan/tilt limits
+// PanTiltLimits represents pan/tilt limits.
 type PanTiltLimits struct {
 	Range Space2DDescription `xml:"Range"`
 }
 
-// ZoomLimits represents zoom limits
+// ZoomLimits represents zoom limits.
 type ZoomLimits struct {
 	Range Space1DDescription `xml:"Range"`
 }
 
-// Space2DDescription represents 2D space description
+// Space2DDescription represents 2D space description.
 type Space2DDescription struct {
 	URI    string     `xml:"URI"`
 	XRange FloatRange `xml:"XRange"`
 	YRange FloatRange `xml:"YRange"`
 }
 
-// Space1DDescription represents 1D space description
+// Space1DDescription represents 1D space description.
 type Space1DDescription struct {
 	URI    string     `xml:"URI"`
 	XRange FloatRange `xml:"XRange"`
 }
 
-// FloatRange represents a float range
+// FloatRange represents a float range.
 type FloatRange struct {
 	Min float64 `xml:"Min"`
 	Max float64 `xml:"Max"`
@@ -200,7 +200,7 @@ type FloatRange struct {
 
 var ptzMutex sync.RWMutex
 
-// HandleContinuousMove handles ContinuousMove request
+// HandleContinuousMove handles ContinuousMove request.
 func (s *Server) HandleContinuousMove(body interface{}) (interface{}, error) {
 	var req ContinuousMoveRequest
 	if err := unmarshalBody(body, &req); err != nil {
@@ -213,7 +213,7 @@ func (s *Server) HandleContinuousMove(body interface{}) (interface{}, error) {
 
 	state, ok := s.ptzState[req.ProfileToken]
 	if !ok {
-		return nil, fmt.Errorf("PTZ not supported for profile: %s", req.ProfileToken)
+		return nil, fmt.Errorf("%w: %s", ErrPTZNotSupported, req.ProfileToken)
 	}
 
 	// Set movement state
@@ -233,7 +233,7 @@ func (s *Server) HandleContinuousMove(body interface{}) (interface{}, error) {
 	return &ContinuousMoveResponse{}, nil
 }
 
-// HandleAbsoluteMove handles AbsoluteMove request
+// HandleAbsoluteMove handles AbsoluteMove request.
 func (s *Server) HandleAbsoluteMove(body interface{}) (interface{}, error) {
 	var req AbsoluteMoveRequest
 	if err := unmarshalBody(body, &req); err != nil {
@@ -246,7 +246,7 @@ func (s *Server) HandleAbsoluteMove(body interface{}) (interface{}, error) {
 
 	state, ok := s.ptzState[req.ProfileToken]
 	if !ok {
-		return nil, fmt.Errorf("PTZ not supported for profile: %s", req.ProfileToken)
+		return nil, fmt.Errorf("%w: %s", ErrPTZNotSupported, req.ProfileToken)
 	}
 
 	// Update position
@@ -280,7 +280,7 @@ func (s *Server) HandleAbsoluteMove(body interface{}) (interface{}, error) {
 	return &AbsoluteMoveResponse{}, nil
 }
 
-// HandleRelativeMove handles RelativeMove request
+// HandleRelativeMove handles RelativeMove request.
 func (s *Server) HandleRelativeMove(body interface{}) (interface{}, error) {
 	var req RelativeMoveRequest
 	if err := unmarshalBody(body, &req); err != nil {
@@ -293,7 +293,7 @@ func (s *Server) HandleRelativeMove(body interface{}) (interface{}, error) {
 
 	state, ok := s.ptzState[req.ProfileToken]
 	if !ok {
-		return nil, fmt.Errorf("PTZ not supported for profile: %s", req.ProfileToken)
+		return nil, fmt.Errorf("%w: %s", ErrPTZNotSupported, req.ProfileToken)
 	}
 
 	// Update position relatively
@@ -327,7 +327,7 @@ func (s *Server) HandleRelativeMove(body interface{}) (interface{}, error) {
 	return &RelativeMoveResponse{}, nil
 }
 
-// HandleStop handles Stop request
+// HandleStop handles Stop request.
 func (s *Server) HandleStop(body interface{}) (interface{}, error) {
 	var req StopRequest
 	if err := unmarshalBody(body, &req); err != nil {
@@ -340,7 +340,7 @@ func (s *Server) HandleStop(body interface{}) (interface{}, error) {
 
 	state, ok := s.ptzState[req.ProfileToken]
 	if !ok {
-		return nil, fmt.Errorf("PTZ not supported for profile: %s", req.ProfileToken)
+		return nil, fmt.Errorf("%w: %s", ErrPTZNotSupported, req.ProfileToken)
 	}
 
 	// Stop movement
@@ -363,7 +363,7 @@ func (s *Server) HandleStop(body interface{}) (interface{}, error) {
 	return &StopResponse{}, nil
 }
 
-// HandleGetStatus handles GetStatus request
+// HandleGetStatus handles GetStatus request.
 func (s *Server) HandleGetStatus(body interface{}) (interface{}, error) {
 	var req GetStatusRequest
 	if err := unmarshalBody(body, &req); err != nil {
@@ -376,7 +376,7 @@ func (s *Server) HandleGetStatus(body interface{}) (interface{}, error) {
 
 	state, ok := s.ptzState[req.ProfileToken]
 	if !ok {
-		return nil, fmt.Errorf("PTZ not supported for profile: %s", req.ProfileToken)
+		return nil, fmt.Errorf("%w: %s", ErrPTZNotSupported, req.ProfileToken)
 	}
 
 	// Build status response
@@ -404,7 +404,7 @@ func (s *Server) HandleGetStatus(body interface{}) (interface{}, error) {
 	}, nil
 }
 
-// HandleGetPresets handles GetPresets request
+// HandleGetPresets handles GetPresets request.
 func (s *Server) HandleGetPresets(body interface{}) (interface{}, error) {
 	var req GetPresetsRequest
 	if err := unmarshalBody(body, &req); err != nil {
@@ -416,12 +416,13 @@ func (s *Server) HandleGetPresets(body interface{}) (interface{}, error) {
 	for i := range s.config.Profiles {
 		if s.config.Profiles[i].Token == req.ProfileToken {
 			profileCfg = &s.config.Profiles[i]
+
 			break
 		}
 	}
 
 	if profileCfg == nil || profileCfg.PTZ == nil {
-		return nil, fmt.Errorf("PTZ not supported for profile: %s", req.ProfileToken)
+		return nil, fmt.Errorf("%w: %s", ErrPTZNotSupported, req.ProfileToken)
 	}
 
 	// Build presets response
@@ -447,7 +448,7 @@ func (s *Server) HandleGetPresets(body interface{}) (interface{}, error) {
 	}, nil
 }
 
-// HandleGotoPreset handles GotoPreset request
+// HandleGotoPreset handles GotoPreset request.
 func (s *Server) HandleGotoPreset(body interface{}) (interface{}, error) {
 	var req GotoPresetRequest
 	if err := unmarshalBody(body, &req); err != nil {
@@ -459,12 +460,13 @@ func (s *Server) HandleGotoPreset(body interface{}) (interface{}, error) {
 	for i := range s.config.Profiles {
 		if s.config.Profiles[i].Token == req.ProfileToken {
 			profileCfg = &s.config.Profiles[i]
+
 			break
 		}
 	}
 
 	if profileCfg == nil || profileCfg.PTZ == nil {
-		return nil, fmt.Errorf("PTZ not supported for profile: %s", req.ProfileToken)
+		return nil, fmt.Errorf("%w: %s", ErrPTZNotSupported, req.ProfileToken)
 	}
 
 	// Find the preset
@@ -472,12 +474,13 @@ func (s *Server) HandleGotoPreset(body interface{}) (interface{}, error) {
 	for _, preset := range profileCfg.PTZ.Presets {
 		if preset.Token == req.PresetToken {
 			presetPos = &preset.Position
+
 			break
 		}
 	}
 
 	if presetPos == nil {
-		return nil, fmt.Errorf("preset not found: %s", req.PresetToken)
+		return nil, fmt.Errorf("%w: %s", ErrPresetNotFound, req.PresetToken)
 	}
 
 	// Get PTZ state and move to preset
@@ -512,15 +515,17 @@ func getMoveStatusString(moving bool) string {
 	if moving {
 		return "MOVING"
 	}
+
 	return "IDLE"
 }
 
-func clamp(value, min, max float64) float64 {
-	if value < min {
-		return min
+func clamp(value, minVal, maxVal float64) float64 {
+	if value < minVal {
+		return minVal
 	}
-	if value > max {
-		return max
+	if value > maxVal {
+		return maxVal
 	}
+
 	return value
 }

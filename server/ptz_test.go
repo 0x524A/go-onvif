@@ -6,8 +6,7 @@ import (
 	"time"
 )
 
-// TestHandleGetPresets tests GetPresets handler - DISABLED due to SOAP namespace requirements
-// These handlers are better tested through the SOAP handler in integration tests
+// These handlers are better tested through the SOAP handler in integration tests.
 func _DisabledTestHandleGetPresets(t *testing.T) {
 	config := createTestConfig()
 	server, _ := New(config)
@@ -75,7 +74,7 @@ func TestHandleGotoPreset(t *testing.T) {
 	}
 }
 
-// TestHandleGetStatus - DISABLED due to SOAP namespace requirements
+// TestHandleGetStatus - DISABLED due to SOAP namespace requirements.
 func _DisabledTestHandleGetStatus(t *testing.T) {
 	config := createTestConfig()
 	server, _ := New(config)
@@ -100,6 +99,7 @@ func _DisabledTestHandleGetStatus(t *testing.T) {
 
 	if statusResp.PTZStatus == nil {
 		t.Error("PTZStatus is nil")
+
 		return
 	}
 
@@ -235,7 +235,7 @@ func _DisabledTestHandleContinuousMove(t *testing.T) {
 	}
 }
 
-// TestHandleStop - DISABLED due to SOAP namespace requirements
+// TestHandleStop - DISABLED due to SOAP namespace requirements.
 func _DisabledTestHandleStop(t *testing.T) {
 	config := createTestConfig()
 	server, _ := New(config)
@@ -468,6 +468,7 @@ func TestPTZPresetOperations(t *testing.T) {
 			name: "GetStatus",
 			testFunc: func() (interface{}, error) {
 				reqXML := `<GetStatus><ProfileToken>` + config.Profiles[0].Token + `</ProfileToken></GetStatus>`
+
 				return server.HandleGetStatus([]byte(reqXML))
 			},
 		},

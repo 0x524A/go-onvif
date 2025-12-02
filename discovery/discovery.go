@@ -1,8 +1,10 @@
+// Package discovery provides ONVIF device discovery functionality using WS-Discovery protocol.
 package discovery
 
 import (
 	"context"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -10,29 +12,35 @@ import (
 )
 
 const (
-	// WS-Discovery multicast address
+	// WS-Discovery multicast address.
 	multicastAddr = "239.255.255.250:3702"
 
-	// WS-Discovery probe message
+	// WS-Discovery probe message.
 	probeTemplate = `<?xml version="1.0" encoding="UTF-8"?>
-<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing">
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" ` +
+		`xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing">
 	<s:Header>
-		<a:Action s:mustUnderstand="1">http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</a:Action>
+		<a:Action s:mustUnderstand="1">` +
+		`http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</a:Action>
 		<a:MessageID>uuid:%s</a:MessageID>
 		<a:ReplyTo>
-			<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address>
+			<a:Address>` +
+		`http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address>
 		</a:ReplyTo>
-		<a:To s:mustUnderstand="1">urn:schemas-xmlsoap-org:ws:2005:04:discovery</a:To>
+		<a:To s:mustUnderstand="1">` +
+		`urn:schemas-xmlsoap-org:ws:2005:04:discovery</a:To>
 	</s:Header>
 	<s:Body>
 		<Probe xmlns="http://schemas.xmlsoap.org/ws/2005/04/discovery">
-			<d:Types xmlns:d="http://schemas.xmlsoap.org/ws/2005/04/discovery" xmlns:dp0="http://www.onvif.org/ver10/network/wsdl">dp0:NetworkVideoTransmitter</d:Types>
+			<d:Types xmlns:d="http://schemas.xmlsoap.org/ws/2005/04/discovery" ` +
+		`xmlns:dp0="http://www.onvif.org/ver10/network/wsdl">` +
+		`dp0:NetworkVideoTransmitter</d:Types>
 		</Probe>
 	</s:Body>
 </s:Envelope>`
 )
 
-// Device represents a discovered ONVIF device
+// Device represents a discovered ONVIF device.
 type Device struct {
 	// Device endpoint address
 	EndpointRef string
@@ -50,7 +58,7 @@ type Device struct {
 	MetadataVersion int
 }
 
-// ProbeMatch represents a WS-Discovery probe match
+// ProbeMatch represents a WS-Discovery probe match.
 type ProbeMatch struct {
 	XMLName         xml.Name `xml:"ProbeMatch"`
 	EndpointRef     string   `xml:"EndpointReference>Address"`
@@ -60,13 +68,13 @@ type ProbeMatch struct {
 	MetadataVersion int      `xml:"MetadataVersion"`
 }
 
-// ProbeMatches represents WS-Discovery probe matches
+// ProbeMatches represents WS-Discovery probe matches.
 type ProbeMatches struct {
 	XMLName    xml.Name     `xml:"ProbeMatches"`
 	ProbeMatch []ProbeMatch `xml:"ProbeMatch"`
 }
 
-// DiscoverOptions contains options for device discovery
+// DiscoverOptions contains options for device discovery.
 type DiscoverOptions struct {
 	// NetworkInterface specifies the network interface to use for multicast.
 	// If empty, the system will choose the default interface.
@@ -76,13 +84,13 @@ type DiscoverOptions struct {
 	// Context and timeout are handled by the caller
 }
 
-// Discover discovers ONVIF devices on the network
-// For advanced options like specifying a network interface, use DiscoverWithOptions
+// Discover performs ONVIF device discovery using WS-Discovery protocol.
+// For advanced options like specifying a network interface, use DiscoverWithOptions.
 func Discover(ctx context.Context, timeout time.Duration) ([]*Device, error) {
 	return DiscoverWithOptions(ctx, timeout, &DiscoverOptions{})
 }
 
-// DiscoverWithOptions discovers ONVIF devices with custom options
+// DiscoverWithOptions discovers ONVIF devices with custom options.
 func DiscoverWithOptions(ctx context.Context, timeout time.Duration, opts *DiscoverOptions) ([]*Device, error) {
 	if opts == nil {
 		opts = &DiscoverOptions{}
@@ -107,7 +115,10 @@ func DiscoverWithOptions(ctx context.Context, timeout time.Duration, opts *Disco
 	if err != nil {
 		return nil, fmt.Errorf("failed to listen on multicast address: %w", err)
 	}
-	defer func() { _ = conn.Close() }()
+	defer func() {
+		//nolint:errcheck // Close error is not critical for cleanup
+		_ = conn.Close()
+	}()
 
 	// Set read deadline
 	if err := conn.SetReadDeadline(time.Now().Add(timeout)); err != nil {
@@ -135,10 +146,12 @@ func DiscoverWithOptions(ctx context.Context, timeout time.Duration, opts *Disco
 		default:
 			n, _, err := conn.ReadFromUDP(buffer)
 			if err != nil {
-				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+				var netErr net.Error
+				if errors.As(err, &netErr) && netErr.Timeout() {
 					// Timeout reached, return collected devices
 					return deviceMapToSlice(devices), nil
 				}
+
 				return deviceMapToSlice(devices), fmt.Errorf("failed to read UDP response: %w", err)
 			}
 
@@ -157,7 +170,7 @@ func DiscoverWithOptions(ctx context.Context, timeout time.Duration, opts *Disco
 	}
 }
 
-// parseProbeResponse parses a WS-Discovery probe response
+// parseProbeResponse parses a WS-Discovery probe response.
 func parseProbeResponse(data []byte) (*Device, error) {
 	var envelope struct {
 		Body struct {
@@ -166,11 +179,11 @@ func parseProbeResponse(data []byte) (*Device, error) {
 	}
 
 	if err := xml.Unmarshal(data, &envelope); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal probe response: %w", err)
 	}
 
 	if len(envelope.Body.ProbeMatches.ProbeMatch) == 0 {
-		return nil, fmt.Errorf("no probe matches found")
+		return nil, fmt.Errorf("%w", ErrNoProbeMatches)
 	}
 
 	// Take the first probe match
@@ -187,25 +200,27 @@ func parseProbeResponse(data []byte) (*Device, error) {
 	return device, nil
 }
 
-// parseSpaceSeparated parses a space-separated string into a slice
+// parseSpaceSeparated parses a space-separated string into a slice.
 func parseSpaceSeparated(s string) []string {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return []string{}
 	}
+
 	return strings.Fields(s)
 }
 
-// deviceMapToSlice converts a map of devices to a slice
+// deviceMapToSlice converts a map of devices to a slice.
 func deviceMapToSlice(m map[string]*Device) []*Device {
 	devices := make([]*Device, 0, len(m))
 	for _, device := range m {
 		devices = append(devices, device)
 	}
+
 	return devices
 }
 
-// generateUUID generates a simple UUID (not cryptographically secure)
+// generateUUID generates a simple UUID (not cryptographically secure).
 func generateUUID() string {
 	return fmt.Sprintf("%d-%d-%d-%d-%d",
 		time.Now().UnixNano(),
@@ -215,7 +230,7 @@ func generateUUID() string {
 		time.Now().UnixNano()%10000)
 }
 
-// resolveNetworkInterface resolves a network interface by name or IP address
+// resolveNetworkInterface resolves a network interface by name or IP address.
 func resolveNetworkInterface(ifaceSpec string) (*net.Interface, error) {
 	// Try to get interface by name (e.g., "eth0", "wlan0")
 	if iface, err := net.InterfaceByName(ifaceSpec); err == nil {
@@ -251,10 +266,16 @@ func resolveNetworkInterface(ifaceSpec string) (*net.Interface, error) {
 	}
 
 	// List available interfaces for error message
-	interfaces, _ := net.Interfaces()
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		interfaces = nil // Continue with empty list if we can't get interfaces
+	}
 	availableInterfaces := make([]string, 0)
 	for _, iface := range interfaces {
-		addrs, _ := iface.Addrs()
+		addrs, err := iface.Addrs()
+		if err != nil {
+			continue // Skip this interface if we can't get addresses
+		}
 		ifaceInfo := iface.Name
 		if len(addrs) > 0 {
 			var addrStrs []string
@@ -266,17 +287,17 @@ func resolveNetworkInterface(ifaceSpec string) (*net.Interface, error) {
 		availableInterfaces = append(availableInterfaces, ifaceInfo)
 	}
 
-	return nil, fmt.Errorf("network interface %q not found. Available interfaces: %v", ifaceSpec, availableInterfaces)
+	return nil, fmt.Errorf("%w: %q. Available interfaces: %v", ErrNetworkInterfaceNotFound, ifaceSpec, availableInterfaces)
 }
 
-// ListNetworkInterfaces returns all available network interfaces with their addresses
+// ListNetworkInterfaces returns all available network interfaces with their addresses.
 func ListNetworkInterfaces() ([]NetworkInterface, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list network interfaces: %w", err)
 	}
 
-	var result []NetworkInterface
+	result := make([]NetworkInterface, 0, len(interfaces))
 	for _, iface := range interfaces {
 		addrs, err := iface.Addrs()
 		if err != nil {
@@ -304,7 +325,7 @@ func ListNetworkInterfaces() ([]NetworkInterface, error) {
 	return result, nil
 }
 
-// NetworkInterface represents a network interface
+// NetworkInterface represents a network interface.
 type NetworkInterface struct {
 	// Name of the interface (e.g., "eth0", "wlan0")
 	Name string
@@ -319,7 +340,7 @@ type NetworkInterface struct {
 	Multicast bool
 }
 
-// GetDeviceEndpoint extracts the primary device endpoint from XAddrs
+// GetDeviceEndpoint extracts the primary device endpoint from XAddrs.
 func (d *Device) GetDeviceEndpoint() string {
 	if len(d.XAddrs) == 0 {
 		return ""
@@ -329,7 +350,7 @@ func (d *Device) GetDeviceEndpoint() string {
 	return d.XAddrs[0]
 }
 
-// GetName extracts the device name from scopes
+// GetName extracts the device name from scopes.
 func (d *Device) GetName() string {
 	for _, scope := range d.Scopes {
 		if strings.Contains(scope, "name") {
@@ -339,10 +360,11 @@ func (d *Device) GetName() string {
 			}
 		}
 	}
+
 	return ""
 }
 
-// GetLocation extracts the device location from scopes
+// GetLocation extracts the device location from scopes.
 func (d *Device) GetLocation() string {
 	for _, scope := range d.Scopes {
 		if strings.Contains(scope, "location") {
@@ -352,5 +374,6 @@ func (d *Device) GetLocation() string {
 			}
 		}
 	}
+
 	return ""
 }

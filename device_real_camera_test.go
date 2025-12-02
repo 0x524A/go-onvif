@@ -16,7 +16,7 @@ import (
 // Serial Number: 404754734001050102
 // Hardware ID: F000B543
 
-// TestGetDeviceInformation_Bosch tests GetDeviceInformation with real camera response
+// TestGetDeviceInformation_Bosch tests GetDeviceInformation with real camera response.
 func TestGetDeviceInformation_Bosch(t *testing.T) {
 	// Real SOAP response from Bosch FLEXIDOME indoor 5100i IR (FW: 8.71.0066)
 	realResponse := `<?xml version="1.0" encoding="UTF-8"?>
@@ -78,7 +78,7 @@ func TestGetDeviceInformation_Bosch(t *testing.T) {
 	}
 }
 
-// TestGetCapabilities_Bosch tests GetCapabilities with real camera response
+// TestGetCapabilities_Bosch tests GetCapabilities with real camera response.
 func TestGetCapabilities_Bosch(t *testing.T) {
 	// Real SOAP response from Bosch FLEXIDOME indoor 5100i IR (FW: 8.71.0066)
 	realResponse := `<?xml version="1.0" encoding="UTF-8"?>
@@ -206,7 +206,7 @@ func TestGetCapabilities_Bosch(t *testing.T) {
 	}
 }
 
-// TestGetServices_Bosch tests GetServices with real camera response
+// TestGetServices_Bosch tests GetServices with real camera response.
 func TestGetServices_Bosch(t *testing.T) {
 	// Real SOAP response from Bosch FLEXIDOME indoor 5100i IR (FW: 8.71.0066)
 	realResponse := `<?xml version="1.0" encoding="UTF-8"?>
@@ -292,7 +292,7 @@ func TestGetServices_Bosch(t *testing.T) {
 	}
 }
 
-// TestGetServiceCapabilities_Bosch tests GetServiceCapabilities with real camera response
+// TestGetServiceCapabilities_Bosch tests GetServiceCapabilities with real camera response.
 func TestGetServiceCapabilities_Bosch(t *testing.T) {
 	// Real SOAP response from Bosch FLEXIDOME indoor 5100i IR (FW: 8.71.0066)
 	// Note: Uses attributes, not child elements
@@ -352,7 +352,7 @@ func TestGetServiceCapabilities_Bosch(t *testing.T) {
 	}
 }
 
-// TestGetSystemDateAndTime_Bosch tests GetSystemDateAndTime with real camera response
+// TestGetSystemDateAndTime_Bosch tests GetSystemDateAndTime with real camera response.
 func TestGetSystemDateAndTime_Bosch(t *testing.T) {
 	// Real SOAP response from Bosch FLEXIDOME indoor 5100i IR (FW: 8.71.0066)
 	realResponse := `<?xml version="1.0" encoding="UTF-8"?>
@@ -415,7 +415,7 @@ func TestGetSystemDateAndTime_Bosch(t *testing.T) {
 	_ = dateTime // Acknowledge we received a response
 }
 
-// TestGetHostname_Bosch tests GetHostname with real camera response
+// TestGetHostname_Bosch tests GetHostname with real camera response.
 func TestGetHostname_Bosch(t *testing.T) {
 	// Real SOAP response from Bosch FLEXIDOME indoor 5100i IR (FW: 8.71.0066)
 	realResponse := `<?xml version="1.0" encoding="UTF-8"?>
@@ -470,7 +470,7 @@ func TestGetHostname_Bosch(t *testing.T) {
 	}
 }
 
-// TestGetScopes_Bosch tests GetScopes with real camera response
+// TestGetScopes_Bosch tests GetScopes with real camera response.
 func TestGetScopes_Bosch(t *testing.T) {
 	// Real SOAP response from Bosch FLEXIDOME indoor 5100i IR (FW: 8.71.0066)
 	realResponse := `<?xml version="1.0" encoding="UTF-8"?>
@@ -541,7 +541,7 @@ func TestGetScopes_Bosch(t *testing.T) {
 	}
 }
 
-// TestGetUsers_Bosch tests GetUsers with real camera response
+// TestGetUsers_Bosch tests GetUsers with real camera response.
 func TestGetUsers_Bosch(t *testing.T) {
 	// Real SOAP response from Bosch FLEXIDOME indoor 5100i IR (FW: 8.71.0066)
 	realResponse := `<?xml version="1.0" encoding="UTF-8"?>

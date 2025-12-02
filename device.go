@@ -8,10 +8,10 @@ import (
 	"github.com/0x524a/onvif-go/internal/soap"
 )
 
-// Device service namespace
+// Device service namespace.
 const deviceNamespace = "http://www.onvif.org/ver10/device/wsdl"
 
-// GetDeviceInformation retrieves device information
+// GetDeviceInformation retrieves device information.
 func (c *Client) GetDeviceInformation(ctx context.Context) (*DeviceInformation, error) {
 	type GetDeviceInformation struct {
 		XMLName xml.Name `xml:"tds:GetDeviceInformation"`
@@ -49,7 +49,7 @@ func (c *Client) GetDeviceInformation(ctx context.Context) (*DeviceInformation, 
 	}, nil
 }
 
-// GetCapabilities retrieves device capabilities
+// GetCapabilities retrieves device capabilities.
 func (c *Client) GetCapabilities(ctx context.Context) (*Capabilities, error) {
 	type GetCapabilities struct {
 		XMLName  xml.Name `xml:"tds:GetCapabilities"`
@@ -230,7 +230,7 @@ func (c *Client) GetCapabilities(ctx context.Context) (*Capabilities, error) {
 	return capabilities, nil
 }
 
-// SystemReboot reboots the device
+// SystemReboot reboots the device.
 func (c *Client) SystemReboot(ctx context.Context) (string, error) {
 	type SystemReboot struct {
 		XMLName xml.Name `xml:"tds:SystemReboot"`
@@ -258,7 +258,7 @@ func (c *Client) SystemReboot(ctx context.Context) (string, error) {
 	return resp.Message, nil
 }
 
-// GetSystemDateAndTime retrieves the device's system date and time
+// GetSystemDateAndTime retrieves the device's system date and time.
 func (c *Client) GetSystemDateAndTime(ctx context.Context) (interface{}, error) {
 	type GetSystemDateAndTime struct {
 		XMLName xml.Name `xml:"tds:GetSystemDateAndTime"`
@@ -281,7 +281,7 @@ func (c *Client) GetSystemDateAndTime(ctx context.Context) (interface{}, error) 
 	return resp, nil
 }
 
-// GetHostname retrieves the device's hostname
+// GetHostname retrieves the device's hostname.
 func (c *Client) GetHostname(ctx context.Context) (*HostnameInformation, error) {
 	type GetHostname struct {
 		XMLName xml.Name `xml:"tds:GetHostname"`
@@ -315,7 +315,7 @@ func (c *Client) GetHostname(ctx context.Context) (*HostnameInformation, error) 
 	}, nil
 }
 
-// SetHostname sets the device's hostname
+// SetHostname sets the device's hostname.
 func (c *Client) SetHostname(ctx context.Context, name string) error {
 	type SetHostname struct {
 		XMLName xml.Name `xml:"tds:SetHostname"`
@@ -338,7 +338,7 @@ func (c *Client) SetHostname(ctx context.Context, name string) error {
 	return nil
 }
 
-// GetDNS retrieves DNS configuration
+// GetDNS retrieves DNS configuration.
 func (c *Client) GetDNS(ctx context.Context) (*DNSInformation, error) {
 	type GetDNS struct {
 		XMLName xml.Name `xml:"tds:GetDNS"`
@@ -396,7 +396,7 @@ func (c *Client) GetDNS(ctx context.Context) (*DNSInformation, error) {
 	return dns, nil
 }
 
-// GetNTP retrieves NTP configuration
+// GetNTP retrieves NTP configuration.
 func (c *Client) GetNTP(ctx context.Context) (*NTPInformation, error) {
 	type GetNTP struct {
 		XMLName xml.Name `xml:"tds:GetNTP"`
@@ -456,7 +456,7 @@ func (c *Client) GetNTP(ctx context.Context) (*NTPInformation, error) {
 	return ntp, nil
 }
 
-// GetNetworkInterfaces retrieves network interface configuration
+// GetNetworkInterfaces retrieves network interface configuration.
 func (c *Client) GetNetworkInterfaces(ctx context.Context) ([]*NetworkInterface, error) {
 	type GetNetworkInterfaces struct {
 		XMLName xml.Name `xml:"tds:GetNetworkInterfaces"`
@@ -533,7 +533,7 @@ func (c *Client) GetNetworkInterfaces(ctx context.Context) ([]*NetworkInterface,
 	return interfaces, nil
 }
 
-// GetScopes retrieves configured scopes
+// GetScopes retrieves configured scopes.
 func (c *Client) GetScopes(ctx context.Context) ([]*Scope, error) {
 	type GetScopes struct {
 		XMLName xml.Name `xml:"tds:GetScopes"`
@@ -572,7 +572,7 @@ func (c *Client) GetScopes(ctx context.Context) ([]*Scope, error) {
 	return scopes, nil
 }
 
-// GetUsers retrieves user accounts
+// GetUsers retrieves user accounts.
 func (c *Client) GetUsers(ctx context.Context) ([]*User, error) {
 	type GetUsers struct {
 		XMLName xml.Name `xml:"tds:GetUsers"`
@@ -611,7 +611,7 @@ func (c *Client) GetUsers(ctx context.Context) ([]*User, error) {
 	return users, nil
 }
 
-// CreateUsers creates new user accounts
+// CreateUsers creates new user accounts.
 func (c *Client) CreateUsers(ctx context.Context, users []*User) error {
 	type CreateUsers struct {
 		XMLName xml.Name `xml:"tds:CreateUsers"`
@@ -649,7 +649,7 @@ func (c *Client) CreateUsers(ctx context.Context, users []*User) error {
 	return nil
 }
 
-// DeleteUsers deletes user accounts
+// DeleteUsers deletes user accounts.
 func (c *Client) DeleteUsers(ctx context.Context, usernames []string) error {
 	type DeleteUsers struct {
 		XMLName  xml.Name `xml:"tds:DeleteUsers"`
@@ -672,7 +672,7 @@ func (c *Client) DeleteUsers(ctx context.Context, usernames []string) error {
 	return nil
 }
 
-// SetUser modifies an existing user account
+// SetUser modifies an existing user account.
 func (c *Client) SetUser(ctx context.Context, user *User) error {
 	type SetUser struct {
 		XMLName xml.Name `xml:"tds:SetUser"`
@@ -703,7 +703,7 @@ func (c *Client) SetUser(ctx context.Context, user *User) error {
 	return nil
 }
 
-// GetServices returns information about services on the device
+// GetServices returns information about services on the device.
 func (c *Client) GetServices(ctx context.Context, includeCapability bool) ([]*Service, error) {
 	type GetServices struct {
 		XMLName           xml.Name `xml:"tds:GetServices"`
@@ -754,7 +754,7 @@ func (c *Client) GetServices(ctx context.Context, includeCapability bool) ([]*Se
 	return services, nil
 }
 
-// GetServiceCapabilities returns the capabilities of the device service
+// GetServiceCapabilities returns the capabilities of the device service.
 func (c *Client) GetServiceCapabilities(ctx context.Context) (*DeviceServiceCapabilities, error) {
 	type GetServiceCapabilities struct {
 		XMLName xml.Name `xml:"tds:GetServiceCapabilities"`
@@ -825,7 +825,7 @@ func (c *Client) GetServiceCapabilities(ctx context.Context) (*DeviceServiceCapa
 	}, nil
 }
 
-// GetDiscoveryMode gets the discovery mode of a device
+// GetDiscoveryMode gets the discovery mode of a device.
 func (c *Client) GetDiscoveryMode(ctx context.Context) (DiscoveryMode, error) {
 	type GetDiscoveryMode struct {
 		XMLName xml.Name `xml:"tds:GetDiscoveryMode"`
@@ -853,7 +853,7 @@ func (c *Client) GetDiscoveryMode(ctx context.Context) (DiscoveryMode, error) {
 	return DiscoveryMode(resp.DiscoveryMode), nil
 }
 
-// SetDiscoveryMode sets the discovery mode of a device
+// SetDiscoveryMode sets the discovery mode of a device.
 func (c *Client) SetDiscoveryMode(ctx context.Context, mode DiscoveryMode) error {
 	type SetDiscoveryMode struct {
 		XMLName       xml.Name      `xml:"tds:SetDiscoveryMode"`
@@ -876,7 +876,7 @@ func (c *Client) SetDiscoveryMode(ctx context.Context, mode DiscoveryMode) error
 	return nil
 }
 
-// GetRemoteDiscoveryMode gets the remote discovery mode
+// GetRemoteDiscoveryMode gets the remote discovery mode.
 func (c *Client) GetRemoteDiscoveryMode(ctx context.Context) (DiscoveryMode, error) {
 	type GetRemoteDiscoveryMode struct {
 		XMLName xml.Name `xml:"tds:GetRemoteDiscoveryMode"`
@@ -904,7 +904,7 @@ func (c *Client) GetRemoteDiscoveryMode(ctx context.Context) (DiscoveryMode, err
 	return DiscoveryMode(resp.RemoteDiscoveryMode), nil
 }
 
-// SetRemoteDiscoveryMode sets the remote discovery mode
+// SetRemoteDiscoveryMode sets the remote discovery mode.
 func (c *Client) SetRemoteDiscoveryMode(ctx context.Context, mode DiscoveryMode) error {
 	type SetRemoteDiscoveryMode struct {
 		XMLName             xml.Name      `xml:"tds:SetRemoteDiscoveryMode"`
@@ -927,7 +927,7 @@ func (c *Client) SetRemoteDiscoveryMode(ctx context.Context, mode DiscoveryMode)
 	return nil
 }
 
-// GetEndpointReference gets the endpoint reference GUID
+// GetEndpointReference gets the endpoint reference GUID.
 func (c *Client) GetEndpointReference(ctx context.Context) (string, error) {
 	type GetEndpointReference struct {
 		XMLName xml.Name `xml:"tds:GetEndpointReference"`
@@ -955,7 +955,7 @@ func (c *Client) GetEndpointReference(ctx context.Context) (string, error) {
 	return resp.GUID, nil
 }
 
-// GetNetworkProtocols gets defined network protocols from a device
+// GetNetworkProtocols gets defined network protocols from a device.
 func (c *Client) GetNetworkProtocols(ctx context.Context) ([]*NetworkProtocol, error) {
 	type GetNetworkProtocols struct {
 		XMLName xml.Name `xml:"tds:GetNetworkProtocols"`
@@ -996,7 +996,7 @@ func (c *Client) GetNetworkProtocols(ctx context.Context) ([]*NetworkProtocol, e
 	return protocols, nil
 }
 
-// SetNetworkProtocols configures defined network protocols on a device
+// SetNetworkProtocols configures defined network protocols on a device.
 func (c *Client) SetNetworkProtocols(ctx context.Context, protocols []*NetworkProtocol) error {
 	type SetNetworkProtocols struct {
 		XMLName          xml.Name `xml:"tds:SetNetworkProtocols"`
@@ -1034,7 +1034,7 @@ func (c *Client) SetNetworkProtocols(ctx context.Context, protocols []*NetworkPr
 	return nil
 }
 
-// GetNetworkDefaultGateway gets the default gateway settings from a device
+// GetNetworkDefaultGateway gets the default gateway settings from a device.
 func (c *Client) GetNetworkDefaultGateway(ctx context.Context) (*NetworkGateway, error) {
 	type GetNetworkDefaultGateway struct {
 		XMLName xml.Name `xml:"tds:GetNetworkDefaultGateway"`
@@ -1068,7 +1068,7 @@ func (c *Client) GetNetworkDefaultGateway(ctx context.Context) (*NetworkGateway,
 	}, nil
 }
 
-// SetNetworkDefaultGateway sets the default gateway settings on a device
+// SetNetworkDefaultGateway sets the default gateway settings on a device.
 func (c *Client) SetNetworkDefaultGateway(ctx context.Context, gateway *NetworkGateway) error {
 	type SetNetworkDefaultGateway struct {
 		XMLName     xml.Name `xml:"tds:SetNetworkDefaultGateway"`
