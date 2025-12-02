@@ -18,10 +18,20 @@ var (
 )
 
 //nolint:funlen // Main function has many statements due to server setup and configuration
+const (
+	defaultPort     = 8080
+	maxWorkers      = 3
+	defaultTimeout  = 30
+	ptzStepSize     = 5
+	ptzMaxPan       = 180
+	ptzMaxTilt      = 90
+	ptzSpeed        = 0.5
+)
+
 func main() {
 	// Define command-line flags
 	host := flag.String("host", "0.0.0.0", "Server host address")
-	port := flag.Int("port", 8080, "Server port")
+	port := flag.Int("port", defaultPort, "Server port")
 	username := flag.String("username", "admin", "Authentication username")
 	password := flag.String("password", "admin", "Authentication password")
 	manufacturer := flag.String("manufacturer", "onvif-go", "Device manufacturer")

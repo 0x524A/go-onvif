@@ -20,7 +20,13 @@ import (
 	"github.com/0x524a/onvif-go"
 )
 
-const version = "1.0.0"
+const (
+	version              = "1.0.0"
+	defaultTimeoutSec     = 30
+	maxRetryAttempts     = 10
+	retryDelaySec        = 5
+	maxIdleTimeoutSec    = 90
+)
 
 type CameraReport struct {
 	Timestamp       string                  `json:"timestamp"`
@@ -198,9 +204,9 @@ func main() {
 
 		loggingTransport = &LoggingTransport{
 			Transport: &http.Transport{
-				MaxIdleConns:        10,
-				MaxIdleConnsPerHost: 5,
-				IdleConnTimeout:     90 * time.Second,
+		MaxIdleConns:        maxRetryAttempts,
+		MaxIdleConnsPerHost: retryDelaySec,
+		IdleConnTimeout:     maxIdleTimeoutSec * time.Second,
 			},
 			LogDir:  xmlCaptureDir,
 			Counter: 0,

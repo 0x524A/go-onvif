@@ -17,6 +17,14 @@ import (
 	"github.com/0x524a/onvif-go/discovery"
 )
 
+const (
+	defaultTimeoutSeconds = 10
+	defaultRetryDelay     = 5
+	ptzTimeoutSeconds     = 30
+	maxRetries            = 3
+	readBufferSize        = 5
+)
+
 type CLI struct {
 	client *onvif.Client
 	reader *bufio.Reader
@@ -101,7 +109,7 @@ func (c *CLI) discoverCameras() {
 	fmt.Println("This may take a few seconds...")
 	fmt.Println()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutSeconds*time.Second)
 	defer cancel()
 
 	// Try auto-discovery first (no specific interface)
@@ -260,7 +268,7 @@ func (c *CLI) discoverWithInterfaceSelection() ([]*discovery.Device, error) {
 
 // performDiscoveryOnInterface performs discovery on a specific network interface.
 func (c *CLI) performDiscoveryOnInterface(interfaceName string) ([]*discovery.Device, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutSeconds*time.Second)
 	defer cancel()
 
 	opts := &discovery.DiscoverOptions{

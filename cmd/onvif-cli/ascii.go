@@ -153,9 +153,9 @@ func imageToASCIIFromImage(img image.Image, config ASCIIConfig, format string) (
 // Uses standard luminance formula.
 func calculateBrightness(r, g, b uint32) int {
 	// Convert 16-bit color to 8-bit
-	r8 := uint8(r >> 8) //nolint:gosec // Color values are clamped to valid range
-	g8 := uint8(g >> 8) //nolint:gosec // Color values are clamped to valid range
-	b8 := uint8(b >> 8) //nolint:gosec // Color values are clamped to valid range
+		r8 := uint8(r >> bitShift8) //nolint:gosec // Color values are clamped to valid range
+		g8 := uint8(g >> bitShift8) //nolint:gosec // Color values are clamped to valid range
+		b8 := uint8(b >> bitShift8) //nolint:gosec // Color values are clamped to valid range
 
 	// Use standard brightness calculation
 	// https://en.wikipedia.org/wiki/Relative_luminance
@@ -233,8 +233,8 @@ func formatBytes(bytes int64) string {
 // CreateASCIIHighQuality creates a high-quality ASCII representation.
 func CreateASCIIHighQuality(imageData []byte) (string, error) {
 	config := ASCIIConfig{
-		Width:   160,
-		Height:  50,
+		Width:   largeASCIIWidth,
+		Height:  largeASCIIHeight,
 		Invert:  false,
 		Quality: "high",
 	}
