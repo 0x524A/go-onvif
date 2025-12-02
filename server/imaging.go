@@ -347,25 +347,27 @@ func (s *Server) HandleSetImagingSettings(body interface{}) (interface{}, error)
 // HandleGetOptions handles GetOptions request.
 func (s *Server) HandleGetOptions(body interface{}) (interface{}, error) {
 	// Return available imaging options/capabilities
+	const maxImagingValue = 100   //nolint:mnd // Maximum imaging parameter value
+	const maxExposureTime = 10000 //nolint:mnd // Maximum exposure time in microseconds
 	options := &ImagingOptions{
-		Brightness:       &FloatRange{Min: 0, Max: 100},
-		ColorSaturation:  &FloatRange{Min: 0, Max: 100},
-		Contrast:         &FloatRange{Min: 0, Max: 100},
-		Sharpness:        &FloatRange{Min: 0, Max: 100},
+		Brightness:       &FloatRange{Min: 0, Max: maxImagingValue},
+		ColorSaturation:  &FloatRange{Min: 0, Max: maxImagingValue},
+		Contrast:         &FloatRange{Min: 0, Max: maxImagingValue},
+		Sharpness:        &FloatRange{Min: 0, Max: maxImagingValue},
 		IrCutFilterModes: []string{"ON", "OFF", "AUTO"},
 		BacklightCompensation: &BacklightCompensationOptions{
 			Mode:  []string{"OFF", "ON"},
-			Level: &FloatRange{Min: 0, Max: 100},
+			Level: &FloatRange{Min: 0, Max: maxImagingValue},
 		},
 		Exposure: &ExposureOptions{
 			Mode:            []string{"AUTO", "MANUAL"},
 			Priority:        []string{"LowNoise", "FrameRate"},
-			MinExposureTime: &FloatRange{Min: 1, Max: 10000},
-			MaxExposureTime: &FloatRange{Min: 1, Max: 10000},
-			MinGain:         &FloatRange{Min: 0, Max: 100},
-			MaxGain:         &FloatRange{Min: 0, Max: 100},
-			ExposureTime:    &FloatRange{Min: 1, Max: 10000},
-			Gain:            &FloatRange{Min: 0, Max: 100},
+			MinExposureTime: &FloatRange{Min: 1, Max: maxExposureTime},
+			MaxExposureTime: &FloatRange{Min: 1, Max: maxExposureTime},
+			MinGain:         &FloatRange{Min: 0, Max: maxImagingValue},
+			MaxGain:         &FloatRange{Min: 0, Max: maxImagingValue},
+			ExposureTime:    &FloatRange{Min: 1, Max: maxExposureTime},
+			Gain:            &FloatRange{Min: 0, Max: maxImagingValue},
 		},
 		Focus: &FocusOptions{
 			AutoFocusModes: []string{"AUTO", "MANUAL"},

@@ -363,7 +363,8 @@ func (c *Config) ServiceEndpoints(host string) map[string]string {
 	}
 
 	var baseURL string
-	if c.Port == 80 {
+	const httpPort = 80 //nolint:mnd // Standard HTTP port
+	if c.Port == httpPort {
 		baseURL = "http://" + host + c.BasePath
 	} else {
 		// Import fmt at the top to use Sprintf

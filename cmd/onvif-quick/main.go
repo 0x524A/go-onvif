@@ -196,7 +196,7 @@ func connectAndShowInfo() {
 	client, err := onvif.NewClient(
 		endpoint,
 		onvif.WithCredentials(username, password),
-		onvif.WithTimeout(30*time.Second),
+		onvif.WithTimeout(ptzTimeout*time.Second),
 	)
 	if err != nil {
 		fmt.Printf("❌ Error: %v\n", err)
@@ -311,7 +311,7 @@ func ptzDemo() {
 
 	switch choice {
 	case "1":
-		velocity = &onvif.PTZSpeed{PanTilt: &onvif.Vector2D{X: 0.5, Y: 0.0}}
+		velocity = &onvif.PTZSpeed{PanTilt: &onvif.Vector2D{X: ptzSpeed, Y: 0.0}}
 	case "2":
 		velocity = &onvif.PTZSpeed{PanTilt: &onvif.Vector2D{X: -ptzSpeed, Y: 0.0}}
 	case "3":
@@ -335,7 +335,7 @@ func ptzDemo() {
 			return
 		}
 		fmt.Println("✅ Moving for 2 seconds...")
-		time.Sleep(2 * time.Second)
+		time.Sleep(ptzStepSize * time.Second)
 		//nolint:errcheck // Stop error is not critical for demo
 		_ = client.Stop(ctx, profileToken, true, false)
 	} else if position != nil {

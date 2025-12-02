@@ -268,7 +268,7 @@ func (s *Server) HandleAbsoluteMove(body interface{}) (interface{}, error) {
 	// In a real implementation, simulate movement over time
 	// For now, we'll stop immediately
 	go func() {
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond) //nolint:mnd // PTZ movement delay
 		ptzMutex.Lock()
 		state.Moving = false
 		state.PanMoving = false
@@ -306,8 +306,10 @@ func (s *Server) HandleRelativeMove(body interface{}) (interface{}, error) {
 	}
 
 	// Clamp values to valid ranges (simplified)
-	state.Position.Pan = clamp(state.Position.Pan, -180, 180)
-	state.Position.Tilt = clamp(state.Position.Tilt, -90, 90)
+	const maxPan = 180  //nolint:mnd // PTZ pan range
+	const maxTilt = 90  //nolint:mnd // PTZ tilt range
+	state.Position.Pan = clamp(state.Position.Pan, -maxPan, maxPan)
+	state.Position.Tilt = clamp(state.Position.Tilt, -maxTilt, maxTilt)
 	state.Position.Zoom = clamp(state.Position.Zoom, 0, 1)
 
 	state.Moving = true
@@ -315,7 +317,7 @@ func (s *Server) HandleRelativeMove(body interface{}) (interface{}, error) {
 
 	// Simulate movement completion
 	go func() {
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond) //nolint:mnd // PTZ movement delay
 		ptzMutex.Lock()
 		state.Moving = false
 		state.PanMoving = false

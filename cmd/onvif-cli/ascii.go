@@ -76,7 +76,7 @@ func imageToASCIIFromImage(img image.Image, config ASCIIConfig, format string) (
 		config.Width = 120
 	}
 	if config.Height <= 0 {
-		config.Height = 40
+		config.Height = defaultASCIIHeight
 	}
 	if config.Quality == "" {
 		config.Quality = "medium"
@@ -130,11 +130,11 @@ func imageToASCIIFromImage(img image.Image, config ASCIIConfig, format string) (
 
 			// Invert if requested
 			if config.Invert {
-				brightness = 255 - brightness
+				brightness = maxColorValue - brightness
 			}
 
 			// Map brightness to character
-			charIndex := int(float64(brightness) / 255.0 * float64(len(charset)-1))
+			charIndex := int(float64(brightness) / float64(maxColorValue) * float64(len(charset)-1))
 			if charIndex >= len(charset) {
 				charIndex = len(charset) - 1
 			}
@@ -153,16 +153,16 @@ func imageToASCIIFromImage(img image.Image, config ASCIIConfig, format string) (
 // Uses standard luminance formula.
 func calculateBrightness(r, g, b uint32) int {
 	// Convert 16-bit color to 8-bit
-		r8 := uint8(r >> bitShift8) //nolint:gosec // Color values are clamped to valid range
-		g8 := uint8(g >> bitShift8) //nolint:gosec // Color values are clamped to valid range
-		b8 := uint8(b >> bitShift8) //nolint:gosec // Color values are clamped to valid range
+	r8 := uint8(r >> bitShift8) //nolint:gosec // Color values are clamped to valid range
+	g8 := uint8(g >> bitShift8) //nolint:gosec // Color values are clamped to valid range
+	b8 := uint8(b >> bitShift8) //nolint:gosec // Color values are clamped to valid range
 
 	// Use standard brightness calculation
 	// https://en.wikipedia.org/wiki/Relative_luminance
 	brightness := int(0.299*float64(r8) + 0.587*float64(g8) + 0.114*float64(b8))
 
-	if brightness > 255 {
-		brightness = 255
+	if brightness > maxColorValue {
+		brightness = maxColorValue
 	}
 	if brightness < 0 {
 		brightness = 0
@@ -223,11 +223,13 @@ func formatBytes(bytes int64) string {
 	if bytes < 1024 {
 		return fmt.Sprintf("%d B", bytes)
 	}
-	if bytes < 1024*1024 {
-		return fmt.Sprintf("%.1f KB", float64(bytes)/1024)
+	const kbSize = 1024
+	const mbSize = 1024 * 1024
+	if bytes < mbSize {
+		return fmt.Sprintf("%.1f KB", float64(bytes)/kbSize)
 	}
 
-	return fmt.Sprintf("%.1f MB", float64(bytes)/(1024*1024))
+	return fmt.Sprintf("%.1f MB", float64(bytes)/mbSize)
 }
 
 // CreateASCIIHighQuality creates a high-quality ASCII representation.

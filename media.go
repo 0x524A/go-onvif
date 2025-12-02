@@ -694,7 +694,9 @@ func (c *Client) GetMediaServiceCapabilities(ctx context.Context) (*MediaService
 // GetVideoEncoderConfigurationOptions retrieves available options for video encoder configuration.
 //
 //nolint:funlen // GetVideoEncoderConfigurationOptions has many statements due to parsing complex encoder options
-func (c *Client) GetVideoEncoderConfigurationOptions(ctx context.Context, configurationToken string) (*VideoEncoderConfigurationOptions, error) {
+func (c *Client) GetVideoEncoderConfigurationOptions(
+	ctx context.Context, configurationToken string,
+) (*VideoEncoderConfigurationOptions, error) {
 	endpoint := c.mediaEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint

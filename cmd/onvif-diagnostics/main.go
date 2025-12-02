@@ -21,11 +21,11 @@ import (
 )
 
 const (
-	version              = "1.0.0"
-	defaultTimeoutSec     = 30
-	maxRetryAttempts     = 10
-	retryDelaySec        = 5
-	maxIdleTimeoutSec    = 90
+	version           = "1.0.0"
+	defaultTimeoutSec = 30
+	maxRetryAttempts  = 10
+	retryDelaySec     = 5
+	maxIdleTimeoutSec = 90
 )
 
 type CameraReport struct {
@@ -174,7 +174,7 @@ func main() {
 	}
 
 	// Create output directory
-	if err := os.MkdirAll(*outputDir, 0755); err != nil {
+	if err := os.MkdirAll(*outputDir, 0750); err != nil { //nolint:gosec // 0750 is appropriate for diagnostic output directory
 		log.Fatalf("Failed to create output directory: %v", err)
 	}
 
@@ -198,15 +198,15 @@ func main() {
 	if *captureXML {
 		timestamp := time.Now().Format("20060102-150405")
 		xmlCaptureDir = filepath.Join(*outputDir, "temp_"+timestamp)
-		if err := os.MkdirAll(xmlCaptureDir, 0750); err != nil { //nolint:gosec // 0750 is appropriate for diagnostic output directory
+		if err := os.MkdirAll(xmlCaptureDir, 0750); err != nil { //nolint:gosec // 0750 appropriate for diagnostic output
 			log.Fatalf("Failed to create XML capture directory: %v", err)
 		}
 
 		loggingTransport = &LoggingTransport{
 			Transport: &http.Transport{
-		MaxIdleConns:        maxRetryAttempts,
-		MaxIdleConnsPerHost: retryDelaySec,
-		IdleConnTimeout:     maxIdleTimeoutSec * time.Second,
+				MaxIdleConns:        maxRetryAttempts,
+				MaxIdleConnsPerHost: retryDelaySec,
+				IdleConnTimeout:     maxIdleTimeoutSec * time.Second,
 			},
 			LogDir:  xmlCaptureDir,
 			Counter: 0,
@@ -883,7 +883,8 @@ func saveReport(report *CameraReport, filename string) error {
 		return fmt.Errorf("failed to marshal report: %w", err)
 	}
 
-	if err := os.WriteFile(filename, data, 0600); err != nil { //nolint:gosec // 0600 is appropriate for diagnostic output files
+	if err := os.WriteFile(filename, data, 0600); err != nil {
+		//nolint:gosec // 0600 appropriate for diagnostic files
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 
@@ -895,20 +896,20 @@ func logStepf(format string, args ...interface{}) {
 	if len(args) > 0 {
 		fmt.Printf("→ %s\n", fmt.Sprintf(format, args...))
 	} else {
-		fmt.Printf("→ " + format + "\n")
+		fmt.Printf("→ %s\n", format)
 	}
 }
 
 func logSuccessf(format string, args ...interface{}) {
-	fmt.Printf("  ✓ "+format+"\n", args...)
+	fmt.Printf("  ✓ %s\n", fmt.Sprintf(format, args...))
 }
 
 func logErrorf(format string, args ...interface{}) {
-	fmt.Printf("  ✗ "+format+"\n", args...)
+	fmt.Printf("  ✗ %s\n", fmt.Sprintf(format, args...))
 }
 
 func logInfof(format string, args ...interface{}) {
-	fmt.Printf("  ℹ "+format+"\n", args...)
+	fmt.Printf("  ℹ %s\n", fmt.Sprintf(format, args...))
 }
 
 // XML Capture functionality
@@ -1023,20 +1024,22 @@ func (t *LoggingTransport) saveCapture(capture *XMLCapture) {
 		return
 	}
 
-	if err := os.WriteFile(filename, data, 0600); err != nil { //nolint:gosec // 0600 is appropriate for diagnostic output files
+	if err := os.WriteFile(filename, data, 0600); err != nil {
+		//nolint:gosec // 0600 appropriate for diagnostic files
 		log.Printf("Failed to write capture: %v", err)
 	}
 
 	// Pretty-print and save XML files for easier viewing
 	reqFile := filepath.Join(t.LogDir, baseFilename+"_request.xml")
 	prettyRequest := prettyPrintXML(capture.RequestBody)
-	if err := os.WriteFile(reqFile, []byte(prettyRequest), 0644); err != nil {
+	if err := os.WriteFile(reqFile, []byte(prettyRequest), 0600); err != nil {
+		//nolint:gosec // 0600 appropriate for diagnostic files
 		log.Printf("Failed to write request XML: %v", err)
 	}
 
 	respFile := filepath.Join(t.LogDir, baseFilename+"_response.xml")
 	prettyResponse := prettyPrintXML(capture.ResponseBody)
-	if err := os.WriteFile(respFile, []byte(prettyResponse), 0644); err != nil {
+	if err := os.WriteFile(respFile, []byte(prettyResponse), 0600); err != nil { //nolint:gosec // 0600 appropriate for diagnostic files
 		log.Printf("Failed to write response XML: %v", err)
 	}
 }
@@ -1049,13 +1052,13 @@ func extractSOAPOperation(soapBody string) string {
 	// Find the Body element
 	bodyStart := strings.Index(soapBody, "<Body")
 	if bodyStart == -1 {
-		return "Unknown"
+		return unknownStatus
 	}
 
 	// Find the closing > of the Body opening tag
 	bodyOpenEnd := strings.Index(soapBody[bodyStart:], ">")
 	if bodyOpenEnd == -1 {
-		return "Unknown"
+		return unknownStatus
 	}
 	bodyContentStart := bodyStart + bodyOpenEnd + 1
 
@@ -1066,7 +1069,7 @@ func extractSOAPOperation(soapBody string) string {
 	}
 
 	if bodyContentStart >= len(soapBody) || soapBody[bodyContentStart] != '<' {
-		return "Unknown"
+		return unknownStatus
 	}
 
 	// Extract the tag name
@@ -1092,7 +1095,7 @@ func extractSOAPOperation(soapBody string) string {
 // createTarGz creates a tar.gz archive from a directory.
 func createTarGz(sourceDir, archivePath string) error {
 	// Create archive file
-	archiveFile, err := os.Create(archivePath)
+	archiveFile, err := os.Create(archivePath) //nolint:gosec // Archive path is validated before use
 	if err != nil {
 		return fmt.Errorf("failed to create archive file: %w", err)
 	}

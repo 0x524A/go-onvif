@@ -19,13 +19,13 @@ var (
 
 //nolint:funlen // Main function has many statements due to server setup and configuration
 const (
-	defaultPort     = 8080
-	maxWorkers      = 3
-	defaultTimeout  = 30
-	ptzStepSize     = 5
-	ptzMaxPan       = 180
-	ptzMaxTilt      = 90
-	ptzSpeed        = 0.5
+	defaultPort    = 8080
+	maxWorkers     = 3
+	defaultTimeout = 30
+	ptzStepSize    = 5
+	ptzMaxPan      = 180
+	ptzMaxTilt     = 90
+	ptzSpeed       = 0.5
 )
 
 func main() {
@@ -126,7 +126,7 @@ func buildConfig(host string, port int, username, password, manufacturer, model,
 		Host:     host,
 		Port:     port,
 		BasePath: "/onvif",
-		Timeout:  30 * time.Second,
+		Timeout:  defaultTimeout * time.Second,
 		DeviceInfo: server.DeviceInfo{
 			Manufacturer:    manufacturer,
 			Model:           model,
@@ -198,10 +198,10 @@ func buildConfig(host string, port int, username, password, manufacturer, model,
 		if ptz && template.hasPTZ {
 			profile.PTZ = &server.PTZConfig{
 				NodeToken:          fmt.Sprintf("ptz_node_%d", i),
-				PanRange:           server.Range{Min: -180, Max: 180},
-				TiltRange:          server.Range{Min: -90, Max: 90},
+				PanRange:           server.Range{Min: -ptzMaxPan, Max: ptzMaxPan},
+				TiltRange:          server.Range{Min: -ptzMaxTilt, Max: ptzMaxTilt},
 				ZoomRange:          server.Range{Min: 0, Max: template.ptzZoomMax},
-				DefaultSpeed:       server.PTZSpeed{Pan: 0.5, Tilt: 0.5, Zoom: 0.5},
+				DefaultSpeed:       server.PTZSpeed{Pan: ptzSpeed, Tilt: ptzSpeed, Zoom: ptzSpeed},
 				SupportsContinuous: true,
 				SupportsAbsolute:   true,
 				SupportsRelative:   true,
@@ -214,7 +214,7 @@ func buildConfig(host string, port int, username, password, manufacturer, model,
 					{
 						Token:    fmt.Sprintf("preset_%d_1", i),
 						Name:     "Entrance",
-						Position: server.PTZPosition{Pan: -45, Tilt: -10, Zoom: template.ptzZoomMax * 0.5},
+						Position: server.PTZPosition{Pan: -45, Tilt: -10, Zoom: template.ptzZoomMax * ptzSpeed}, //nolint:mnd // Preset position values
 					},
 				},
 			}

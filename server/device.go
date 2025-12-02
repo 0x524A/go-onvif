@@ -266,12 +266,12 @@ func (s *Server) HandleGetServices(body interface{}) (interface{}, error) {
 		{
 			Namespace: "http://www.onvif.org/ver10/device/wsdl",
 			XAddr:     baseURL + "/device_service",
-			Version:   Version{Major: 2, Minor: 5},
+			Version:   Version{Major: 2, Minor: 5}, //nolint:mnd // ONVIF version
 		},
 		{
 			Namespace: "http://www.onvif.org/ver10/media/wsdl",
 			XAddr:     baseURL + "/media_service",
-			Version:   Version{Major: 2, Minor: 5},
+			Version:   Version{Major: 2, Minor: 5}, //nolint:mnd // ONVIF version
 		},
 	}
 
@@ -279,7 +279,7 @@ func (s *Server) HandleGetServices(body interface{}) (interface{}, error) {
 		services = append(services, Service{
 			Namespace: "http://www.onvif.org/ver20/ptz/wsdl",
 			XAddr:     baseURL + "/ptz_service",
-			Version:   Version{Major: 2, Minor: 5},
+			Version:   Version{Major: 2, Minor: 5}, //nolint:mnd // ONVIF version
 		})
 	}
 
@@ -287,7 +287,7 @@ func (s *Server) HandleGetServices(body interface{}) (interface{}, error) {
 		services = append(services, Service{
 			Namespace: "http://www.onvif.org/ver20/imaging/wsdl",
 			XAddr:     baseURL + "/imaging_service",
-			Version:   Version{Major: 2, Minor: 5},
+			Version:   Version{Major: 2, Minor: 5}, //nolint:mnd // ONVIF version
 		})
 	}
 
