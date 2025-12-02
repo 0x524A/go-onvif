@@ -2,7 +2,9 @@ package onvif
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -792,5 +794,508 @@ func TestInitializeWithLocalhostURLs(t *testing.T) {
 	// Verify Imaging endpoint was fixed (0.0.0.0 should be replaced with mock host)
 	if strings.Contains(client.imagingEndpoint, "0.0.0.0") {
 		t.Errorf("Imaging endpoint still contains 0.0.0.0: %v", client.imagingEndpoint)
+	}
+}
+
+// TestDownloadFileWithBasicAuth tests DownloadFile with basic authentication
+func TestDownloadFileWithBasicAuth(t *testing.T) {
+	// Create a mock server that requires basic auth
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		username, password, ok := r.BasicAuth()
+		if !ok || username != "admin" || password != "password" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.Header().Set("Content-Type", "image/jpeg")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("fake image data"))
+	}))
+	defer server.Close()
+
+	client, err := NewClient(
+		server.URL,
+		WithCredentials("admin", "password"),
+	)
+	if err != nil {
+		t.Fatalf("NewClient() failed: %v", err)
+	}
+
+	ctx := context.Background()
+	data, err := client.DownloadFile(ctx, server.URL)
+	if err != nil {
+		t.Fatalf("DownloadFile() failed: %v", err)
+	}
+
+	if string(data) != "fake image data" {
+		t.Errorf("DownloadFile() = %q, want %q", string(data), "fake image data")
+	}
+}
+
+// TestDownloadFileWithDigestAuth tests DownloadFile with digest authentication
+func TestDownloadFileWithDigestAuth(t *testing.T) {
+	nonce := "test-nonce-12345"
+	realm := "test-realm"
+	opaque := "test-opaque"
+
+	// Create a mock server that requires digest auth
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" || !strings.HasPrefix(authHeader, "Digest ") {
+			// First request - return 401 with digest challenge
+			w.Header().Set("WWW-Authenticate", fmt.Sprintf(
+				`Digest realm="%s", nonce="%s", opaque="%s", qop="auth"`,
+				realm, nonce, opaque))
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		// Second request with auth - accept it
+		w.Header().Set("Content-Type", "image/jpeg")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("fake image data with digest"))
+	}))
+	defer server.Close()
+
+	client, err := NewClient(
+		server.URL,
+		WithCredentials("admin", "password"),
+	)
+	if err != nil {
+		t.Fatalf("NewClient() failed: %v", err)
+	}
+
+	ctx := context.Background()
+	data, err := client.DownloadFile(ctx, server.URL)
+	if err != nil {
+		t.Fatalf("DownloadFile() failed: %v", err)
+	}
+
+	if string(data) != "fake image data with digest" {
+		t.Errorf("DownloadFile() = %q, want %q", string(data), "fake image data with digest")
+	}
+}
+
+// TestDownloadFileUnauthorized tests DownloadFile with invalid credentials
+func TestDownloadFileUnauthorized(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+	}))
+	defer server.Close()
+
+	client, err := NewClient(
+		server.URL,
+		WithCredentials("wrong", "wrong"),
+	)
+	if err != nil {
+		t.Fatalf("NewClient() failed: %v", err)
+	}
+
+	ctx := context.Background()
+	_, err = client.DownloadFile(ctx, server.URL)
+	if err == nil {
+		t.Error("DownloadFile() expected error for unauthorized request")
+	}
+	if !strings.Contains(err.Error(), "401") {
+		t.Errorf("Expected 401 error, got: %v", err)
+	}
+}
+
+// TestDownloadFileNotFound tests DownloadFile with 404 response
+func TestDownloadFileNotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte("not found"))
+	}))
+	defer server.Close()
+
+	client, err := NewClient(server.URL)
+	if err != nil {
+		t.Fatalf("NewClient() failed: %v", err)
+	}
+
+	ctx := context.Background()
+	_, err = client.DownloadFile(ctx, server.URL)
+	if err == nil {
+		t.Error("DownloadFile() expected error for 404 response")
+	}
+	if !strings.Contains(err.Error(), "404") {
+		t.Errorf("Expected 404 error, got: %v", err)
+	}
+}
+
+// TestDownloadFileForbidden tests DownloadFile with 403 response
+func TestDownloadFileForbidden(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+	}))
+	defer server.Close()
+
+	client, err := NewClient(server.URL)
+	if err != nil {
+		t.Fatalf("NewClient() failed: %v", err)
+	}
+
+	ctx := context.Background()
+	_, err = client.DownloadFile(ctx, server.URL)
+	if err == nil {
+		t.Error("DownloadFile() expected error for 403 response")
+	}
+	if !strings.Contains(err.Error(), "403") {
+		t.Errorf("Expected 403 error, got: %v", err)
+	}
+}
+
+// TestDownloadFileNetworkError tests DownloadFile with network error
+func TestDownloadFileNetworkError(t *testing.T) {
+	client, err := NewClient("http://192.168.999.999/onvif")
+	if err != nil {
+		t.Fatalf("NewClient() failed: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	_, err = client.DownloadFile(ctx, "http://192.168.999.999/nonexistent")
+	if err == nil {
+		t.Error("DownloadFile() expected error for network failure")
+	}
+}
+
+// TestDigestAuthTransport tests the digest authentication transport
+func TestDigestAuthTransport(t *testing.T) {
+	nonce := "test-nonce"
+	realm := "test-realm"
+	opaque := "test-opaque"
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" || !strings.HasPrefix(authHeader, "Digest ") {
+			w.Header().Set("WWW-Authenticate", fmt.Sprintf(
+				`Digest realm="%s", nonce="%s", opaque="%s", qop="auth"`,
+				realm, nonce, opaque))
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		// Verify digest auth header contains required fields
+		if !strings.Contains(authHeader, `username="admin"`) {
+			t.Error("Digest auth header missing username")
+		}
+		if !strings.Contains(authHeader, `realm="`+realm+`"`) {
+			t.Error("Digest auth header missing realm")
+		}
+		if !strings.Contains(authHeader, `nonce="`+nonce+`"`) {
+			t.Error("Digest auth header missing nonce")
+		}
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("success"))
+	}))
+	defer server.Close()
+
+	tr := &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout:   DefaultTimeout,
+			KeepAlive: DefaultTimeout,
+		}).Dial,
+	}
+
+	digestClient := &http.Client{
+		Transport: &digestAuthTransport{
+			transport: tr,
+			username:  "admin",
+			password:  "password",
+		},
+		Timeout: DefaultTimeout,
+	}
+
+	req, err := http.NewRequest("GET", server.URL, nil)
+	if err != nil {
+		t.Fatalf("NewRequest() failed: %v", err)
+	}
+
+	resp, err := digestClient.Do(req)
+	if err != nil {
+		t.Fatalf("Do() failed: %v", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected 200, got %d", resp.StatusCode)
+	}
+}
+
+// TestExtractParam tests the extractParam helper function
+func TestExtractParam(t *testing.T) {
+	tests := []struct {
+		name       string
+		authHeader string
+		param      string
+		expected   string
+	}{
+		{
+			name:       "extract realm",
+			authHeader: `Digest realm="test-realm", nonce="123"`,
+			param:      "realm",
+			expected:   "test-realm",
+		},
+		{
+			name:       "extract nonce",
+			authHeader: `Digest realm="test", nonce="abc123"`,
+			param:      "nonce",
+			expected:   "abc123",
+		},
+		{
+			name:       "extract qop",
+			authHeader: `Digest realm="test", qop="auth"`,
+			param:      "qop",
+			expected:   "auth",
+		},
+		{
+			name:       "missing param",
+			authHeader: `Digest realm="test"`,
+			param:      "nonce",
+			expected:   "",
+		},
+		{
+			name:       "empty header",
+			authHeader: "",
+			param:      "realm",
+			expected:   "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := extractParam(tt.authHeader, tt.param)
+			if result != tt.expected {
+				t.Errorf("extractParam() = %q, want %q", result, tt.expected)
+			}
+		})
+	}
+}
+
+// TestGenerateNonce tests nonce generation
+func TestGenerateNonce(t *testing.T) {
+	// Generate multiple nonces and verify they're different and valid hex
+	nonces := make(map[string]bool)
+	for i := 0; i < 10; i++ {
+		nonce := generateNonce()
+		if len(nonce) != NonceSize*2 { // hex encoding doubles the length
+			t.Errorf("generateNonce() length = %d, want %d", len(nonce), NonceSize*2)
+		}
+		// Verify it's valid hex
+		_, err := hex.DecodeString(nonce)
+		if err != nil {
+			t.Errorf("generateNonce() returned invalid hex: %v", err)
+		}
+		nonces[nonce] = true
+	}
+
+	// Verify nonces are unique (very unlikely to collide with crypto/rand)
+	if len(nonces) < 10 {
+		t.Error("generateNonce() generated duplicate nonces")
+	}
+}
+
+// TestMd5Hash tests MD5 hash function
+func TestMd5Hash(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string // Expected MD5 hash in hex
+	}{
+		{
+			name:     "empty string",
+			input:    "",
+			expected: "d41d8cd98f00b204e9800998ecf8427e",
+		},
+		{
+			name:     "simple string",
+			input:    "test",
+			expected: "098f6bcd4621d373cade4e832627b4f6",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := md5Hash(tt.input)
+			if result != tt.expected {
+				t.Errorf("md5Hash(%q) = %q, want %q", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
+// TestErrorTypes tests error type checking
+func TestErrorTypes(t *testing.T) {
+	t.Run("IsONVIFError with ONVIFError", func(t *testing.T) {
+		err := NewONVIFError("Sender", "InvalidArgs", "test message")
+		if !IsONVIFError(err) {
+			t.Error("IsONVIFError() returned false for ONVIFError")
+		}
+	})
+
+	t.Run("IsONVIFError with regular error", func(t *testing.T) {
+		err := fmt.Errorf("regular error")
+		if IsONVIFError(err) {
+			t.Error("IsONVIFError() returned true for regular error")
+		}
+	})
+
+	t.Run("IsONVIFError with wrapped ONVIFError", func(t *testing.T) {
+		onvifErr := NewONVIFError("Sender", "InvalidArgs", "test")
+		wrappedErr := fmt.Errorf("wrapped: %w", onvifErr)
+		if !IsONVIFError(wrappedErr) {
+			t.Error("IsONVIFError() returned false for wrapped ONVIFError")
+		}
+	})
+}
+
+// TestClientConcurrency tests concurrent access to client
+func TestClientConcurrency(t *testing.T) {
+	client, err := NewClient("http://192.168.1.100/onvif")
+	if err != nil {
+		t.Fatalf("NewClient() failed: %v", err)
+	}
+
+	// Test concurrent credential access
+	done := make(chan bool)
+	for i := 0; i < 10; i++ {
+		go func(id int) {
+			client.SetCredentials(fmt.Sprintf("user%d", id), "pass")
+			user, pass := client.GetCredentials()
+			if user == "" || pass == "" {
+				t.Error("Concurrent credential access failed")
+			}
+			done <- true
+		}(i)
+	}
+
+	// Wait for all goroutines
+	for i := 0; i < 10; i++ {
+		<-done
+	}
+}
+
+// TestNormalizeEndpointErrorCases tests error cases for normalizeEndpoint
+func TestNormalizeEndpointErrorCases(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		wantErr bool
+	}{
+		{
+			name:    "empty string",
+			input:   "",
+			wantErr: true,
+		},
+		{
+			name:    "invalid URL",
+			input:   "://invalid",
+			wantErr: false, // normalizeEndpoint treats this as IP without scheme
+		},
+		{
+			name:    "URL with empty host",
+			input:   "http:///path",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := normalizeEndpoint(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("normalizeEndpoint() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// TestFixLocalhostURLEdgeCases tests edge cases for fixLocalhostURL
+func TestFixLocalhostURLEdgeCases(t *testing.T) {
+	tests := []struct {
+		name        string
+		clientURL   string
+		serviceURL  string
+		expectedURL string
+	}{
+		{
+			name:        "invalid service URL",
+			clientURL:   "http://192.168.1.100/onvif",
+			serviceURL:  "://invalid",
+			expectedURL: "://invalid", // Should return original on parse error
+		},
+		{
+			name:        "invalid client URL",
+			clientURL:   "://invalid",
+			serviceURL:  "http://localhost/path",
+			expectedURL: "http://localhost/path", // Should return original on parse error
+		},
+		{
+			name:        "service URL with query params",
+			clientURL:   "http://192.168.1.100/onvif",
+			serviceURL:  "http://localhost/path?param=value",
+			expectedURL: "http://192.168.1.100/path?param=value",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := &Client{
+				endpoint: tt.clientURL,
+			}
+
+			result := client.fixLocalhostURL(tt.serviceURL)
+			if result != tt.expectedURL {
+				t.Errorf("fixLocalhostURL() = %q, want %q", result, tt.expectedURL)
+			}
+		})
+	}
+}
+
+// TestWithInsecureSkipVerify tests the WithInsecureSkipVerify option
+func TestWithInsecureSkipVerify(t *testing.T) {
+	client, err := NewClient(
+		"https://192.168.1.100/onvif",
+		WithInsecureSkipVerify(),
+	)
+	if err != nil {
+		t.Fatalf("NewClient() failed: %v", err)
+	}
+
+	transport, ok := client.httpClient.Transport.(*http.Transport)
+	if !ok {
+		t.Fatal("Transport is not *http.Transport")
+	}
+
+	if transport.TLSClientConfig == nil {
+		t.Error("TLSClientConfig is nil")
+	} else if !transport.TLSClientConfig.InsecureSkipVerify {
+		t.Error("InsecureSkipVerify is not set")
+	}
+}
+
+// TestDownloadFileContextCancellation tests context cancellation
+func TestDownloadFileContextCancellation(t *testing.T) {
+	// Create a slow server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(2 * time.Second)
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("data"))
+	}))
+	defer server.Close()
+
+	client, err := NewClient(server.URL)
+	if err != nil {
+		t.Fatalf("NewClient() failed: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	_, err = client.DownloadFile(ctx, server.URL)
+	if err == nil {
+		t.Error("DownloadFile() expected error for cancelled context")
+	}
+	if !strings.Contains(err.Error(), "context deadline exceeded") && !strings.Contains(err.Error(), "context canceled") {
+		t.Errorf("Expected context error, got: %v", err)
 	}
 }

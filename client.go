@@ -3,7 +3,9 @@ package onvif
 import (
 	"context"
 	"crypto/md5"
+	"crypto/rand"
 	"crypto/tls"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net"
@@ -12,6 +14,20 @@ import (
 	"strings"
 	"sync"
 	"time"
+)
+
+// Default client configuration constants
+const (
+	// DefaultTimeout is the default HTTP client timeout
+	DefaultTimeout = 30 * time.Second
+	// DefaultIdleConnTimeout is the default idle connection timeout
+	DefaultIdleConnTimeout = 90 * time.Second
+	// DefaultMaxIdleConns is the default maximum idle connections
+	DefaultMaxIdleConns = 10
+	// DefaultMaxIdleConnsPerHost is the default maximum idle connections per host
+	DefaultMaxIdleConnsPerHost = 5
+	// NonceSize is the size of the nonce for digest authentication
+	NonceSize = 16
 )
 
 // Client represents an ONVIF client for communicating with IP cameras
@@ -82,11 +98,11 @@ func NewClient(endpoint string, opts ...ClientOption) (*Client, error) {
 	client := &Client{
 		endpoint: normalizedEndpoint,
 		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout: DefaultTimeout,
 			Transport: &http.Transport{
-				MaxIdleConns:        10,
-				MaxIdleConnsPerHost: 5,
-				IdleConnTimeout:     90 * time.Second,
+				MaxIdleConns:        DefaultMaxIdleConns,
+				MaxIdleConnsPerHost: DefaultMaxIdleConnsPerHost,
+				IdleConnTimeout:     DefaultIdleConnTimeout,
 			},
 			// Don't follow redirects automatically
 			// This prevents http:// from being silently upgraded to https://
@@ -277,24 +293,21 @@ func (c *Client) downloadWithBasicAuth(ctx context.Context, downloadURL string) 
 			bodyStr = bodyStr[:200] + "..."
 		}
 
+		// Base error message for programmatic use
 		errorMsg := fmt.Sprintf("download failed with status code %d", resp.StatusCode)
 
+		// Add structured error details
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
-			errorMsg += "\n  ❌ Authentication failed (401 Unauthorized)"
-			errorMsg += "\n  💡 Basic auth failed; trying digest auth..."
+			errorMsg += ": authentication failed (401 Unauthorized); basic auth failed, trying digest auth"
 		case http.StatusForbidden:
-			errorMsg += "\n  ❌ Access denied (403 Forbidden)"
-			errorMsg += "\n  💡 User may not have permission to download snapshots"
-			errorMsg += "\n  💡 Check camera user role/permissions"
+			errorMsg += ": access denied (403 Forbidden); user may not have permission to download snapshots"
 		case http.StatusNotFound:
-			errorMsg += "\n  ❌ Snapshot URI not found (404)"
-			errorMsg += "\n  💡 Camera may have revoked the URI"
-			errorMsg += "\n  💡 Try getting a fresh snapshot URI"
+			errorMsg += ": snapshot URI not found (404); camera may have revoked the URI, try getting a fresh snapshot URI"
 		}
 
-		if bodyStr != "" && resp.StatusCode != http.StatusOK {
-			errorMsg += fmt.Sprintf("\n  📝 Response: %s", bodyStr)
+		if bodyStr != "" {
+			errorMsg += fmt.Sprintf("; response: %s", bodyStr)
 		}
 
 		return nil, fmt.Errorf("%s", errorMsg)
@@ -317,12 +330,12 @@ func (c *Client) downloadWithDigestAuth(ctx context.Context, downloadURL string)
 	// Create a custom transport with digest auth
 	tr := &http.Transport{
 		Dial: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
+			Timeout:   DefaultTimeout,
+			KeepAlive: DefaultTimeout,
 		}).Dial,
-		MaxIdleConns:        10,
-		MaxIdleConnsPerHost: 5,
-		IdleConnTimeout:     90 * time.Second,
+		MaxIdleConns:        DefaultMaxIdleConns,
+		MaxIdleConnsPerHost: DefaultMaxIdleConnsPerHost,
+		IdleConnTimeout:     DefaultIdleConnTimeout,
 	}
 
 	// Create a custom HTTP client for digest auth
@@ -332,7 +345,7 @@ func (c *Client) downloadWithDigestAuth(ctx context.Context, downloadURL string)
 			username:  c.username,
 			password:  c.password,
 		},
-		Timeout: 30 * time.Second,
+		Timeout: DefaultTimeout,
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, nil)
@@ -360,20 +373,15 @@ func (c *Client) downloadWithDigestAuth(ctx context.Context, downloadURL string)
 
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
-			errorMsg += "\n  ❌ Digest authentication failed (401 Unauthorized)"
-			errorMsg += "\n  💡 Check camera credentials (username/password)"
-			errorMsg += "\n  💡 Try accessing the snapshot URL manually:"
-			errorMsg += fmt.Sprintf("\n     curl --digest -u username:password '%s'", downloadURL)
+			errorMsg += ": digest authentication failed (401 Unauthorized); check camera credentials (username/password)"
 		case http.StatusForbidden:
-			errorMsg += "\n  ❌ Access denied (403 Forbidden)"
-			errorMsg += "\n  💡 User may not have permission to download snapshots"
+			errorMsg += ": access denied (403 Forbidden); user may not have permission to download snapshots"
 		case http.StatusNotFound:
-			errorMsg += "\n  ❌ Snapshot URI not found (404)"
-			errorMsg += "\n  💡 Try getting a fresh snapshot URI"
+			errorMsg += ": snapshot URI not found (404); try getting a fresh snapshot URI"
 		}
 
 		if bodyStr != "" {
-			errorMsg += fmt.Sprintf("\n  📝 Response: %s", bodyStr)
+			errorMsg += fmt.Sprintf("; response: %s", bodyStr)
 		}
 
 		return nil, fmt.Errorf("%s", errorMsg)
@@ -493,7 +501,12 @@ func md5sum(s string) interface{} {
 	return h.Sum(nil)
 }
 
+// generateNonce generates a cryptographically secure random nonce for digest authentication
 func generateNonce() string {
-	// Generate a simple nonce
-	return fmt.Sprintf("%d", time.Now().UnixNano())
+	bytes := make([]byte, NonceSize)
+	if _, err := rand.Read(bytes); err != nil {
+		// Fallback to time-based nonce if crypto/rand fails (shouldn't happen)
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	return hex.EncodeToString(bytes)
 }

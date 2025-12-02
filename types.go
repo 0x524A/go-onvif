@@ -322,6 +322,107 @@ type FilterType struct {
 // ProfileExtension represents profile extension
 type ProfileExtension struct{}
 
+// MediaServiceCapabilities represents media service capabilities
+type MediaServiceCapabilities struct {
+	SnapshotUri             bool
+	Rotation                bool
+	VideoSourceMode         bool
+	OSD                     bool
+	TemporaryOSDText        bool
+	EXICompression          bool
+	MaximumNumberOfProfiles int
+	RTPMulticast            bool
+	RTP_TCP                 bool
+	RTP_RTSP_TCP            bool
+}
+
+// VideoEncoderConfigurationOptions represents available options for video encoder configuration
+type VideoEncoderConfigurationOptions struct {
+	QualityRange *FloatRange
+	JPEG         *JPEGOptions
+	H264         *H264Options
+}
+
+// JPEGOptions represents JPEG encoder options
+type JPEGOptions struct {
+	ResolutionsAvailable  []*VideoResolution
+	FrameRateRange        *FloatRange
+	EncodingIntervalRange *IntRange
+}
+
+// H264Options represents H264 encoder options
+type H264Options struct {
+	ResolutionsAvailable  []*VideoResolution
+	GovLengthRange        *IntRange
+	FrameRateRange        *FloatRange
+	EncodingIntervalRange *IntRange
+	H264ProfilesSupported []string
+}
+
+// VideoSourceMode represents a video source mode
+type VideoSourceMode struct {
+	Token      string
+	Enabled    bool
+	Resolution *VideoResolution
+}
+
+// OSDConfiguration represents OSD (On-Screen Display) configuration
+type OSDConfiguration struct {
+	Token string
+	// Additional fields can be added based on ONVIF spec
+}
+
+// AudioEncoderConfigurationOptions represents available options for audio encoder configuration
+type AudioEncoderConfigurationOptions struct {
+	EncodingOptions []string
+	BitrateList     []int
+	SampleRateList  []int
+}
+
+// MetadataConfigurationOptions represents available options for metadata configuration
+type MetadataConfigurationOptions struct {
+	PTZStatusFilterOptions *PTZFilter
+}
+
+// AudioOutputConfiguration represents audio output configuration
+type AudioOutputConfiguration struct {
+	Token       string
+	Name        string
+	UseCount    int
+	OutputToken string
+}
+
+// AudioOutputConfigurationOptions represents available options for audio output configuration
+type AudioOutputConfigurationOptions struct {
+	OutputTokensAvailable []string
+}
+
+// AudioDecoderConfigurationOptions represents available options for audio decoder configuration
+type AudioDecoderConfigurationOptions struct {
+	AACDecOptions  *AudioDecoderOptions
+	G711DecOptions *AudioDecoderOptions
+	G726DecOptions *AudioDecoderOptions
+}
+
+// AudioDecoderOptions represents audio decoder options
+type AudioDecoderOptions struct {
+	BitrateList    []int
+	SampleRateList []int
+}
+
+// GuaranteedNumberOfVideoEncoderInstances represents guaranteed number of video encoder instances
+type GuaranteedNumberOfVideoEncoderInstances struct {
+	TotalNumber int
+	JPEG        int
+	H264        int
+	MPEG4       int
+}
+
+// OSDConfigurationOptions represents available options for OSD configuration
+type OSDConfigurationOptions struct {
+	MaximumNumberOfOSDs int
+}
+
 // StreamSetup represents stream setup parameters
 type StreamSetup struct {
 	Stream    string // RTP-Unicast, RTP-Multicast
