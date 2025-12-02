@@ -401,6 +401,7 @@ type digestAuthTransport struct {
 	username  string
 	password  string
 	nc        int
+	ncMu      sync.Mutex // Protects nc field from concurrent access
 }
 
 // RoundTrip implements http.RoundTripper with digest auth support
@@ -452,8 +453,13 @@ func (d *digestAuthTransport) createDigestAuthHeader(req *http.Request, authHead
 	method := req.Method
 	ha2 := md5Hash(method + ":" + uri)
 
+	// Increment nonce count atomically to prevent race conditions
+	// HTTP transports must be safe for concurrent use
+	d.ncMu.Lock()
 	d.nc++
-	ncStr := fmt.Sprintf("%08x", d.nc)
+	nc := d.nc
+	d.ncMu.Unlock()
+	ncStr := fmt.Sprintf("%08x", nc)
 	cnonce := generateNonce()
 
 	var responseStr string
