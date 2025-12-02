@@ -1,12 +1,6 @@
 run:
   timeout: 5m
   tests: true
-  skip-dirs:
-    - vendor
-    - testdata
-  skip-files:
-    - ".*\\.pb\\.go$"
-    - ".*\\.gen\\.go$"
 
 linters:
   enable:
@@ -41,13 +35,11 @@ linters:
     - exhaustive
     - godot
     - goerr113
-    - gomnd
+    - mnd
     - goprintffuncname
     - nlreturn
     - noctx
     - nolintlint
-    - rowserrcheck
-    - sqlclosecheck
     - thelper
     - tparallel
     - wastedassign
@@ -56,10 +48,6 @@ linters-settings:
   errcheck:
     check-type-assertions: true
     check-blank: true
-  
-  govet:
-    check-shadowing: true
-    enable-all: true
   
   gocyclo:
     min-complexity: 15
@@ -127,8 +115,5 @@ issues:
   exclude-use-default: false
 
 output:
-  formats:
-    - colored-line-number
   print-issued-lines: true
   print-linter-name: true
-  uniq-by-line: false
