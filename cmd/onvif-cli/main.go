@@ -58,6 +58,10 @@ func main() {
 			cli.ptzOperations()
 		case "6":
 			cli.imagingOperations()
+		case "7":
+			cli.eventOperations()
+		case "8":
+			cli.deviceIOOperations()
 		case "0", "q", "quit", "exit":
 			fmt.Println("Goodbye! 👋")
 
@@ -78,8 +82,10 @@ func (c *CLI) showMainMenu() {
 		fmt.Println("  4. Media Operations")
 		fmt.Println("  5. PTZ Operations")
 		fmt.Println("  6. Imaging Operations")
+		fmt.Println("  7. Event Operations")
+		fmt.Println("  8. Device IO Operations")
 	} else {
-		fmt.Println("  3-6. (Connect to camera first)")
+		fmt.Println("  3-8. (Connect to camera first)")
 	}
 	fmt.Println("  0. Exit")
 	fmt.Println()
@@ -1622,6 +1628,588 @@ func (c *CLI) captureAndDisplaySnapshot(ctx context.Context) { //nolint:funlen /
 			fmt.Printf("❌ Failed to save file: %v\n", err)
 		} else {
 			fmt.Printf("✅ Snapshot saved to %s\n", filename)
+		}
+	}
+}
+
+// ============================================
+// Event Operations
+// ============================================
+
+func (c *CLI) eventOperations() {
+	if c.client == nil {
+		fmt.Println("❌ Not connected to any camera")
+
+		return
+	}
+
+	fmt.Println("📡 Event Operations")
+	fmt.Println("==================")
+	fmt.Println("  1. Get Event Service Capabilities")
+	fmt.Println("  2. Get Event Properties")
+	fmt.Println("  3. Create Pull Point Subscription")
+	fmt.Println("  4. Get Event Brokers")
+	fmt.Println("  0. Back to Main Menu")
+
+	choice := c.readInput("Select operation: ")
+	ctx := context.Background()
+
+	switch choice {
+	case "1":
+		c.getEventServiceCapabilities(ctx)
+	case "2":
+		c.getEventProperties(ctx)
+	case "3":
+		c.createPullPointSubscription(ctx)
+	case "4":
+		c.getEventBrokers(ctx)
+	case "0":
+		return
+	default:
+		fmt.Println("❌ Invalid option")
+	}
+}
+
+func (c *CLI) getEventServiceCapabilities(ctx context.Context) {
+	fmt.Println("⏳ Getting event service capabilities...")
+
+	caps, err := c.client.GetEventServiceCapabilities(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	fmt.Println("✅ Event Service Capabilities:")
+	fmt.Printf("   WS Subscription Policy Support: %v\n", caps.WSSubscriptionPolicySupport)
+	fmt.Printf("   WS Pausable Subscription: %v\n", caps.WSPausableSubscriptionManagerInterfaceSupport)
+	fmt.Printf("   Max Notification Producers: %d\n", caps.MaxNotificationProducers)
+	fmt.Printf("   Max Pull Points: %d\n", caps.MaxPullPoints)
+	fmt.Printf("   Persistent Notification Storage: %v\n", caps.PersistentNotificationStorage)
+	fmt.Printf("   Event Broker Protocols: %v\n", caps.EventBrokerProtocols)
+	fmt.Printf("   Max Event Brokers: %d\n", caps.MaxEventBrokers)
+	fmt.Printf("   Metadata Over MQTT: %v\n", caps.MetadataOverMQTT)
+}
+
+func (c *CLI) getEventProperties(ctx context.Context) {
+	fmt.Println("⏳ Getting event properties...")
+
+	props, err := c.client.GetEventProperties(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	fmt.Println("✅ Event Properties:")
+	fmt.Printf("   Fixed Topic Set: %v\n", props.FixedTopicSet)
+	fmt.Printf("   Topic Namespace Locations: %d\n", len(props.TopicNamespaceLocation))
+	for i, loc := range props.TopicNamespaceLocation {
+		fmt.Printf("     %d. %s\n", i+1, loc)
+	}
+	fmt.Printf("   Topic Expression Dialects: %d\n", len(props.TopicExpressionDialects))
+	fmt.Printf("   Message Content Filter Dialects: %d\n", len(props.MessageContentFilterDialects))
+}
+
+func (c *CLI) createPullPointSubscription(ctx context.Context) {
+	fmt.Println("⏳ Creating pull point subscription...")
+
+	termTimeStr := c.readInputWithDefault("Subscription duration (seconds)", "60")
+	termTimeSec, err := strconv.Atoi(termTimeStr)
+	if err != nil || termTimeSec <= 0 {
+		termTimeSec = 60
+	}
+
+	termTime := time.Duration(termTimeSec) * time.Second
+
+	sub, err := c.client.CreatePullPointSubscription(ctx, "", &termTime, "")
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	fmt.Println("✅ Pull Point Subscription Created:")
+	fmt.Printf("   Subscription Reference: %s\n", sub.SubscriptionReference)
+	fmt.Printf("   Current Time: %v\n", sub.CurrentTime)
+	fmt.Printf("   Termination Time: %v\n", sub.TerminationTime)
+
+	// Offer to pull messages
+	pull := c.readInput("📨 Pull messages now? (y/n) [y]: ")
+	if pull == "" || strings.EqualFold(pull, "y") {
+		c.pullMessagesFromSubscription(ctx, sub.SubscriptionReference)
+	}
+
+	// Offer to unsubscribe
+	unsub := c.readInput("🔌 Unsubscribe? (y/n) [y]: ")
+	if unsub == "" || strings.EqualFold(unsub, "y") {
+		if err := c.client.Unsubscribe(ctx, sub.SubscriptionReference); err != nil {
+			fmt.Printf("❌ Unsubscribe error: %v\n", err)
+		} else {
+			fmt.Println("✅ Unsubscribed successfully")
+		}
+	}
+}
+
+func (c *CLI) pullMessagesFromSubscription(ctx context.Context, subscriptionRef string) {
+	fmt.Println("⏳ Pulling messages (5 second timeout)...")
+
+	messages, err := c.client.PullMessages(ctx, subscriptionRef, 5*time.Second, 100) //nolint:mnd // 100 max messages
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	if len(messages) == 0 {
+		fmt.Println("📭 No messages available")
+
+		return
+	}
+
+	fmt.Printf("✅ Received %d message(s):\n", len(messages))
+	for i := range messages {
+		msg := &messages[i]
+		if i >= 10 { //nolint:mnd // Show max 10 messages
+			fmt.Printf("   ... and %d more\n", len(messages)-10) //nolint:mnd // Show remaining count
+
+			break
+		}
+		fmt.Printf("   %d. Topic: %s\n", i+1, msg.Topic)
+		if msg.Message.PropertyOperation != "" {
+			fmt.Printf("      Operation: %s\n", msg.Message.PropertyOperation)
+		}
+		if !msg.Message.UtcTime.IsZero() {
+			fmt.Printf("      Time: %v\n", msg.Message.UtcTime)
+		}
+		if len(msg.Message.Source) > 0 {
+			fmt.Printf("      Source: %s=%s\n", msg.Message.Source[0].Name, msg.Message.Source[0].Value)
+		}
+		if len(msg.Message.Data) > 0 {
+			fmt.Printf("      Data: %s=%s\n", msg.Message.Data[0].Name, msg.Message.Data[0].Value)
+		}
+	}
+}
+
+func (c *CLI) getEventBrokers(ctx context.Context) {
+	fmt.Println("⏳ Getting event brokers...")
+
+	brokers, err := c.client.GetEventBrokers(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	if len(brokers) == 0 {
+		fmt.Println("📭 No event brokers configured")
+
+		return
+	}
+
+	fmt.Printf("✅ Found %d Event Broker(s):\n", len(brokers))
+	for i, broker := range brokers {
+		fmt.Printf("   %d. Address: %s\n", i+1, broker.Address)
+		if broker.TopicPrefix != "" {
+			fmt.Printf("      Topic Prefix: %s\n", broker.TopicPrefix)
+		}
+		if broker.Status != "" {
+			fmt.Printf("      Status: %s\n", broker.Status)
+		}
+		fmt.Printf("      QoS: %d\n", broker.QoS)
+	}
+}
+
+// ============================================
+// Device IO Operations
+// ============================================
+
+func (c *CLI) deviceIOOperations() {
+	if c.client == nil {
+		fmt.Println("❌ Not connected to any camera")
+
+		return
+	}
+
+	fmt.Println("🔌 Device IO Operations")
+	fmt.Println("======================")
+	fmt.Println("  1. Get Device IO Capabilities")
+	fmt.Println("  2. Get Digital Inputs")
+	fmt.Println("  3. Get Relay Outputs")
+	fmt.Println("  4. Set Relay Output State")
+	fmt.Println("  5. Get Relay Output Options")
+	fmt.Println("  6. Get Video Outputs")
+	fmt.Println("  7. Get Video Output Configuration")
+	fmt.Println("  8. Get Video Output Configuration Options")
+	fmt.Println("  9. Get Serial Ports")
+	fmt.Println("  0. Back to Main Menu")
+
+	choice := c.readInput("Select operation: ")
+	ctx := context.Background()
+
+	switch choice {
+	case "1":
+		c.getDeviceIOCapabilities(ctx)
+	case "2":
+		c.getDigitalInputs(ctx)
+	case "3":
+		c.getRelayOutputsCLI(ctx)
+	case "4":
+		c.setRelayOutputStateCLI(ctx)
+	case "5":
+		c.getRelayOutputOptionsCLI(ctx)
+	case "6":
+		c.getVideoOutputsCLI(ctx)
+	case "7":
+		c.getVideoOutputConfigurationCLI(ctx)
+	case "8":
+		c.getVideoOutputConfigurationOptionsCLI(ctx)
+	case "9":
+		c.getSerialPortsCLI(ctx)
+	case "0":
+		return
+	default:
+		fmt.Println("❌ Invalid option")
+	}
+}
+
+func (c *CLI) getDeviceIOCapabilities(ctx context.Context) {
+	fmt.Println("⏳ Getting Device IO capabilities...")
+
+	caps, err := c.client.GetDeviceIOServiceCapabilities(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	fmt.Println("✅ Device IO Capabilities:")
+	fmt.Printf("   Video Sources: %d\n", caps.VideoSources)
+	fmt.Printf("   Video Outputs: %d\n", caps.VideoOutputs)
+	fmt.Printf("   Audio Sources: %d\n", caps.AudioSources)
+	fmt.Printf("   Audio Outputs: %d\n", caps.AudioOutputs)
+	fmt.Printf("   Relay Outputs: %d\n", caps.RelayOutputs)
+	fmt.Printf("   Digital Inputs: %d\n", caps.DigitalInputs)
+	fmt.Printf("   Serial Ports: %d\n", caps.SerialPorts)
+	fmt.Printf("   Digital Input Options: %v\n", caps.DigitalInputOptions)
+	fmt.Printf("   Serial Port Configuration: %v\n", caps.SerialPortConfiguration)
+}
+
+func (c *CLI) getDigitalInputs(ctx context.Context) {
+	fmt.Println("⏳ Getting digital inputs...")
+
+	inputs, err := c.client.GetDigitalInputs(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	if len(inputs) == 0 {
+		fmt.Println("📭 No digital inputs found")
+
+		return
+	}
+
+	fmt.Printf("✅ Found %d Digital Input(s):\n", len(inputs))
+	for i, input := range inputs {
+		fmt.Printf("   %d. Token: %s\n", i+1, input.Token)
+		fmt.Printf("      Idle State: %s\n", input.IdleState)
+	}
+}
+
+func (c *CLI) getRelayOutputsCLI(ctx context.Context) {
+	fmt.Println("⏳ Getting relay outputs...")
+
+	relays, err := c.client.GetRelayOutputs(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	if len(relays) == 0 {
+		fmt.Println("📭 No relay outputs found")
+
+		return
+	}
+
+	fmt.Printf("✅ Found %d Relay Output(s):\n", len(relays))
+	for i, relay := range relays {
+		fmt.Printf("   %d. Token: %s\n", i+1, relay.Token)
+		fmt.Printf("      Mode: %s\n", relay.Properties.Mode)
+		fmt.Printf("      Idle State: %s\n", relay.Properties.IdleState)
+		if relay.Properties.DelayTime > 0 {
+			fmt.Printf("      Delay Time: %v\n", relay.Properties.DelayTime)
+		}
+	}
+}
+
+func (c *CLI) setRelayOutputStateCLI(ctx context.Context) {
+	// First get available relay outputs
+	relays, err := c.client.GetRelayOutputs(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error getting relays: %v\n", err)
+
+		return
+	}
+
+	if len(relays) == 0 {
+		fmt.Println("📭 No relay outputs available")
+
+		return
+	}
+
+	fmt.Println("Available relay outputs:")
+	for i, relay := range relays {
+		fmt.Printf("  %d. %s (Mode: %s)\n", i+1, relay.Token, relay.Properties.Mode)
+	}
+
+	choice := c.readInput("Select relay (1-" + strconv.Itoa(len(relays)) + "): ")
+	idx, err := strconv.Atoi(choice)
+	if err != nil || idx < 1 || idx > len(relays) {
+		fmt.Println("❌ Invalid selection")
+
+		return
+	}
+
+	selectedRelay := relays[idx-1]
+
+	fmt.Println("Select state:")
+	fmt.Println("  1. Active")
+	fmt.Println("  2. Inactive")
+	stateChoice := c.readInput("State: ")
+
+	var state onvif.RelayLogicalState
+	switch stateChoice {
+	case "1":
+		state = onvif.RelayLogicalStateActive
+	case "2":
+		state = onvif.RelayLogicalStateInactive
+	default:
+		fmt.Println("❌ Invalid state")
+
+		return
+	}
+
+	fmt.Println("⏳ Setting relay output state...")
+
+	if err := c.client.SetRelayOutputState(ctx, selectedRelay.Token, state); err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	fmt.Printf("✅ Relay %s set to %s\n", selectedRelay.Token, state)
+}
+
+func (c *CLI) getVideoOutputsCLI(ctx context.Context) {
+	fmt.Println("⏳ Getting video outputs...")
+
+	outputs, err := c.client.GetVideoOutputs(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	if len(outputs) == 0 {
+		fmt.Println("📭 No video outputs found")
+
+		return
+	}
+
+	fmt.Printf("✅ Found %d Video Output(s):\n", len(outputs))
+	for i, output := range outputs {
+		fmt.Printf("   %d. Token: %s\n", i+1, output.Token)
+		if output.Resolution != nil {
+			fmt.Printf("      Resolution: %dx%d\n", output.Resolution.Width, output.Resolution.Height)
+		}
+		if output.RefreshRate > 0 {
+			fmt.Printf("      Refresh Rate: %.1f Hz\n", output.RefreshRate)
+		}
+		if output.AspectRatio != "" {
+			fmt.Printf("      Aspect Ratio: %s\n", output.AspectRatio)
+		}
+	}
+}
+
+func (c *CLI) getSerialPortsCLI(ctx context.Context) {
+	fmt.Println("⏳ Getting serial ports...")
+
+	ports, err := c.client.GetSerialPorts(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	if len(ports) == 0 {
+		fmt.Println("📭 No serial ports found")
+
+		return
+	}
+
+	fmt.Printf("✅ Found %d Serial Port(s):\n", len(ports))
+	for i, port := range ports {
+		fmt.Printf("   %d. Token: %s\n", i+1, port.Token)
+		fmt.Printf("      Type: %s\n", port.Type)
+
+		// Get configuration if available
+		config, err := c.client.GetSerialPortConfiguration(ctx, port.Token)
+		if err == nil {
+			fmt.Printf("      Baud Rate: %d\n", config.BaudRate)
+			fmt.Printf("      Parity: %s\n", config.ParityBit)
+			fmt.Printf("      Data Bits: %d\n", config.CharacterLength)
+			fmt.Printf("      Stop Bits: %.1f\n", config.StopBit)
+		}
+	}
+}
+
+func (c *CLI) getRelayOutputOptionsCLI(ctx context.Context) {
+	// First get available relay outputs
+	relays, err := c.client.GetRelayOutputs(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error getting relays: %v\n", err)
+
+		return
+	}
+
+	if len(relays) == 0 {
+		fmt.Println("📭 No relay outputs available")
+
+		return
+	}
+
+	fmt.Println("Available relay outputs:")
+	for i, relay := range relays {
+		fmt.Printf("  %d. %s\n", i+1, relay.Token)
+	}
+
+	choice := c.readInput("Select relay (1-" + strconv.Itoa(len(relays)) + "): ")
+	idx, err := strconv.Atoi(choice)
+	if err != nil || idx < 1 || idx > len(relays) {
+		fmt.Println("❌ Invalid selection")
+
+		return
+	}
+
+	selectedRelay := relays[idx-1]
+	fmt.Printf("⏳ Getting relay output options for %s...\n", selectedRelay.Token)
+
+	options, err := c.client.GetRelayOutputOptions(ctx, selectedRelay.Token)
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	fmt.Println("✅ Relay Output Options:")
+	fmt.Printf("   Token: %s\n", options.Token)
+	if len(options.Mode) > 0 {
+		fmt.Println("   Supported Modes:")
+		for _, mode := range options.Mode {
+			fmt.Printf("      - %s\n", mode)
+		}
+	}
+	if len(options.DelayTimes) > 0 {
+		fmt.Println("   Supported Delay Times:")
+		for _, dt := range options.DelayTimes {
+			fmt.Printf("      - %s\n", dt)
+		}
+	}
+	fmt.Printf("   Discrete: %v\n", options.Discrete)
+}
+
+func (c *CLI) getVideoOutputConfigurationCLI(ctx context.Context) {
+	// First get available video outputs
+	outputs, err := c.client.GetVideoOutputs(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error getting video outputs: %v\n", err)
+
+		return
+	}
+
+	if len(outputs) == 0 {
+		fmt.Println("📭 No video outputs available")
+
+		return
+	}
+
+	fmt.Println("Available video outputs:")
+	for i, output := range outputs {
+		fmt.Printf("  %d. %s\n", i+1, output.Token)
+	}
+
+	choice := c.readInput("Select video output (1-" + strconv.Itoa(len(outputs)) + "): ")
+	idx, err := strconv.Atoi(choice)
+	if err != nil || idx < 1 || idx > len(outputs) {
+		fmt.Println("❌ Invalid selection")
+
+		return
+	}
+
+	selectedOutput := outputs[idx-1]
+	fmt.Printf("⏳ Getting video output configuration for %s...\n", selectedOutput.Token)
+
+	config, err := c.client.GetVideoOutputConfiguration(ctx, selectedOutput.Token)
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	fmt.Println("✅ Video Output Configuration:")
+	fmt.Printf("   Token: %s\n", config.Token)
+	fmt.Printf("   Name: %s\n", config.Name)
+	fmt.Printf("   Use Count: %d\n", config.UseCount)
+	fmt.Printf("   Output Token: %s\n", config.OutputToken)
+}
+
+func (c *CLI) getVideoOutputConfigurationOptionsCLI(ctx context.Context) {
+	// First get available video outputs
+	outputs, err := c.client.GetVideoOutputs(ctx)
+	if err != nil {
+		fmt.Printf("❌ Error getting video outputs: %v\n", err)
+
+		return
+	}
+
+	if len(outputs) == 0 {
+		fmt.Println("📭 No video outputs available")
+
+		return
+	}
+
+	fmt.Println("Available video outputs:")
+	for i, output := range outputs {
+		fmt.Printf("  %d. %s\n", i+1, output.Token)
+	}
+
+	choice := c.readInput("Select video output (1-" + strconv.Itoa(len(outputs)) + "): ")
+	idx, err := strconv.Atoi(choice)
+	if err != nil || idx < 1 || idx > len(outputs) {
+		fmt.Println("❌ Invalid selection")
+
+		return
+	}
+
+	selectedOutput := outputs[idx-1]
+	fmt.Printf("⏳ Getting video output configuration options for %s...\n", selectedOutput.Token)
+
+	options, err := c.client.GetVideoOutputConfigurationOptions(ctx, selectedOutput.Token)
+	if err != nil {
+		fmt.Printf("❌ Error: %v\n", err)
+
+		return
+	}
+
+	fmt.Println("✅ Video Output Configuration Options:")
+	fmt.Printf("   Name Length: Min=%d, Max=%d\n", options.Name.Min, options.Name.Max)
+	if len(options.OutputTokensAvailable) > 0 {
+		fmt.Println("   Available Output Tokens:")
+		for _, token := range options.OutputTokensAvailable {
+			fmt.Printf("      - %s\n", token)
 		}
 	}
 }

@@ -99,6 +99,16 @@ linters:
         linters:
           - dupl
       
+      - path: deviceio\.go
+        linters:
+          - dupl
+      
+      - path: event\.go
+        linters:
+          - dupl
+          - gocritic
+          - staticcheck
+      
       - path: examples/
         linters:
           - errcheck
