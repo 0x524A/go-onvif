@@ -78,7 +78,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@4afd733a84b1f43292c63897423277bb7f4313a9 # v6.5.0
         with:
-          version: latest
+          version: v1.64.8
           args: --timeout=5m
 
   # Stage 3: Test with Coverage (depends on lint)
