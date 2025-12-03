@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GO_VERSION: '1.24'
+  GO_VERSION: '1.24.x'
 
 jobs:
   # Stage 1: Format Check (fastest - fail immediately if code isn't formatted)
@@ -79,7 +79,7 @@ jobs:
         uses: golangci/golangci-lint-action@4afd733a84b1f43292c63897423277bb7f4313a9 # v6.5.0
         with:
           version: latest
-          args: --timeout=5m --out-format=github-actions
+          args: --timeout=5m
 
   # Stage 3: Test with Coverage (depends on lint)
   test:
