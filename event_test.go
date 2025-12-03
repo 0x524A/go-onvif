@@ -736,4 +736,3 @@ func TestSetEventEndpoint(t *testing.T) {
 		t.Errorf("Expected event endpoint %s, got %s", newEndpoint, endpoint)
 	}
 }
-

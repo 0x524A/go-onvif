@@ -144,16 +144,16 @@ type DigitalInputConfigurationOptions struct {
 
 // VideoOutputConfiguration represents a video output configuration.
 type VideoOutputConfiguration struct {
-	Token          string
-	Name           string
-	UseCount       int
-	OutputToken    string
+	Token            string
+	Name             string
+	UseCount         int
+	OutputToken      string
 	ForcePersistence bool
 }
 
 // VideoOutputConfigurationOptions represents video output configuration options.
 type VideoOutputConfigurationOptions struct {
-	Name              StringRange
+	Name                  StringRange
 	OutputTokensAvailable []string
 }
 
@@ -165,10 +165,10 @@ type StringRange struct {
 
 // RelayOutputOptions represents relay output configuration options.
 type RelayOutputOptions struct {
-	Token              string
-	Mode               []RelayMode
-	DelayTimes         []string
-	Discrete           bool
+	Token      string
+	Mode       []RelayMode
+	DelayTimes []string
+	Discrete   bool
 }
 
 // getDeviceIOEndpoint returns the device IO endpoint.
@@ -818,18 +818,18 @@ func (c *Client) SetVideoOutputConfiguration(ctx context.Context, config *VideoO
 	endpoint := c.getDeviceIOEndpoint()
 
 	type VideoOutputConfigurationXML struct {
-		Token            string `xml:"token,attr"`
-		Name             string `xml:"tt:Name"`
-		UseCount         int    `xml:"tt:UseCount"`
-		OutputToken      string `xml:"tt:OutputToken"`
+		Token       string `xml:"token,attr"`
+		Name        string `xml:"tt:Name"`
+		UseCount    int    `xml:"tt:UseCount"`
+		OutputToken string `xml:"tt:OutputToken"`
 	}
 
 	type SetVideoOutputConfiguration struct {
-		XMLName                  xml.Name                    `xml:"tmd:SetVideoOutputConfiguration"`
-		Xmlns                    string                      `xml:"xmlns:tmd,attr"`
-		XmlnsTT                  string                      `xml:"xmlns:tt,attr"`
-		Configuration            VideoOutputConfigurationXML `xml:"tmd:Configuration"`
-		ForcePersistence         bool                        `xml:"tmd:ForcePersistence"`
+		XMLName          xml.Name                    `xml:"tmd:SetVideoOutputConfiguration"`
+		Xmlns            string                      `xml:"xmlns:tmd,attr"`
+		XmlnsTT          string                      `xml:"xmlns:tt,attr"`
+		Configuration    VideoOutputConfigurationXML `xml:"tmd:Configuration"`
+		ForcePersistence bool                        `xml:"tmd:ForcePersistence"`
 	}
 
 	type SetVideoOutputConfigurationResponse struct {

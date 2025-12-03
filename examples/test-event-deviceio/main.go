@@ -233,4 +233,3 @@ func testDeviceIOService(ctx context.Context, client *onvif.Client) {
 		}
 	}
 }
-

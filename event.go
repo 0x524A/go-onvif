@@ -86,27 +86,27 @@ type Topic struct {
 
 // EventBrokerConfig represents an event broker configuration.
 type EventBrokerConfig struct {
-	Address         string
-	TopicPrefix     string
-	UserName        string
-	Password        string
-	CertificateID   string
-	PublishFilter   string
-	QoS             int
-	Status          string
+	Address            string
+	TopicPrefix        string
+	UserName           string
+	Password           string
+	CertificateID      string
+	PublishFilter      string
+	QoS                int
+	Status             string
 	CertPathValidation bool
-	MetadataFilter  string
+	MetadataFilter     string
 }
 
 // EventProperties represents the event properties of the device.
 type EventProperties struct {
-	TopicNamespaceLocation          []string
-	FixedTopicSet                   bool
-	TopicSet                        TopicSet
-	TopicExpressionDialects         []string
-	MessageContentFilterDialects    []string
+	TopicNamespaceLocation           []string
+	FixedTopicSet                    bool
+	TopicSet                         TopicSet
+	TopicExpressionDialects          []string
+	MessageContentFilterDialects     []string
 	ProducerPropertiesFilterDialects []string
-	MessageContentSchemaLocation    []string
+	MessageContentSchemaLocation     []string
 }
 
 // getEventEndpoint returns the event endpoint, falling back to the default endpoint if not set.
@@ -540,13 +540,13 @@ func (c *Client) GetEventProperties(ctx context.Context) (*EventProperties, erro
 	}
 
 	type GetEventPropertiesResponse struct {
-		XMLName                          xml.Name `xml:"GetEventPropertiesResponse"`
-		TopicNamespaceLocation           []string `xml:"TopicNamespaceLocation"`
-		FixedTopicSet                    bool     `xml:"FixedTopicSet"`
-		TopicExpressionDialect           []string `xml:"TopicExpressionDialect"`
-		MessageContentFilterDialect      []string `xml:"MessageContentFilterDialect"`
-		ProducerPropertiesFilterDialect  []string `xml:"ProducerPropertiesFilterDialect"`
-		MessageContentSchemaLocation     []string `xml:"MessageContentSchemaLocation"`
+		XMLName                         xml.Name `xml:"GetEventPropertiesResponse"`
+		TopicNamespaceLocation          []string `xml:"TopicNamespaceLocation"`
+		FixedTopicSet                   bool     `xml:"FixedTopicSet"`
+		TopicExpressionDialect          []string `xml:"TopicExpressionDialect"`
+		MessageContentFilterDialect     []string `xml:"MessageContentFilterDialect"`
+		ProducerPropertiesFilterDialect []string `xml:"ProducerPropertiesFilterDialect"`
+		MessageContentSchemaLocation    []string `xml:"MessageContentSchemaLocation"`
 	}
 
 	req := GetEventProperties{
@@ -599,8 +599,8 @@ func (c *Client) AddEventBroker(ctx context.Context, config *EventBrokerConfig) 
 	}
 
 	type AddEventBroker struct {
-		XMLName           xml.Name            `xml:"tev:AddEventBroker"`
-		Xmlns             string              `xml:"xmlns:tev,attr"`
+		XMLName           xml.Name             `xml:"tev:AddEventBroker"`
+		Xmlns             string               `xml:"xmlns:tev,attr"`
 		EventBrokerConfig EventBrokerConfigXML `xml:"tev:EventBrokerConfig"`
 	}
 
@@ -776,4 +776,3 @@ func splitSpaceSeparated(s string) []string {
 
 	return result
 }
-
