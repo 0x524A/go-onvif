@@ -9,6 +9,10 @@ import (
 	"testing"
 )
 
+const (
+	encodingH264 = "H264"
+)
+
 // Test device information from real camera:
 // Manufacturer: Bosch
 // Model: FLEXIDOME indoor 5100i IR
@@ -168,7 +172,7 @@ func TestGetProfiles_Bosch(t *testing.T) {
 	if profiles[0].VideoEncoderConfiguration.Token != "EncCfg_L1S1" {
 		t.Errorf("Expected encoder token=EncCfg_L1S1 (Bosch FLEXIDOME), got %s", profiles[0].VideoEncoderConfiguration.Token)
 	}
-	if profiles[0].VideoEncoderConfiguration.Encoding != "H264" {
+	if profiles[0].VideoEncoderConfiguration.Encoding != encodingH264 {
 		t.Errorf("Expected encoding=H264 (Bosch FLEXIDOME), got %s", profiles[0].VideoEncoderConfiguration.Encoding)
 	}
 	if profiles[0].VideoEncoderConfiguration.Resolution.Width != 1920 {
@@ -533,7 +537,7 @@ func TestGetVideoEncoderConfiguration_Bosch(t *testing.T) {
 	if config.Name != "Balanced 2 MP" {
 		t.Errorf("Expected name=Balanced 2 MP (Bosch FLEXIDOME), got %s", config.Name)
 	}
-	if config.Encoding != "H264" {
+	if config.Encoding != encodingH264 {
 		t.Errorf("Expected encoding=H264 (Bosch FLEXIDOME), got %s", config.Encoding)
 	}
 	if config.Resolution.Width != 1920 {

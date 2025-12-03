@@ -8,6 +8,11 @@ import (
 	"github.com/0x524a/onvif-go/server/soap"
 )
 
+const (
+	defaultHost     = "0.0.0.0"
+	defaultHostname = "localhost"
+)
+
 // Device service SOAP message types
 
 // GetDeviceInformationResponse represents GetDeviceInformation response.
@@ -162,8 +167,8 @@ func (s *Server) HandleGetCapabilities(body interface{}) (interface{}, error) {
 	// Get the host from the request (in a real implementation)
 	// For now, use a placeholder
 	host := s.config.Host
-	if host == "0.0.0.0" || host == "" {
-		host = "localhost"
+	if host == defaultHost || host == "" {
+		host = defaultHostname
 	}
 
 	baseURL := fmt.Sprintf("http://%s:%d%s", host, s.config.Port, s.config.BasePath)
@@ -256,8 +261,8 @@ func (s *Server) HandleGetSystemDateAndTime(body interface{}) (interface{}, erro
 // HandleGetServices handles GetServices request.
 func (s *Server) HandleGetServices(body interface{}) (interface{}, error) {
 	host := s.config.Host
-	if host == "0.0.0.0" || host == "" {
-		host = "localhost"
+	if host == defaultHost || host == "" {
+		host = defaultHostname
 	}
 
 	baseURL := fmt.Sprintf("http://%s:%d%s", host, s.config.Port, s.config.BasePath)

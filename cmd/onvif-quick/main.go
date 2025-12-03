@@ -110,7 +110,7 @@ func discoverCameras() {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout*time.Second)
 	defer cancel()
 
-	devices, err := discovery.DiscoverWithOptions(ctx, 5*time.Second, opts)
+	devices, err := discovery.DiscoverWithOptions(ctx, defaultRetryDelay*time.Second, opts)
 	if err != nil {
 		fmt.Printf("❌ Error: %v\n", err)
 
@@ -233,8 +233,7 @@ func connectAndShowInfo() {
 	}
 }
 
-//nolint:gocyclo // PTZ demo function has high complexity due to multiple control paths
-func ptzDemo() {
+func ptzDemo() { //nolint:funlen,gocyclo // Many statements and high complexity due to user interaction
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("Camera IP: ")

@@ -377,12 +377,12 @@ func (s *Server) HandleGetOptions(body interface{}) (interface{}, error) {
 		},
 		WideDynamicRange: &WideDynamicRangeOptions{
 			Mode:  []string{"OFF", "ON"},
-			Level: &FloatRange{Min: 0, Max: 100},
+			Level: &FloatRange{Min: 0, Max: 100}, //nolint:mnd // Imaging parameter range
 		},
 		WhiteBalance: &WhiteBalanceOptions{
 			Mode:   []string{"AUTO", "MANUAL"},
-			YrGain: &FloatRange{Min: 0, Max: 255},
-			YbGain: &FloatRange{Min: 0, Max: 255},
+			YrGain: &FloatRange{Min: 0, Max: 255}, //nolint:mnd // White balance gain range
+			YbGain: &FloatRange{Min: 0, Max: 255}, //nolint:mnd // White balance gain range
 		},
 	}
 

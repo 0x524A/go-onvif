@@ -7,6 +7,28 @@ import (
 	"github.com/0x524a/onvif-go"
 )
 
+const (
+	defaultTimeoutSec = 30
+	defaultWidth      = 1920
+	defaultHeight     = 1080
+	defaultFramerate  = 30
+	defaultQuality    = 80
+	defaultBitrate    = 4096
+	maxPan            = 180
+	maxTilt           = 90
+	defaultPTZSpeed   = 0.5
+	mediumWidth       = 1280
+	mediumHeight      = 720
+	mediumQuality     = 75
+	highQuality       = 85
+	mediumBitrate     = 2048
+	lowFramerate      = 25
+	highBitrate       = 6144
+	maxZoom           = 3
+	lowPTZSpeed       = 0.3
+	presetZoom        = 2
+)
+
 // Config represents the ONVIF server configuration.
 type Config struct {
 	// Server settings
@@ -233,9 +255,9 @@ type WDRSettings struct {
 func DefaultConfig() *Config {
 	return &Config{
 		Host:     "0.0.0.0",
-		Port:     8080,
+		Port:     8080, //nolint:mnd // Default HTTP port
 		BasePath: "/onvif",
-		Timeout:  30 * time.Second,
+		Timeout:  defaultTimeoutSec * time.Second, //nolint:mnd // Default timeout
 		DeviceInfo: DeviceInfo{
 			Manufacturer:    "onvif-go",
 			Model:           "Virtual Multi-Lens Camera",
@@ -255,36 +277,41 @@ func DefaultConfig() *Config {
 				VideoSource: VideoSourceConfig{
 					Token:      "video_source_0",
 					Name:       "Main Camera",
-					Resolution: Resolution{Width: 1920, Height: 1080},
-					Framerate:  30,
-					Bounds:     Bounds{X: 0, Y: 0, Width: 1920, Height: 1080},
+					Resolution: Resolution{Width: defaultWidth, Height: defaultHeight},         //nolint:mnd // Default resolution
+					Framerate:  defaultFramerate,                                               //nolint:mnd // Default framerate
+					Bounds:     Bounds{X: 0, Y: 0, Width: defaultWidth, Height: defaultHeight}, //nolint:mnd // Default bounds
 				},
 				VideoEncoder: VideoEncoderConfig{
 					Encoding:   "H264",
-					Resolution: Resolution{Width: 1920, Height: 1080},
-					Quality:    80,
-					Framerate:  30,
-					Bitrate:    4096,
-					GovLength:  30,
+					Resolution: Resolution{Width: defaultWidth, Height: defaultHeight}, //nolint:mnd // Default resolution
+					Quality:    defaultQuality,                                         //nolint:mnd // Default quality
+					Framerate:  defaultFramerate,                                       //nolint:mnd // Default framerate
+					Bitrate:    defaultBitrate,                                         //nolint:mnd // Default bitrate
+					GovLength:  defaultFramerate,                                       //nolint:mnd // Default gov length
 				},
 				PTZ: &PTZConfig{
-					NodeToken:          "ptz_node_0",
-					PanRange:           Range{Min: -180, Max: 180},
-					TiltRange:          Range{Min: -90, Max: 90},
-					ZoomRange:          Range{Min: 0, Max: 1},
-					DefaultSpeed:       PTZSpeed{Pan: 0.5, Tilt: 0.5, Zoom: 0.5},
+					NodeToken: "ptz_node_0",
+					PanRange:  Range{Min: -maxPan, Max: maxPan},   //nolint:mnd // PTZ pan range
+					TiltRange: Range{Min: -maxTilt, Max: maxTilt}, //nolint:mnd // PTZ tilt range
+					ZoomRange: Range{Min: 0, Max: 1},
+					DefaultSpeed: PTZSpeed{
+						Pan: defaultPTZSpeed, Tilt: defaultPTZSpeed, Zoom: defaultPTZSpeed, //nolint:mnd // Default PTZ speed
+					},
 					SupportsContinuous: true,
 					SupportsAbsolute:   true,
 					SupportsRelative:   true,
 					Presets: []Preset{
 						{Token: "preset_0", Name: "Home", Position: PTZPosition{Pan: 0, Tilt: 0, Zoom: 0}},
-						{Token: "preset_1", Name: "Entrance", Position: PTZPosition{Pan: -45, Tilt: -10, Zoom: 0.5}},
+						{
+							Token: "preset_1", Name: "Entrance",
+							Position: PTZPosition{Pan: -45, Tilt: -10, Zoom: defaultPTZSpeed}, //nolint:mnd // Preset position
+						},
 					},
 				},
 				Snapshot: SnapshotConfig{
 					Enabled:    true,
-					Resolution: Resolution{Width: 1920, Height: 1080},
-					Quality:    85,
+					Resolution: Resolution{Width: defaultWidth, Height: defaultHeight}, //nolint:mnd // Default resolution
+					Quality:    highQuality,                                            //nolint:mnd // High quality
 				},
 			},
 			{
@@ -293,22 +320,22 @@ func DefaultConfig() *Config {
 				VideoSource: VideoSourceConfig{
 					Token:      "video_source_1",
 					Name:       "Wide Angle Camera",
-					Resolution: Resolution{Width: 1280, Height: 720},
-					Framerate:  30,
-					Bounds:     Bounds{X: 0, Y: 0, Width: 1280, Height: 720},
+					Resolution: Resolution{Width: mediumWidth, Height: mediumHeight},         //nolint:mnd // Medium resolution
+					Framerate:  defaultFramerate,                                             //nolint:mnd // Default framerate
+					Bounds:     Bounds{X: 0, Y: 0, Width: mediumWidth, Height: mediumHeight}, //nolint:mnd // Medium bounds
 				},
 				VideoEncoder: VideoEncoderConfig{
 					Encoding:   "H264",
-					Resolution: Resolution{Width: 1280, Height: 720},
-					Quality:    75,
-					Framerate:  30,
-					Bitrate:    2048,
-					GovLength:  30,
+					Resolution: Resolution{Width: mediumWidth, Height: mediumHeight}, //nolint:mnd // Medium resolution
+					Quality:    mediumQuality,                                        //nolint:mnd // Medium quality
+					Framerate:  defaultFramerate,                                     //nolint:mnd // Default framerate
+					Bitrate:    mediumBitrate,                                        //nolint:mnd // Medium bitrate
+					GovLength:  defaultFramerate,                                     //nolint:mnd // Default gov length
 				},
 				Snapshot: SnapshotConfig{
 					Enabled:    true,
-					Resolution: Resolution{Width: 1280, Height: 720},
-					Quality:    80,
+					Resolution: Resolution{Width: mediumWidth, Height: mediumHeight}, //nolint:mnd // Medium resolution
+					Quality:    defaultQuality,                                       //nolint:mnd // Default quality
 				},
 			},
 			{
@@ -317,36 +344,38 @@ func DefaultConfig() *Config {
 				VideoSource: VideoSourceConfig{
 					Token:      "video_source_2",
 					Name:       "Telephoto Camera",
-					Resolution: Resolution{Width: 1920, Height: 1080},
-					Framerate:  25,
-					Bounds:     Bounds{X: 0, Y: 0, Width: 1920, Height: 1080},
+					Resolution: Resolution{Width: defaultWidth, Height: defaultHeight},         //nolint:mnd // Default resolution
+					Framerate:  lowFramerate,                                                   //nolint:mnd // Low framerate
+					Bounds:     Bounds{X: 0, Y: 0, Width: defaultWidth, Height: defaultHeight}, //nolint:mnd // Default bounds
 				},
 				VideoEncoder: VideoEncoderConfig{
 					Encoding:   "H264",
-					Resolution: Resolution{Width: 1920, Height: 1080},
-					Quality:    85,
-					Framerate:  25,
-					Bitrate:    6144,
-					GovLength:  25,
+					Resolution: Resolution{Width: defaultWidth, Height: defaultHeight}, //nolint:mnd // Default resolution
+					Quality:    highQuality,                                            //nolint:mnd // High quality
+					Framerate:  lowFramerate,                                           //nolint:mnd // Low framerate
+					Bitrate:    highBitrate,                                            //nolint:mnd // High bitrate
+					GovLength:  lowFramerate,                                           //nolint:mnd // Low framerate
 				},
 				PTZ: &PTZConfig{
 					NodeToken:          "ptz_node_2",
-					PanRange:           Range{Min: -180, Max: 180},
-					TiltRange:          Range{Min: -90, Max: 90},
-					ZoomRange:          Range{Min: 0, Max: 3},
-					DefaultSpeed:       PTZSpeed{Pan: 0.3, Tilt: 0.3, Zoom: 0.3},
+					PanRange:           Range{Min: -maxPan, Max: maxPan},                                 //nolint:mnd // PTZ pan range
+					TiltRange:          Range{Min: -maxTilt, Max: maxTilt},                               //nolint:mnd // PTZ tilt range
+					ZoomRange:          Range{Min: 0, Max: maxZoom},                                      //nolint:mnd // Max zoom
+					DefaultSpeed: PTZSpeed{
+						Pan: lowPTZSpeed, Tilt: lowPTZSpeed, Zoom: lowPTZSpeed, //nolint:mnd // Low PTZ speed
+					},
 					SupportsContinuous: true,
 					SupportsAbsolute:   true,
 					SupportsRelative:   true,
 					Presets: []Preset{
 						{Token: "preset_2_0", Name: "Home", Position: PTZPosition{Pan: 0, Tilt: 0, Zoom: 0}},
-						{Token: "preset_2_1", Name: "Zoom In", Position: PTZPosition{Pan: 0, Tilt: 0, Zoom: 2}},
+						{Token: "preset_2_1", Name: "Zoom In", Position: PTZPosition{Pan: 0, Tilt: 0, Zoom: presetZoom}}, //nolint:mnd // Preset zoom
 					},
 				},
 				Snapshot: SnapshotConfig{
 					Enabled:    true,
-					Resolution: Resolution{Width: 1920, Height: 1080},
-					Quality:    90,
+					Resolution: Resolution{Width: defaultWidth, Height: defaultHeight}, //nolint:mnd // Default resolution
+					Quality:    highQuality,                                            //nolint:mnd // High quality
 				},
 			},
 		},

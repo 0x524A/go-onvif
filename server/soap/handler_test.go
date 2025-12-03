@@ -12,6 +12,7 @@ import (
 	"testing"
 )
 
+
 func TestNewHandler(t *testing.T) {
 	handler := NewHandler("admin", "password")
 

@@ -57,10 +57,10 @@ func New(config *Config) (*Server, error) {
 
 		// Initialize imaging state
 		server.imagingState[profile.VideoSource.Token] = &ImagingState{
-			Brightness:  50.0,
-			Contrast:    50.0,
-			Saturation:  50.0,
-			Sharpness:   50.0,
+			Brightness:  50.0, //nolint:mnd // Default imaging value
+			Contrast:    50.0, //nolint:mnd // Default imaging value
+			Saturation:  50.0, //nolint:mnd // Default imaging value
+			Sharpness:   50.0, //nolint:mnd // Default imaging value
 			IrCutFilter: "AUTO",
 			BacklightComp: BacklightCompensation{
 				Mode:  "OFF",
@@ -70,23 +70,23 @@ func New(config *Config) (*Server, error) {
 				Mode:         "AUTO",
 				Priority:     "FrameRate",
 				MinExposure:  1,
-				MaxExposure:  10000,
+				MaxExposure:  10000, //nolint:mnd // Exposure time in microseconds
 				MinGain:      0,
-				MaxGain:      100,
-				ExposureTime: 100,
-				Gain:         50,
+				MaxGain:      100, //nolint:mnd // Gain value
+				ExposureTime: 100, //nolint:mnd // Exposure time
+				Gain:         50,  //nolint:mnd // Gain value
 			},
 			Focus: FocusSettings{
 				AutoFocusMode: "AUTO",
-				DefaultSpeed:  0.5,
+				DefaultSpeed:  0.5, //nolint:mnd // Focus speed
 				NearLimit:     0,
 				FarLimit:      1,
-				CurrentPos:    0.5,
+				CurrentPos:    0.5, //nolint:mnd // Focus position
 			},
 			WhiteBalance: WhiteBalanceSettings{
 				Mode:   "AUTO",
-				CrGain: 128,
-				CbGain: 128,
+				CrGain: 128, //nolint:mnd // White balance gain
+				CbGain: 128, //nolint:mnd // White balance gain
 			},
 			WideDynamicRange: WDRSettings{
 				Mode:  "OFF",

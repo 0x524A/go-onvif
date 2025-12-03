@@ -94,6 +94,8 @@ func Discover(ctx context.Context, timeout time.Duration) ([]*Device, error) {
 }
 
 // DiscoverWithOptions discovers ONVIF devices with custom options.
+//
+//nolint:gocyclo // Discovery function has high complexity due to multiple network operations
 func DiscoverWithOptions(ctx context.Context, timeout time.Duration, opts *DiscoverOptions) ([]*Device, error) {
 	if opts == nil {
 		opts = &DiscoverOptions{}
@@ -236,7 +238,7 @@ func generateUUID() string {
 
 // resolveNetworkInterface resolves a network interface by name or IP address.
 //
-//nolint:gocognit // Network interface resolution has high complexity due to multiple validation paths
+//nolint:gocyclo,gocognit // Network interface resolution has high complexity due to multiple validation paths
 func resolveNetworkInterface(ifaceSpec string) (*net.Interface, error) {
 	// Try to get interface by name (e.g., "eth0", "wlan0")
 	if iface, err := net.InterfaceByName(ifaceSpec); err == nil {

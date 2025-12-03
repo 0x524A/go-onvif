@@ -23,6 +23,7 @@ const (
 	ptzTimeoutSeconds     = 30
 	maxRetries            = 3
 	readBufferSize        = 5
+	defaultBrightness     = "50.0"
 )
 
 type CLI struct {
@@ -114,7 +115,7 @@ func (c *CLI) discoverCameras() {
 
 	// Try auto-discovery first (no specific interface)
 	fmt.Println("⏳ Attempting auto-discovery on default interface...")
-	devices, err := discovery.DiscoverWithOptions(ctx, 5*time.Second, &discovery.DiscoverOptions{})
+	devices, err := discovery.DiscoverWithOptions(ctx, defaultRetryDelay*time.Second, &discovery.DiscoverOptions{})
 
 	// If auto-discovery fails or finds nothing, offer interface selection
 	if err != nil || len(devices) == 0 {
@@ -275,7 +276,11 @@ func (c *CLI) performDiscoveryOnInterface(interfaceName string) ([]*discovery.De
 		NetworkInterface: interfaceName,
 	}
 
-	return discovery.DiscoverWithOptions(ctx, 5*time.Second, opts)
+	devices, err := discovery.DiscoverWithOptions(ctx, defaultRetryDelay*time.Second, opts)
+	if err != nil {
+		return nil, fmt.Errorf("discovery failed: %w", err)
+	}
+	return devices, nil
 }
 
 func (c *CLI) selectAndConnectCamera(devices []*discovery.Device) {
@@ -361,7 +366,7 @@ func (c *CLI) createClient(endpoint, username, password string, insecure bool) {
 
 	opts := []onvif.ClientOption{
 		onvif.WithCredentials(username, password),
-		onvif.WithTimeout(30 * time.Second),
+		onvif.WithTimeout(ptzTimeoutSeconds * time.Second),
 	}
 
 	if insecure {
@@ -607,10 +612,13 @@ func (c *CLI) inspectRTSPStream(streamURI string) map[string]interface{} {
 	}
 
 	// Use rtspeek library for detailed stream inspection
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		defaultRetryDelay*time.Second, //nolint:mnd // Stream inspection timeout
+	)
 	defer cancel()
 
-	streamInfo, err := sd.DescribeStream(ctx, streamURI, 5*time.Second)
+	streamInfo, err := sd.DescribeStream(ctx, streamURI, defaultRetryDelay*time.Second) //nolint:mnd // Stream description timeout
 	if err == nil && streamInfo != nil {
 		details["reachable"] = streamInfo.IsReachable()
 
@@ -677,7 +685,7 @@ func (c *CLI) tryRTSPConnection(streamURI string) map[string]interface{} {
 	}
 
 	// Try to connect
-	conn, err := net.DialTimeout("tcp", hostPort, 3*time.Second)
+	conn, err := net.DialTimeout("tcp", hostPort, maxRetries*time.Second) //nolint:mnd // Connection timeout
 	if err == nil {
 		//nolint:errcheck // Close error is not critical for connectivity check
 		_ = conn.Close()
@@ -1287,7 +1295,7 @@ func (c *CLI) setBrightness(ctx context.Context, videoSourceToken string) {
 		return
 	}
 
-	currentValue := "50.0"
+	currentValue := defaultBrightness
 	if currentSettings.Brightness != nil {
 		currentValue = fmt.Sprintf("%.1f", *currentSettings.Brightness)
 	}
@@ -1322,7 +1330,7 @@ func (c *CLI) setContrast(ctx context.Context, videoSourceToken string) {
 		return
 	}
 
-	currentValue := "50.0"
+	currentValue := defaultBrightness
 	if currentSettings.Contrast != nil {
 		currentValue = fmt.Sprintf("%.1f", *currentSettings.Contrast)
 	}
@@ -1357,7 +1365,7 @@ func (c *CLI) setSaturation(ctx context.Context, videoSourceToken string) {
 		return
 	}
 
-	currentValue := "50.0"
+	currentValue := defaultBrightness
 	if currentSettings.ColorSaturation != nil {
 		currentValue = fmt.Sprintf("%.1f", *currentSettings.ColorSaturation)
 	}
@@ -1392,7 +1400,7 @@ func (c *CLI) setSharpness(ctx context.Context, videoSourceToken string) {
 		return
 	}
 
-	currentValue := "50.0"
+	currentValue := defaultBrightness
 	if currentSettings.Sharpness != nil {
 		currentValue = fmt.Sprintf("%.1f", *currentSettings.Sharpness)
 	}
@@ -1482,7 +1490,7 @@ func (c *CLI) advancedImagingSettings(ctx context.Context, videoSourceToken stri
 }
 
 //nolint:gocyclo // Snapshot capture and display has high complexity due to multiple error handling paths
-func (c *CLI) captureAndDisplaySnapshot(ctx context.Context) {
+func (c *CLI) captureAndDisplaySnapshot(ctx context.Context) { //nolint:funlen // Many statements due to error handling
 	fmt.Println("📷 Capture Snapshot as ASCII Preview")
 	fmt.Println("===================================")
 	fmt.Println()
@@ -1543,7 +1551,7 @@ func (c *CLI) captureAndDisplaySnapshot(ctx context.Context) {
 	case "2":
 		config.Width = 100
 		config.Height = 30
-		config.Quality = "medium"
+		config.Quality = defaultQuality
 	case "3":
 		config.Width = 140
 		config.Height = 40
@@ -1555,7 +1563,7 @@ func (c *CLI) captureAndDisplaySnapshot(ctx context.Context) {
 	default:
 		config.Width = 100
 		config.Height = 30
-		config.Quality = "medium"
+		config.Quality = defaultQuality
 	}
 
 	// Download actual snapshot
@@ -1606,7 +1614,9 @@ func (c *CLI) captureAndDisplaySnapshot(ctx context.Context) {
 		if filename == "" {
 			filename = "snapshot.jpg"
 		}
-		if err := os.WriteFile(filename, snapshotData, 0600); err != nil { //nolint:gosec // 0600 is appropriate for CLI output files
+		if err := os.WriteFile(
+			filename, snapshotData, 0600, //nolint:gosec,mnd // 0600 appropriate for CLI output files
+		); err != nil {
 			fmt.Printf("❌ Failed to save file: %v\n", err)
 		} else {
 			fmt.Printf("✅ Snapshot saved to %s\n", filename)

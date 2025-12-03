@@ -280,8 +280,8 @@ func (s *Server) HandleGetStreamURI(body interface{}) (interface{}, error) {
 	if uri == "" {
 		// Default URI construction
 		host := s.config.Host
-		if host == "0.0.0.0" || host == "" {
-			host = "localhost"
+		if host == defaultHost || host == "" {
+			host = defaultHostname
 		}
 		uri = fmt.Sprintf("rtsp://%s:8554%s", host, streamCfg.RTSPPath)
 	}
@@ -326,8 +326,8 @@ func (s *Server) HandleGetSnapshotURI(body interface{}) (interface{}, error) {
 
 	// Build snapshot URI
 	host := s.config.Host
-	if host == "0.0.0.0" || host == "" {
-		host = "localhost"
+	if host == defaultHost || host == "" {
+		host = defaultHostname
 	}
 	uri := fmt.Sprintf("http://%s:%d%s/snapshot?profile=%s",
 		host, s.config.Port, s.config.BasePath, req.ProfileToken)

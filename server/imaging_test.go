@@ -5,8 +5,13 @@ import (
 	"testing"
 )
 
+const (
+	exposureModeAuto   = "AUTO"
+	exposureModeManual = "MANUAL"
+)
+
 func TestHandleGetImagingSettings(t *testing.T) {
-	config := createTestConfig()
+	config := createTestConfig(t)
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -42,7 +47,7 @@ func TestHandleGetImagingSettings(t *testing.T) {
 }
 
 func TestHandleSetImagingSettings(t *testing.T) {
-	config := createTestConfig()
+	config := createTestConfig(t)
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -85,7 +90,7 @@ func TestHandleSetImagingSettings(t *testing.T) {
 }
 
 func TestHandleGetOptions(t *testing.T) {
-	config := createTestConfig()
+	config := createTestConfig(t)
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -122,8 +127,10 @@ func TestHandleGetOptions(t *testing.T) {
 }
 
 // TestHandleMove - DISABLED due to SOAP namespace requirements.
+//
+//nolint:unused // Disabled test function kept for reference
 func _DisabledTestHandleMove(t *testing.T) {
-	config := createTestConfig()
+	config := createTestConfig(t)
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -148,7 +155,7 @@ func TestImagingSettings(t *testing.T) {
 	contrast := 60.0
 	saturation := 50.0
 	sharpness := 50.0
-	irCutFilter := "AUTO"
+	irCutFilter := exposureModeAuto
 	level := 50.0
 	gain := 50.0
 	exposureTime := 100.0
@@ -167,16 +174,16 @@ func TestImagingSettings(t *testing.T) {
 			Level: &level,
 		},
 		Exposure: &ExposureSettings20{
-			Mode:         "AUTO",
+			Mode:         exposureModeAuto,
 			ExposureTime: &exposureTime,
 			Gain:         &gain,
 		},
 		Focus: &FocusConfiguration20{
-			AutoFocusMode: "AUTO",
+			AutoFocusMode: exposureModeAuto,
 			DefaultSpeed:  &defaultSpeed,
 		},
 		WhiteBalance: &WhiteBalanceSettings20{
-			Mode:   "AUTO",
+			Mode:   exposureModeAuto,
 			CrGain: &crGain,
 			CbGain: &cbGain,
 		},
@@ -204,15 +211,15 @@ func TestImagingSettings(t *testing.T) {
 		t.Errorf("BacklightCompensation mode invalid: %s", settings.BacklightCompensation.Mode)
 	}
 
-	if settings.Exposure != nil && settings.Exposure.Mode != "AUTO" {
+	if settings.Exposure != nil && settings.Exposure.Mode != exposureModeAuto {
 		t.Errorf("Exposure mode invalid: %s", settings.Exposure.Mode)
 	}
 
-	if settings.Focus != nil && settings.Focus.AutoFocusMode != "AUTO" {
+	if settings.Focus != nil && settings.Focus.AutoFocusMode != exposureModeAuto {
 		t.Errorf("Focus mode invalid: %s", settings.Focus.AutoFocusMode)
 	}
 
-	if settings.WhiteBalance.Mode != "AUTO" {
+	if settings.WhiteBalance.Mode != exposureModeAuto {
 		t.Errorf("WhiteBalance mode invalid: %s", settings.WhiteBalance.Mode)
 	}
 }
@@ -276,7 +283,7 @@ func TestExposureSettings(t *testing.T) {
 		{
 			name: "Valid MANUAL exposure",
 			exposure: ExposureSettings{
-				Mode:         "MANUAL",
+				Mode:         exposureModeManual,
 				ExposureTime: 100,
 				Gain:         50,
 			},
@@ -293,7 +300,7 @@ func TestExposureSettings(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			valid := tt.exposure.Mode == "AUTO" || tt.exposure.Mode == "MANUAL"
+			valid := tt.exposure.Mode == exposureModeAuto || tt.exposure.Mode == exposureModeManual
 			if valid != tt.expectValid {
 				t.Errorf("Exposure validation failed: Mode=%s", tt.exposure.Mode)
 			}
@@ -310,7 +317,7 @@ func TestFocusSettings(t *testing.T) {
 		{
 			name: "Valid AUTO focus",
 			focus: FocusSettings{
-				AutoFocusMode: "AUTO",
+				AutoFocusMode: exposureModeAuto,
 				DefaultSpeed:  0.5,
 				NearLimit:     0,
 				FarLimit:      1,
@@ -320,7 +327,7 @@ func TestFocusSettings(t *testing.T) {
 		{
 			name: "Valid MANUAL focus",
 			focus: FocusSettings{
-				AutoFocusMode: "MANUAL",
+				AutoFocusMode: exposureModeManual,
 				DefaultSpeed:  0.5,
 				CurrentPos:    0.5,
 			},
@@ -337,7 +344,7 @@ func TestFocusSettings(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			valid := tt.focus.AutoFocusMode == "AUTO" || tt.focus.AutoFocusMode == "MANUAL"
+			valid := tt.focus.AutoFocusMode == exposureModeAuto || tt.focus.AutoFocusMode == exposureModeManual
 			if valid != tt.expectValid {
 				t.Errorf("Focus validation failed: Mode=%s", tt.focus.AutoFocusMode)
 			}
@@ -354,7 +361,7 @@ func TestWhiteBalanceSettings(t *testing.T) {
 		{
 			name: "Valid AUTO white balance",
 			whiteBalance: WhiteBalanceSettings{
-				Mode:   "AUTO",
+				Mode:   exposureModeAuto,
 				CrGain: 128,
 				CbGain: 128,
 			},
@@ -372,7 +379,7 @@ func TestWhiteBalanceSettings(t *testing.T) {
 		{
 			name: "Gain out of range",
 			whiteBalance: WhiteBalanceSettings{
-				Mode:   "AUTO",
+				Mode:   exposureModeAuto,
 				CrGain: 300,
 				CbGain: 128,
 			},
@@ -382,7 +389,7 @@ func TestWhiteBalanceSettings(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			valid := (tt.whiteBalance.Mode == "AUTO" || tt.whiteBalance.Mode == "MANUAL") &&
+			valid := (tt.whiteBalance.Mode == exposureModeAuto || tt.whiteBalance.Mode == exposureModeManual) &&
 				tt.whiteBalance.CrGain >= 0 && tt.whiteBalance.CrGain <= 255 &&
 				tt.whiteBalance.CbGain >= 0 && tt.whiteBalance.CbGain <= 255
 			if valid != tt.expectValid {
@@ -463,7 +470,7 @@ func TestGetImagingSettingsResponseXML(t *testing.T) {
 }
 
 func TestHandleGetOptionsDetails(t *testing.T) {
-	config := createTestConfig()
+	config := createTestConfig(t)
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -499,7 +506,7 @@ func TestImagingSettingsEdgeCases(t *testing.T) {
 }
 
 func TestSetImagingSettingsEdgeCases(t *testing.T) {
-	config := createTestConfig()
+	config := createTestConfig(t)
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -518,7 +525,7 @@ func TestSetImagingSettingsEdgeCases(t *testing.T) {
 }
 
 func TestGetImagingSettingsEdgeCases(t *testing.T) {
-	config := createTestConfig()
+	config := createTestConfig(t)
 	server, _ := New(config)
 
 	// Test with invalid token

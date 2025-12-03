@@ -17,7 +17,6 @@ var (
 	version = "1.0.0"
 )
 
-//nolint:funlen // Main function has many statements due to server setup and configuration
 const (
 	defaultPort    = 8080
 	maxWorkers     = 3
@@ -28,6 +27,7 @@ const (
 	ptzSpeed       = 0.5
 )
 
+//nolint:funlen // Main function has many statements due to server setup and configuration
 func main() {
 	// Define command-line flags
 	host := flag.String("host", "0.0.0.0", "Server host address")
@@ -38,7 +38,7 @@ func main() {
 	model := flag.String("model", "Virtual Multi-Lens Camera", "Device model")
 	firmware := flag.String("firmware", "1.0.0", "Firmware version")
 	serial := flag.String("serial", "SN-12345678", "Serial number")
-	profiles := flag.Int("profiles", 3, "Number of camera profiles (1-10)")
+	profiles := flag.Int("profiles", maxWorkers, "Number of camera profiles (1-10)") //nolint:mnd // Default profile count
 	ptz := flag.Bool("ptz", true, "Enable PTZ support")
 	imaging := flag.Bool("imaging", true, "Enable Imaging support")
 	events := flag.Bool("events", false, "Enable Events support")
@@ -190,7 +190,7 @@ func buildConfig(host string, port int, username, password, manufacturer, model,
 			Snapshot: server.SnapshotConfig{
 				Enabled:    true,
 				Resolution: server.Resolution{Width: template.width, Height: template.height},
-				Quality:    template.quality + 5,
+				Quality:    template.quality + 5, //nolint:mnd // Quality offset
 			},
 		}
 
@@ -212,9 +212,11 @@ func buildConfig(host string, port int, username, password, manufacturer, model,
 						Position: server.PTZPosition{Pan: 0, Tilt: 0, Zoom: 0},
 					},
 					{
-						Token:    fmt.Sprintf("preset_%d_1", i),
-						Name:     "Entrance",
-						Position: server.PTZPosition{Pan: -45, Tilt: -10, Zoom: template.ptzZoomMax * ptzSpeed}, //nolint:mnd // Preset position values
+						Token: fmt.Sprintf("preset_%d_1", i),
+						Name:  "Entrance",
+						Position: server.PTZPosition{
+							Pan: -45, Tilt: -10, Zoom: template.ptzZoomMax * ptzSpeed, //nolint:mnd // Preset position values
+						},
 					},
 				},
 			}

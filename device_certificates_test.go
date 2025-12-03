@@ -10,6 +10,11 @@ import (
 	"testing"
 )
 
+const (
+	testCertID    = "cert-001"
+	testXMLHeader = `<?xml version="1.0" encoding="UTF-8"?>`
+)
+
 func newMockDeviceCertificatesServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/soap+xml")
@@ -167,7 +172,7 @@ func newMockDeviceCertificatesServer() *httptest.Server {
 </SOAP-ENV:Envelope>`
 
 		default:
-			response = `<?xml version="1.0" encoding="UTF-8"?>
+			response = testXMLHeader + `
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope">
   <SOAP-ENV:Body>
     <SOAP-ENV:Fault>
@@ -201,8 +206,8 @@ func TestGetCertificates(t *testing.T) {
 		t.Error("Expected at least one certificate")
 	}
 
-	if certs[0].CertificateID != "cert-001" {
-		t.Errorf("Expected certificate ID 'cert-001', got '%s'", certs[0].CertificateID)
+	if certs[0].CertificateID != testCertID {
+		t.Errorf("Expected certificate ID '%s', got '%s'", testCertID, certs[0].CertificateID)
 	}
 }
 

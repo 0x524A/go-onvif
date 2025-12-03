@@ -142,7 +142,11 @@ func (c *Client) GetImagingSettings(ctx context.Context, videoSourceToken string
 }
 
 // SetImagingSettings sets imaging settings for a video source.
-func (c *Client) SetImagingSettings(ctx context.Context, videoSourceToken string, settings *ImagingSettings, forcePersistence bool) error {
+//
+//nolint:funlen // SetImagingSettings has many statements due to building complex imaging settings request
+func (c *Client) SetImagingSettings(
+	ctx context.Context, videoSourceToken string, settings *ImagingSettings, forcePersistence bool,
+) error {
 	endpoint := c.imagingEndpoint
 	if endpoint == "" {
 		endpoint = c.endpoint

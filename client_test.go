@@ -13,6 +13,13 @@ import (
 	"time"
 )
 
+const (
+	testEndpoint = "http://192.168.1.100/onvif"
+	testUsername = "admin"
+	testRealm    = "test-realm"
+	testOpaque   = "test-opaque"
+)
+
 func TestNormalizeEndpoint(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -184,7 +191,7 @@ type MockONVIFServer struct {
 func NewMockONVIFServer() *MockONVIFServer {
 	mock := &MockONVIFServer{
 		responses: make(map[string]string),
-		username:  "admin",
+		username:  testUsername,
 		password:  "password",
 	}
 
@@ -374,10 +381,10 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestClientOptions(t *testing.T) {
-	endpoint := "http://192.168.1.100/onvif"
+	endpoint := testEndpoint
 
 	t.Run("WithCredentials", func(t *testing.T) {
-		username := "admin"
+		username := testUsername
 		password := "test123"
 
 		client, err := NewClient(endpoint, WithCredentials(username, password))
@@ -422,7 +429,7 @@ func TestClientOptions(t *testing.T) {
 }
 
 func TestClientEndpoint(t *testing.T) {
-	endpoint := "http://192.168.1.100/onvif"
+	endpoint := testEndpoint
 	client, err := NewClient(endpoint)
 	if err != nil {
 		t.Fatalf("NewClient() error = %v", err)
@@ -462,7 +469,7 @@ func TestGetDeviceInformationWithMockServer(t *testing.T) {
 
 	client, err := NewClient(
 		server.URL,
-		WithCredentials("admin", "password"),
+		WithCredentials(testUsername, "password"),
 	)
 	if err != nil {
 		t.Fatalf("NewClient() failed: %v", err)
@@ -504,7 +511,7 @@ func TestInitializeEndpointDiscovery(t *testing.T) {
 	// Test that Initialize can handle network errors gracefully
 	client, err := NewClient(
 		"http://192.168.999.999/onvif/device_service", // non-existent IP
-		WithCredentials("admin", "password"),
+		WithCredentials(testUsername, "password"),
 		WithTimeout(1*time.Second),
 	)
 	if err != nil {
@@ -526,7 +533,7 @@ func TestInitializeEndpointDiscovery(t *testing.T) {
 func TestGetProfilesRequiresInitialization(t *testing.T) {
 	client, err := NewClient(
 		"http://192.168.1.100/onvif/device_service",
-		WithCredentials("admin", "password"),
+		WithCredentials(testUsername, "password"),
 	)
 	if err != nil {
 		t.Fatalf("NewClient() failed: %v", err)
@@ -548,7 +555,7 @@ func TestContextTimeout(t *testing.T) {
 
 	client, err := NewClient(
 		mock.URL(),
-		WithCredentials("admin", "password"),
+		WithCredentials(testUsername, "password"),
 	)
 	if err != nil {
 		t.Fatalf("NewClient() failed: %v", err)
@@ -591,7 +598,7 @@ func TestONVIFError(t *testing.T) {
 }
 
 func BenchmarkNewClient(b *testing.B) {
-	endpoint := "http://192.168.1.100/onvif"
+	endpoint := testEndpoint
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, err := NewClient(endpoint)
@@ -607,7 +614,7 @@ func BenchmarkGetDeviceInformation(b *testing.B) {
 
 	client, err := NewClient(
 		mock.URL(),
-		WithCredentials("admin", "password"),
+		WithCredentials(testUsername, "password"),
 	)
 	if err != nil {
 		b.Fatalf("NewClient() failed: %v", err)
@@ -629,7 +636,7 @@ func ExampleClient_GetDeviceInformation() {
 	// Create client
 	client, err := NewClient(
 		"http://192.168.1.100/onvif/device_service",
-		WithCredentials("admin", "password"),
+		WithCredentials(testUsername, "password"),
 		WithTimeout(30*time.Second),
 	)
 	if err != nil {
@@ -760,7 +767,7 @@ func TestInitializeWithLocalhostURLs(t *testing.T) {
 	// Create client pointing to mock server
 	client, err := NewClient(
 		mock.URL()+"/onvif/device_service",
-		WithCredentials("admin", "admin"),
+		WithCredentials(testUsername, testUsername),
 	)
 	if err != nil {
 		t.Fatalf("Failed to create client: %v", err)
@@ -806,7 +813,7 @@ func TestDownloadFileWithBasicAuth(t *testing.T) {
 	// Create a mock server that requires basic auth
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
-		if !ok || username != "admin" || password != "password" {
+		if !ok || username != testUsername || password != "password" {
 			w.WriteHeader(http.StatusUnauthorized)
 
 			return
@@ -819,7 +826,7 @@ func TestDownloadFileWithBasicAuth(t *testing.T) {
 
 	client, err := NewClient(
 		server.URL,
-		WithCredentials("admin", "password"),
+		WithCredentials(testUsername, "password"),
 	)
 	if err != nil {
 		t.Fatalf("NewClient() failed: %v", err)
@@ -839,8 +846,8 @@ func TestDownloadFileWithBasicAuth(t *testing.T) {
 // TestDownloadFileWithDigestAuth tests DownloadFile with digest authentication.
 func TestDownloadFileWithDigestAuth(t *testing.T) {
 	nonce := "test-nonce-12345"
-	realm := "test-realm"
-	opaque := "test-opaque"
+	realm := testRealm
+	opaque := testOpaque
 
 	// Create a mock server that requires digest auth
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -863,7 +870,7 @@ func TestDownloadFileWithDigestAuth(t *testing.T) {
 
 	client, err := NewClient(
 		server.URL,
-		WithCredentials("admin", "password"),
+		WithCredentials(testUsername, "password"),
 	)
 	if err != nil {
 		t.Fatalf("NewClient() failed: %v", err)
@@ -969,8 +976,8 @@ func TestDownloadFileNetworkError(t *testing.T) {
 // TestDigestAuthTransport tests the digest authentication transport.
 func TestDigestAuthTransport(t *testing.T) {
 	nonce := "test-nonce"
-	realm := "test-realm"
-	opaque := "test-opaque"
+	realm := testRealm
+	opaque := testOpaque
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
@@ -983,7 +990,7 @@ func TestDigestAuthTransport(t *testing.T) {
 			return
 		}
 		// Verify digest auth header contains required fields
-		if !strings.Contains(authHeader, `username="admin"`) {
+		if !strings.Contains(authHeader, `username="`+testUsername+`"`) {
 			t.Error("Digest auth header missing username")
 		}
 		if !strings.Contains(authHeader, `realm="`+realm+`"`) {
@@ -1007,7 +1014,7 @@ func TestDigestAuthTransport(t *testing.T) {
 	digestClient := &http.Client{
 		Transport: &digestAuthTransport{
 			transport: tr,
-			username:  "admin",
+			username:  testUsername,
 			password:  "password",
 		},
 		Timeout: DefaultTimeout,
@@ -1039,9 +1046,9 @@ func TestExtractParam(t *testing.T) {
 	}{
 		{
 			name:       "extract realm",
-			authHeader: `Digest realm="test-realm", nonce="123"`,
+			authHeader: `Digest realm="` + testRealm + `", nonce="123"`,
 			param:      "realm",
-			expected:   "test-realm",
+			expected:   testRealm,
 		},
 		{
 			name:       "extract nonce",
@@ -1310,8 +1317,8 @@ func TestDownloadFileContextCancellation(t *testing.T) {
 // This verifies that the nc field is properly protected from race conditions.
 func TestDigestAuthTransportConcurrency(t *testing.T) {
 	nonce := "test-nonce"
-	realm := "test-realm"
-	opaque := "test-opaque"
+	realm := testRealm
+	opaque := testOpaque
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
@@ -1342,7 +1349,7 @@ func TestDigestAuthTransportConcurrency(t *testing.T) {
 	// Create a single transport instance that will be used concurrently
 	digestTransport := &digestAuthTransport{
 		transport: tr,
-		username:  "admin",
+		username:  testUsername,
 		password:  "password",
 	}
 

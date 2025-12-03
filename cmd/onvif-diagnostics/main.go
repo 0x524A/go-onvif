@@ -26,6 +26,7 @@ const (
 	maxRetryAttempts  = 10
 	retryDelaySec     = 5
 	maxIdleTimeoutSec = 90
+	unknownStatus     = "Unknown"
 )
 
 type CameraReport struct {
@@ -146,7 +147,7 @@ var (
 	username   = flag.String("username", "", "ONVIF username")
 	password   = flag.String("password", "", "ONVIF password")
 	outputDir  = flag.String("output", "./camera-logs", "Output directory for logs")
-	timeout    = flag.Int("timeout", 30, "Request timeout in seconds")
+	timeout    = flag.Int("timeout", 30, "Request timeout in seconds") //nolint:mnd // Default timeout value
 	verbose    = flag.Bool("verbose", false, "Verbose output")
 	captureXML = flag.Bool("capture-xml", false, "Capture raw SOAP XML traffic and create tar.gz archive")
 )
@@ -174,7 +175,7 @@ func main() {
 	}
 
 	// Create output directory
-	if err := os.MkdirAll(*outputDir, 0750); err != nil { //nolint:gosec // 0750 is appropriate for diagnostic output directory
+	if err := os.MkdirAll(*outputDir, 0750); err != nil { //nolint:gosec,mnd // 0750 appropriate for diagnostic output
 		log.Fatalf("Failed to create output directory: %v", err)
 	}
 
@@ -198,7 +199,7 @@ func main() {
 	if *captureXML {
 		timestamp := time.Now().Format("20060102-150405")
 		xmlCaptureDir = filepath.Join(*outputDir, "temp_"+timestamp)
-		if err := os.MkdirAll(xmlCaptureDir, 0750); err != nil { //nolint:gosec // 0750 appropriate for diagnostic output
+		if err := os.MkdirAll(xmlCaptureDir, 0750); err != nil { //nolint:gosec,mnd // 0750 appropriate for diagnostic output
 			log.Fatalf("Failed to create XML capture directory: %v", err)
 		}
 
@@ -883,8 +884,7 @@ func saveReport(report *CameraReport, filename string) error {
 		return fmt.Errorf("failed to marshal report: %w", err)
 	}
 
-	if err := os.WriteFile(filename, data, 0600); err != nil {
-		//nolint:gosec // 0600 appropriate for diagnostic files
+	if err := os.WriteFile(filename, data, 0600); err != nil { //nolint:gosec,mnd // 0600 appropriate for diagnostic files
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 
@@ -1024,22 +1024,24 @@ func (t *LoggingTransport) saveCapture(capture *XMLCapture) {
 		return
 	}
 
-	if err := os.WriteFile(filename, data, 0600); err != nil {
-		//nolint:gosec // 0600 appropriate for diagnostic files
+	if err := os.WriteFile(filename, data, 0600); err != nil { //nolint:gosec,mnd // 0600 appropriate for diagnostic files
 		log.Printf("Failed to write capture: %v", err)
 	}
 
 	// Pretty-print and save XML files for easier viewing
 	reqFile := filepath.Join(t.LogDir, baseFilename+"_request.xml")
 	prettyRequest := prettyPrintXML(capture.RequestBody)
-	if err := os.WriteFile(reqFile, []byte(prettyRequest), 0600); err != nil {
-		//nolint:gosec // 0600 appropriate for diagnostic files
+	if err := os.WriteFile(
+		reqFile, []byte(prettyRequest), 0600, //nolint:gosec,mnd // 0600 appropriate for diagnostic files
+	); err != nil {
 		log.Printf("Failed to write request XML: %v", err)
 	}
 
 	respFile := filepath.Join(t.LogDir, baseFilename+"_response.xml")
 	prettyResponse := prettyPrintXML(capture.ResponseBody)
-	if err := os.WriteFile(respFile, []byte(prettyResponse), 0600); err != nil { //nolint:gosec // 0600 appropriate for diagnostic files
+	if err := os.WriteFile(
+		respFile, []byte(prettyResponse), 0600, //nolint:gosec,mnd // 0600 appropriate for diagnostic files
+	); err != nil {
 		log.Printf("Failed to write response XML: %v", err)
 	}
 }

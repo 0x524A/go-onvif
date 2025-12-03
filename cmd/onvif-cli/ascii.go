@@ -25,6 +25,7 @@ const (
 	bufferSize1024     = 1024
 	largeASCIIWidth    = 160
 	largeASCIIHeight   = 50
+	defaultQuality     = "medium"
 )
 
 // DefaultASCIIConfig returns a sensible default configuration.
@@ -70,7 +71,7 @@ func ImageToASCII(imageData []byte, config ASCIIConfig) (string, error) {
 // imageToASCIIFromImage is the core conversion function.
 //
 //nolint:gocyclo // Image to ASCII conversion has high complexity due to multiple pixel processing paths
-func imageToASCIIFromImage(img image.Image, config ASCIIConfig, format string) (string, error) {
+func imageToASCIIFromImage(img image.Image, config ASCIIConfig, format string) (string, error) { //nolint:unparam // format reserved for future use
 	// Validate configuration
 	if config.Width <= 0 {
 		config.Width = 120
@@ -79,7 +80,7 @@ func imageToASCIIFromImage(img image.Image, config ASCIIConfig, format string) (
 		config.Height = defaultASCIIHeight
 	}
 	if config.Quality == "" {
-		config.Quality = "medium"
+		config.Quality = defaultQuality
 	}
 
 	// Select character set based on quality
@@ -220,7 +221,7 @@ type ImageInfo struct {
 
 // formatBytes converts bytes to human-readable format.
 func formatBytes(bytes int64) string {
-	if bytes < 1024 {
+	if bytes < bufferSize1024 {
 		return fmt.Sprintf("%d B", bytes)
 	}
 	const kbSize = 1024
