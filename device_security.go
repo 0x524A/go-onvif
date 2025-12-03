@@ -8,14 +8,73 @@ import (
 	"github.com/0x524a/onvif-go/internal/soap"
 )
 
+// Common XML request/response types for device security operations.
+// These are defined at package level to avoid repeated inline struct definitions.
+
+// ipAddressFilterRequest is the common structure for IP address filter SOAP requests.
+type ipAddressFilterRequest struct {
+	Type        string                   `xml:"tds:Type"`
+	IPv4Address []prefixedIPv4AddressXML `xml:"tds:IPv4Address,omitempty"`
+	IPv6Address []prefixedIPv6AddressXML `xml:"tds:IPv6Address,omitempty"`
+}
+
+// prefixedIPv4AddressXML is the XML representation of a prefixed IPv4 address.
+type prefixedIPv4AddressXML struct {
+	Address      string `xml:"tds:Address"`
+	PrefixLength int    `xml:"tds:PrefixLength"`
+}
+
+// prefixedIPv6AddressXML is the XML representation of a prefixed IPv6 address.
+type prefixedIPv6AddressXML struct {
+	Address      string `xml:"tds:Address"`
+	PrefixLength int    `xml:"tds:PrefixLength"`
+}
+
+// buildIPAddressFilterRequest converts an IPAddressFilter to the XML request format.
+// Pre-allocates slices for efficiency when the source length is known.
+func buildIPAddressFilterRequest(filter *IPAddressFilter) ipAddressFilterRequest {
+	req := ipAddressFilterRequest{
+		Type: string(filter.Type),
+	}
+
+	// Pre-allocate slices with known capacity
+	if len(filter.IPv4Address) > 0 {
+		req.IPv4Address = make([]prefixedIPv4AddressXML, 0, len(filter.IPv4Address))
+		for _, addr := range filter.IPv4Address {
+			req.IPv4Address = append(req.IPv4Address, prefixedIPv4AddressXML{
+				Address:      addr.Address,
+				PrefixLength: addr.PrefixLength,
+			})
+		}
+	}
+
+	if len(filter.IPv6Address) > 0 {
+		req.IPv6Address = make([]prefixedIPv6AddressXML, 0, len(filter.IPv6Address))
+		for _, addr := range filter.IPv6Address {
+			req.IPv6Address = append(req.IPv6Address, prefixedIPv6AddressXML{
+				Address:      addr.Address,
+				PrefixLength: addr.PrefixLength,
+			})
+		}
+	}
+
+	return req
+}
+
+// newSOAPClient creates a SOAP client with the current client credentials.
+func (c *Client) newSOAPClient() *soap.Client {
+	username, password := c.GetCredentials()
+	return soap.NewClient(c.httpClient, username, password)
+}
+
 // GetRemoteUser returns the configured remote user.
 func (c *Client) GetRemoteUser(ctx context.Context) (*RemoteUser, error) {
-	type GetRemoteUser struct {
+	type getRemoteUserRequest struct {
 		XMLName xml.Name `xml:"tds:GetRemoteUser"`
 		Xmlns   string   `xml:"xmlns:tds,attr"`
 	}
 
-	type GetRemoteUserResponse struct {
+	type getRemoteUserResponse struct {
 		XMLName    xml.Name `xml:"GetRemoteUserResponse"`
 		RemoteUser *struct {
 			Username           string `xml:"Username"`
@@ -24,16 +83,12 @@ func (c *Client) GetRemoteUser(ctx context.Context) (*RemoteUser, error) {
 		} `xml:"RemoteUser"`
 	}
 
-	req := GetRemoteUser{
+	req := getRemoteUserRequest{
 		Xmlns: deviceNamespace,
 	}
 
-	var resp GetRemoteUserResponse
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, &resp); err != nil {
+	var resp getRemoteUserResponse
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, &resp); err != nil {
 		return nil, fmt.Errorf("GetRemoteUser failed: %w", err)
 	}
 
@@ -50,36 +105,31 @@ func (c *Client) GetRemoteUser(ctx context.Context) (*RemoteUser, error) {
 
 // SetRemoteUser sets the remote user.
 func (c *Client) SetRemoteUser(ctx context.Context, remoteUser *RemoteUser) error {
-	type SetRemoteUser struct {
-		XMLName    xml.Name `xml:"tds:SetRemoteUser"`
-		Xmlns      string   `xml:"xmlns:tds,attr"`
-		RemoteUser *struct {
-			Username           string `xml:"tds:Username"`
-			Password           string `xml:"tds:Password,omitempty"`
-			UseDerivedPassword bool   `xml:"tds:UseDerivedPassword"`
-		} `xml:"tds:RemoteUser,omitempty"`
+	type remoteUserXML struct {
+		Username           string `xml:"tds:Username"`
+		Password           string `xml:"tds:Password,omitempty"`
+		UseDerivedPassword bool   `xml:"tds:UseDerivedPassword"`
 	}
 
-	req := SetRemoteUser{
+	type setRemoteUserRequest struct {
+		XMLName    xml.Name       `xml:"tds:SetRemoteUser"`
+		Xmlns      string         `xml:"xmlns:tds,attr"`
+		RemoteUser *remoteUserXML `xml:"tds:RemoteUser,omitempty"`
+	}
+
+	req := setRemoteUserRequest{
 		Xmlns: deviceNamespace,
 	}
 
 	if remoteUser != nil {
-		req.RemoteUser = &struct {
-			Username           string `xml:"tds:Username"`
-			Password           string `xml:"tds:Password,omitempty"`
-			UseDerivedPassword bool   `xml:"tds:UseDerivedPassword"`
-		}{
+		req.RemoteUser = &remoteUserXML{
 			Username:           remoteUser.Username,
 			Password:           remoteUser.Password,
 			UseDerivedPassword: remoteUser.UseDerivedPassword,
 		}
 	}
 
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, nil); err != nil {
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, nil); err != nil {
 		return fmt.Errorf("SetRemoteUser failed: %w", err)
 	}
 
@@ -88,36 +138,31 @@ func (c *Client) SetRemoteUser(ctx context.Context, remoteUser *RemoteUser) erro
 
 // GetIPAddressFilter gets the IP address filter settings from a device.
 func (c *Client) GetIPAddressFilter(ctx context.Context) (*IPAddressFilter, error) {
-	type GetIPAddressFilter struct {
+	type getIPAddressFilterRequest struct {
 		XMLName xml.Name `xml:"tds:GetIPAddressFilter"`
 		Xmlns   string   `xml:"xmlns:tds,attr"`
 	}
 
-	type GetIPAddressFilterResponse struct {
+	type prefixedAddressXML struct {
+		Address      string `xml:"Address"`
+		PrefixLength int    `xml:"PrefixLength"`
+	}
+
+	type getIPAddressFilterResponse struct {
 		XMLName         xml.Name `xml:"GetIPAddressFilterResponse"`
 		IPAddressFilter struct {
-			Type        string `xml:"Type"`
-			IPv4Address []struct {
-				Address      string `xml:"Address"`
-				PrefixLength int    `xml:"PrefixLength"`
-			} `xml:"IPv4Address"`
-			IPv6Address []struct {
-				Address      string `xml:"Address"`
-				PrefixLength int    `xml:"PrefixLength"`
-			} `xml:"IPv6Address"`
+			Type        string               `xml:"Type"`
+			IPv4Address []prefixedAddressXML `xml:"IPv4Address"`
+			IPv6Address []prefixedAddressXML `xml:"IPv6Address"`
 		} `xml:"IPAddressFilter"`
 	}
 
-	req := GetIPAddressFilter{
+	req := getIPAddressFilterRequest{
 		Xmlns: deviceNamespace,
 	}
 
-	var resp GetIPAddressFilterResponse
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, &resp); err != nil {
+	var resp getIPAddressFilterResponse
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, &resp); err != nil {
 		return nil, fmt.Errorf("GetIPAddressFilter failed: %w", err)
 	}
 
@@ -125,18 +170,25 @@ func (c *Client) GetIPAddressFilter(ctx context.Context) (*IPAddressFilter, erro
 		Type: IPAddressFilterType(resp.IPAddressFilter.Type),
 	}
 
-	for _, addr := range resp.IPAddressFilter.IPv4Address {
-		filter.IPv4Address = append(filter.IPv4Address, PrefixedIPv4Address{
-			Address:      addr.Address,
-			PrefixLength: addr.PrefixLength,
-		})
+	// Pre-allocate slices with known capacity
+	if len(resp.IPAddressFilter.IPv4Address) > 0 {
+		filter.IPv4Address = make([]PrefixedIPv4Address, 0, len(resp.IPAddressFilter.IPv4Address))
+		for _, addr := range resp.IPAddressFilter.IPv4Address {
+			filter.IPv4Address = append(filter.IPv4Address, PrefixedIPv4Address{
+				Address:      addr.Address,
+				PrefixLength: addr.PrefixLength,
+			})
+		}
 	}
 
-	for _, addr := range resp.IPAddressFilter.IPv6Address {
-		filter.IPv6Address = append(filter.IPv6Address, PrefixedIPv6Address{
-			Address:      addr.Address,
-			PrefixLength: addr.PrefixLength,
-		})
+	if len(resp.IPAddressFilter.IPv6Address) > 0 {
+		filter.IPv6Address = make([]PrefixedIPv6Address, 0, len(resp.IPAddressFilter.IPv6Address))
+		for _, addr := range resp.IPAddressFilter.IPv6Address {
+			filter.IPv6Address = append(filter.IPv6Address, PrefixedIPv6Address{
+				Address:      addr.Address,
+				PrefixLength: addr.PrefixLength,
+			})
+		}
 	}
 
 	return filter, nil
@@ -144,51 +196,18 @@ func (c *Client) GetIPAddressFilter(ctx context.Context) (*IPAddressFilter, erro
 
 // SetIPAddressFilter sets the IP address filter settings on a device.
 func (c *Client) SetIPAddressFilter(ctx context.Context, filter *IPAddressFilter) error {
-	type SetIPAddressFilter struct {
-		XMLName         xml.Name `xml:"tds:SetIPAddressFilter"`
-		Xmlns           string   `xml:"xmlns:tds,attr"`
-		IPAddressFilter struct {
-			Type        string `xml:"tds:Type"`
-			IPv4Address []struct {
-				Address      string `xml:"tds:Address"`
-				PrefixLength int    `xml:"tds:PrefixLength"`
-			} `xml:"tds:IPv4Address,omitempty"`
-			IPv6Address []struct {
-				Address      string `xml:"tds:Address"`
-				PrefixLength int    `xml:"tds:PrefixLength"`
-			} `xml:"tds:IPv6Address,omitempty"`
-		} `xml:"tds:IPAddressFilter"`
+	type setIPAddressFilterRequest struct {
+		XMLName         xml.Name               `xml:"tds:SetIPAddressFilter"`
+		Xmlns           string                 `xml:"xmlns:tds,attr"`
+		IPAddressFilter ipAddressFilterRequest `xml:"tds:IPAddressFilter"`
 	}
 
-	req := SetIPAddressFilter{
-		Xmlns: deviceNamespace,
-	}
-	req.IPAddressFilter.Type = string(filter.Type)
-
-	for _, addr := range filter.IPv4Address {
-		req.IPAddressFilter.IPv4Address = append(req.IPAddressFilter.IPv4Address, struct {
-			Address      string `xml:"tds:Address"`
-			PrefixLength int    `xml:"tds:PrefixLength"`
-		}{
-			Address:      addr.Address,
-			PrefixLength: addr.PrefixLength,
-		})
+	req := setIPAddressFilterRequest{
+		Xmlns:           deviceNamespace,
+		IPAddressFilter: buildIPAddressFilterRequest(filter),
 	}
 
-	for _, addr := range filter.IPv6Address {
-		req.IPAddressFilter.IPv6Address = append(req.IPAddressFilter.IPv6Address, struct {
-			Address      string `xml:"tds:Address"`
-			PrefixLength int    `xml:"tds:PrefixLength"`
-		}{
-			Address:      addr.Address,
-			PrefixLength: addr.PrefixLength,
-		})
-	}
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, nil); err != nil {
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, nil); err != nil {
 		return fmt.Errorf("SetIPAddressFilter failed: %w", err)
 	}
 
@@ -197,51 +216,18 @@ func (c *Client) SetIPAddressFilter(ctx context.Context, filter *IPAddressFilter
 
 // AddIPAddressFilter adds an IP filter address to a device.
 func (c *Client) AddIPAddressFilter(ctx context.Context, filter *IPAddressFilter) error {
-	type AddIPAddressFilter struct {
-		XMLName         xml.Name `xml:"tds:AddIPAddressFilter"`
-		Xmlns           string   `xml:"xmlns:tds,attr"`
-		IPAddressFilter struct {
-			Type        string `xml:"tds:Type"`
-			IPv4Address []struct {
-				Address      string `xml:"tds:Address"`
-				PrefixLength int    `xml:"tds:PrefixLength"`
-			} `xml:"tds:IPv4Address,omitempty"`
-			IPv6Address []struct {
-				Address      string `xml:"tds:Address"`
-				PrefixLength int    `xml:"tds:PrefixLength"`
-			} `xml:"tds:IPv6Address,omitempty"`
-		} `xml:"tds:IPAddressFilter"`
+	type addIPAddressFilterRequest struct {
+		XMLName         xml.Name               `xml:"tds:AddIPAddressFilter"`
+		Xmlns           string                 `xml:"xmlns:tds,attr"`
+		IPAddressFilter ipAddressFilterRequest `xml:"tds:IPAddressFilter"`
 	}
 
-	req := AddIPAddressFilter{
-		Xmlns: deviceNamespace,
-	}
-	req.IPAddressFilter.Type = string(filter.Type)
-
-	for _, addr := range filter.IPv4Address {
-		req.IPAddressFilter.IPv4Address = append(req.IPAddressFilter.IPv4Address, struct {
-			Address      string `xml:"tds:Address"`
-			PrefixLength int    `xml:"tds:PrefixLength"`
-		}{
-			Address:      addr.Address,
-			PrefixLength: addr.PrefixLength,
-		})
+	req := addIPAddressFilterRequest{
+		Xmlns:           deviceNamespace,
+		IPAddressFilter: buildIPAddressFilterRequest(filter),
 	}
 
-	for _, addr := range filter.IPv6Address {
-		req.IPAddressFilter.IPv6Address = append(req.IPAddressFilter.IPv6Address, struct {
-			Address      string `xml:"tds:Address"`
-			PrefixLength int    `xml:"tds:PrefixLength"`
-		}{
-			Address:      addr.Address,
-			PrefixLength: addr.PrefixLength,
-		})
-	}
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, nil); err != nil {
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, nil); err != nil {
 		return fmt.Errorf("AddIPAddressFilter failed: %w", err)
 	}
 
@@ -250,51 +236,18 @@ func (c *Client) AddIPAddressFilter(ctx context.Context, filter *IPAddressFilter
 
 // RemoveIPAddressFilter deletes an IP filter address from a device.
 func (c *Client) RemoveIPAddressFilter(ctx context.Context, filter *IPAddressFilter) error {
-	type RemoveIPAddressFilter struct {
-		XMLName         xml.Name `xml:"tds:RemoveIPAddressFilter"`
-		Xmlns           string   `xml:"xmlns:tds,attr"`
-		IPAddressFilter struct {
-			Type        string `xml:"tds:Type"`
-			IPv4Address []struct {
-				Address      string `xml:"tds:Address"`
-				PrefixLength int    `xml:"tds:PrefixLength"`
-			} `xml:"tds:IPv4Address,omitempty"`
-			IPv6Address []struct {
-				Address      string `xml:"tds:Address"`
-				PrefixLength int    `xml:"tds:PrefixLength"`
-			} `xml:"tds:IPv6Address,omitempty"`
-		} `xml:"tds:IPAddressFilter"`
+	type removeIPAddressFilterRequest struct {
+		XMLName         xml.Name               `xml:"tds:RemoveIPAddressFilter"`
+		Xmlns           string                 `xml:"xmlns:tds,attr"`
+		IPAddressFilter ipAddressFilterRequest `xml:"tds:IPAddressFilter"`
 	}
 
-	req := RemoveIPAddressFilter{
-		Xmlns: deviceNamespace,
-	}
-	req.IPAddressFilter.Type = string(filter.Type)
-
-	for _, addr := range filter.IPv4Address {
-		req.IPAddressFilter.IPv4Address = append(req.IPAddressFilter.IPv4Address, struct {
-			Address      string `xml:"tds:Address"`
-			PrefixLength int    `xml:"tds:PrefixLength"`
-		}{
-			Address:      addr.Address,
-			PrefixLength: addr.PrefixLength,
-		})
+	req := removeIPAddressFilterRequest{
+		Xmlns:           deviceNamespace,
+		IPAddressFilter: buildIPAddressFilterRequest(filter),
 	}
 
-	for _, addr := range filter.IPv6Address {
-		req.IPAddressFilter.IPv6Address = append(req.IPAddressFilter.IPv6Address, struct {
-			Address      string `xml:"tds:Address"`
-			PrefixLength int    `xml:"tds:PrefixLength"`
-		}{
-			Address:      addr.Address,
-			PrefixLength: addr.PrefixLength,
-		})
-	}
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, nil); err != nil {
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, nil); err != nil {
 		return fmt.Errorf("RemoveIPAddressFilter failed: %w", err)
 	}
 
@@ -303,12 +256,12 @@ func (c *Client) RemoveIPAddressFilter(ctx context.Context, filter *IPAddressFil
 
 // GetZeroConfiguration gets the zero-configuration from a device.
 func (c *Client) GetZeroConfiguration(ctx context.Context) (*NetworkZeroConfiguration, error) {
-	type GetZeroConfiguration struct {
+	type getZeroConfigurationRequest struct {
 		XMLName xml.Name `xml:"tds:GetZeroConfiguration"`
 		Xmlns   string   `xml:"xmlns:tds,attr"`
 	}
 
-	type GetZeroConfigurationResponse struct {
+	type getZeroConfigurationResponse struct {
 		XMLName           xml.Name `xml:"GetZeroConfigurationResponse"`
 		ZeroConfiguration struct {
 			InterfaceToken string   `xml:"InterfaceToken"`
@@ -317,16 +270,12 @@ func (c *Client) GetZeroConfiguration(ctx context.Context) (*NetworkZeroConfigur
 		} `xml:"ZeroConfiguration"`
 	}
 
-	req := GetZeroConfiguration{
+	req := getZeroConfigurationRequest{
 		Xmlns: deviceNamespace,
 	}
 
-	var resp GetZeroConfigurationResponse
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, &resp); err != nil {
+	var resp getZeroConfigurationResponse
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, &resp); err != nil {
 		return nil, fmt.Errorf("GetZeroConfiguration failed: %w", err)
 	}
 
@@ -339,23 +288,20 @@ func (c *Client) GetZeroConfiguration(ctx context.Context) (*NetworkZeroConfigur
 
 // SetZeroConfiguration sets the zero-configuration.
 func (c *Client) SetZeroConfiguration(ctx context.Context, interfaceToken string, enabled bool) error {
-	type SetZeroConfiguration struct {
+	type setZeroConfigurationRequest struct {
 		XMLName        xml.Name `xml:"tds:SetZeroConfiguration"`
 		Xmlns          string   `xml:"xmlns:tds,attr"`
 		InterfaceToken string   `xml:"tds:InterfaceToken"`
 		Enabled        bool     `xml:"tds:Enabled"`
 	}
 
-	req := SetZeroConfiguration{
+	req := setZeroConfigurationRequest{
 		Xmlns:          deviceNamespace,
 		InterfaceToken: interfaceToken,
 		Enabled:        enabled,
 	}
 
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, nil); err != nil {
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, nil); err != nil {
 		return fmt.Errorf("SetZeroConfiguration failed: %w", err)
 	}
 
@@ -364,12 +310,12 @@ func (c *Client) SetZeroConfiguration(ctx context.Context, interfaceToken string
 
 // GetDynamicDNS gets the dynamic DNS settings from a device.
 func (c *Client) GetDynamicDNS(ctx context.Context) (*DynamicDNSInformation, error) {
-	type GetDynamicDNS struct {
+	type getDynamicDNSRequest struct {
 		XMLName xml.Name `xml:"tds:GetDynamicDNS"`
 		Xmlns   string   `xml:"xmlns:tds,attr"`
 	}
 
-	type GetDynamicDNSResponse struct {
+	type getDynamicDNSResponse struct {
 		XMLName               xml.Name `xml:"GetDynamicDNSResponse"`
 		DynamicDNSInformation struct {
 			Type string `xml:"Type"`
@@ -378,16 +324,12 @@ func (c *Client) GetDynamicDNS(ctx context.Context) (*DynamicDNSInformation, err
 		} `xml:"DynamicDNSInformation"`
 	}
 
-	req := GetDynamicDNS{
+	req := getDynamicDNSRequest{
 		Xmlns: deviceNamespace,
 	}
 
-	var resp GetDynamicDNSResponse
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, &resp); err != nil {
+	var resp getDynamicDNSResponse
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, &resp); err != nil {
 		return nil, fmt.Errorf("GetDynamicDNS failed: %w", err)
 	}
 
@@ -400,23 +342,20 @@ func (c *Client) GetDynamicDNS(ctx context.Context) (*DynamicDNSInformation, err
 
 // SetDynamicDNS sets the dynamic DNS settings on a device.
 func (c *Client) SetDynamicDNS(ctx context.Context, dnsType DynamicDNSType, name string) error {
-	type SetDynamicDNS struct {
+	type setDynamicDNSRequest struct {
 		XMLName xml.Name       `xml:"tds:SetDynamicDNS"`
 		Xmlns   string         `xml:"xmlns:tds,attr"`
 		Type    DynamicDNSType `xml:"tds:Type"`
 		Name    string         `xml:"tds:Name,omitempty"`
 	}
 
-	req := SetDynamicDNS{
+	req := setDynamicDNSRequest{
 		Xmlns: deviceNamespace,
 		Type:  dnsType,
 		Name:  name,
 	}
 
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, nil); err != nil {
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, nil); err != nil {
 		return fmt.Errorf("SetDynamicDNS failed: %w", err)
 	}
 
@@ -425,12 +364,12 @@ func (c *Client) SetDynamicDNS(ctx context.Context, dnsType DynamicDNSType, name
 
 // GetPasswordComplexityConfiguration retrieves the current password complexity configuration settings.
 func (c *Client) GetPasswordComplexityConfiguration(ctx context.Context) (*PasswordComplexityConfiguration, error) {
-	type GetPasswordComplexityConfiguration struct {
+	type getPasswordComplexityConfigurationRequest struct {
 		XMLName xml.Name `xml:"tds:GetPasswordComplexityConfiguration"`
 		Xmlns   string   `xml:"xmlns:tds,attr"`
 	}
 
-	type GetPasswordComplexityConfigurationResponse struct {
+	type getPasswordComplexityConfigurationResponse struct {
 		XMLName                   xml.Name `xml:"GetPasswordComplexityConfigurationResponse"`
 		MinLen                    int      `xml:"MinLen"`
 		Uppercase                 int      `xml:"Uppercase"`
@@ -440,16 +379,12 @@ func (c *Client) GetPasswordComplexityConfiguration(ctx context.Context) (*Passw
 		PolicyConfigurationLocked bool     `xml:"PolicyConfigurationLocked"`
 	}
 
-	req := GetPasswordComplexityConfiguration{
+	req := getPasswordComplexityConfigurationRequest{
 		Xmlns: deviceNamespace,
 	}
 
-	var resp GetPasswordComplexityConfigurationResponse
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, &resp); err != nil {
+	var resp getPasswordComplexityConfigurationResponse
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, &resp); err != nil {
 		return nil, fmt.Errorf("GetPasswordComplexityConfiguration failed: %w", err)
 	}
 
@@ -468,7 +403,7 @@ func (c *Client) SetPasswordComplexityConfiguration(
 	ctx context.Context,
 	config *PasswordComplexityConfiguration,
 ) error {
-	type SetPasswordComplexityConfiguration struct {
+	type setPasswordComplexityConfigurationRequest struct {
 		XMLName                   xml.Name `xml:"tds:SetPasswordComplexityConfiguration"`
 		Xmlns                     string   `xml:"xmlns:tds,attr"`
 		MinLen                    int      `xml:"tds:MinLen,omitempty"`
@@ -479,7 +414,7 @@ func (c *Client) SetPasswordComplexityConfiguration(
 		PolicyConfigurationLocked bool     `xml:"tds:PolicyConfigurationLocked,omitempty"`
 	}
 
-	req := SetPasswordComplexityConfiguration{
+	req := setPasswordComplexityConfigurationRequest{
 		Xmlns:                     deviceNamespace,
 		MinLen:                    config.MinLen,
 		Uppercase:                 config.Uppercase,
@@ -489,10 +424,7 @@ func (c *Client) SetPasswordComplexityConfiguration(
 		PolicyConfigurationLocked: config.PolicyConfigurationLocked,
 	}
 
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, nil); err != nil {
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, nil); err != nil {
 		return fmt.Errorf("SetPasswordComplexityConfiguration failed: %w", err)
 	}
 
@@ -501,27 +433,23 @@ func (c *Client) SetPasswordComplexityConfiguration(
 
 // GetPasswordHistoryConfiguration retrieves the current password history configuration settings.
 func (c *Client) GetPasswordHistoryConfiguration(ctx context.Context) (*PasswordHistoryConfiguration, error) {
-	type GetPasswordHistoryConfiguration struct {
+	type getPasswordHistoryConfigurationRequest struct {
 		XMLName xml.Name `xml:"tds:GetPasswordHistoryConfiguration"`
 		Xmlns   string   `xml:"xmlns:tds,attr"`
 	}
 
-	type GetPasswordHistoryConfigurationResponse struct {
+	type getPasswordHistoryConfigurationResponse struct {
 		XMLName xml.Name `xml:"GetPasswordHistoryConfigurationResponse"`
 		Enabled bool     `xml:"Enabled"`
 		Length  int      `xml:"Length"`
 	}
 
-	req := GetPasswordHistoryConfiguration{
+	req := getPasswordHistoryConfigurationRequest{
 		Xmlns: deviceNamespace,
 	}
 
-	var resp GetPasswordHistoryConfigurationResponse
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, &resp); err != nil {
+	var resp getPasswordHistoryConfigurationResponse
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, &resp); err != nil {
 		return nil, fmt.Errorf("GetPasswordHistoryConfiguration failed: %w", err)
 	}
 
@@ -533,23 +461,20 @@ func (c *Client) GetPasswordHistoryConfiguration(ctx context.Context) (*Password
 
 // SetPasswordHistoryConfiguration allows setting of the password history configuration.
 func (c *Client) SetPasswordHistoryConfiguration(ctx context.Context, config *PasswordHistoryConfiguration) error {
-	type SetPasswordHistoryConfiguration struct {
+	type setPasswordHistoryConfigurationRequest struct {
 		XMLName xml.Name `xml:"tds:SetPasswordHistoryConfiguration"`
 		Xmlns   string   `xml:"xmlns:tds,attr"`
 		Enabled bool     `xml:"tds:Enabled"`
 		Length  int      `xml:"tds:Length"`
 	}
 
-	req := SetPasswordHistoryConfiguration{
+	req := setPasswordHistoryConfigurationRequest{
 		Xmlns:   deviceNamespace,
 		Enabled: config.Enabled,
 		Length:  config.Length,
 	}
 
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, nil); err != nil {
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, nil); err != nil {
 		return fmt.Errorf("SetPasswordHistoryConfiguration failed: %w", err)
 	}
 
@@ -558,28 +483,24 @@ func (c *Client) SetPasswordHistoryConfiguration(ctx context.Context, config *Pa
 
 // GetAuthFailureWarningConfiguration retrieves the current authentication failure warning configuration.
 func (c *Client) GetAuthFailureWarningConfiguration(ctx context.Context) (*AuthFailureWarningConfiguration, error) {
-	type GetAuthFailureWarningConfiguration struct {
+	type getAuthFailureWarningConfigurationRequest struct {
 		XMLName xml.Name `xml:"tds:GetAuthFailureWarningConfiguration"`
 		Xmlns   string   `xml:"xmlns:tds,attr"`
 	}
 
-	type GetAuthFailureWarningConfigurationResponse struct {
+	type getAuthFailureWarningConfigurationResponse struct {
 		XMLName         xml.Name `xml:"GetAuthFailureWarningConfigurationResponse"`
 		Enabled         bool     `xml:"Enabled"`
 		MonitorPeriod   int      `xml:"MonitorPeriod"`
 		MaxAuthFailures int      `xml:"MaxAuthFailures"`
 	}
 
-	req := GetAuthFailureWarningConfiguration{
+	req := getAuthFailureWarningConfigurationRequest{
 		Xmlns: deviceNamespace,
 	}
 
-	var resp GetAuthFailureWarningConfigurationResponse
-
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, &resp); err != nil {
+	var resp getAuthFailureWarningConfigurationResponse
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, &resp); err != nil {
 		return nil, fmt.Errorf("GetAuthFailureWarningConfiguration failed: %w", err)
 	}
 
@@ -595,7 +516,7 @@ func (c *Client) SetAuthFailureWarningConfiguration(
 	ctx context.Context,
 	config *AuthFailureWarningConfiguration,
 ) error {
-	type SetAuthFailureWarningConfiguration struct {
+	type setAuthFailureWarningConfigurationRequest struct {
 		XMLName         xml.Name `xml:"tds:SetAuthFailureWarningConfiguration"`
 		Xmlns           string   `xml:"xmlns:tds,attr"`
 		Enabled         bool     `xml:"tds:Enabled"`
@@ -603,17 +524,14 @@ func (c *Client) SetAuthFailureWarningConfiguration(
 		MaxAuthFailures int      `xml:"tds:MaxAuthFailures"`
 	}
 
-	req := SetAuthFailureWarningConfiguration{
+	req := setAuthFailureWarningConfigurationRequest{
 		Xmlns:           deviceNamespace,
 		Enabled:         config.Enabled,
 		MonitorPeriod:   config.MonitorPeriod,
 		MaxAuthFailures: config.MaxAuthFailures,
 	}
 
-	username, password := c.GetCredentials()
-	soapClient := soap.NewClient(c.httpClient, username, password)
-
-	if err := soapClient.Call(ctx, c.endpoint, "", req, nil); err != nil {
+	if err := c.newSOAPClient().Call(ctx, c.endpoint, "", req, nil); err != nil {
 		return fmt.Errorf("SetAuthFailureWarningConfiguration failed: %w", err)
 	}
 

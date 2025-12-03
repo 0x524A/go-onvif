@@ -521,3 +521,266 @@ func TestIPAddressFilterTypeConstants(t *testing.T) {
 		t.Errorf("IPAddressFilterDeny should be 'Deny', got %s", IPAddressFilterDeny)
 	}
 }
+
+// Benchmarks for device security operations.
+
+func BenchmarkGetRemoteUser(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = client.GetRemoteUser(ctx)
+	}
+}
+
+func BenchmarkSetRemoteUser(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+	remoteUser := &RemoteUser{
+		Username:           "test_user",
+		Password:           "password123",
+		UseDerivedPassword: true,
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = client.SetRemoteUser(ctx, remoteUser)
+	}
+}
+
+func BenchmarkGetIPAddressFilter(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = client.GetIPAddressFilter(ctx)
+	}
+}
+
+func BenchmarkSetIPAddressFilter(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+	filter := &IPAddressFilter{
+		Type: IPAddressFilterAllow,
+		IPv4Address: []PrefixedIPv4Address{
+			{Address: "192.168.1.0", PrefixLength: 24},
+			{Address: "10.0.0.0", PrefixLength: 8},
+		},
+		IPv6Address: []PrefixedIPv6Address{
+			{Address: "fe80::", PrefixLength: 64},
+		},
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = client.SetIPAddressFilter(ctx, filter)
+	}
+}
+
+func BenchmarkAddIPAddressFilter(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+	filter := &IPAddressFilter{
+		Type: IPAddressFilterAllow,
+		IPv4Address: []PrefixedIPv4Address{
+			{Address: "172.16.0.0", PrefixLength: 12},
+		},
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = client.AddIPAddressFilter(ctx, filter)
+	}
+}
+
+func BenchmarkRemoveIPAddressFilter(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+	filter := &IPAddressFilter{
+		Type: IPAddressFilterAllow,
+		IPv4Address: []PrefixedIPv4Address{
+			{Address: "172.16.0.0", PrefixLength: 12},
+		},
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = client.RemoveIPAddressFilter(ctx, filter)
+	}
+}
+
+func BenchmarkGetZeroConfiguration(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = client.GetZeroConfiguration(ctx)
+	}
+}
+
+func BenchmarkSetZeroConfiguration(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = client.SetZeroConfiguration(ctx, "eth0", true)
+	}
+}
+
+func BenchmarkGetPasswordComplexityConfiguration(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = client.GetPasswordComplexityConfiguration(ctx)
+	}
+}
+
+func BenchmarkSetPasswordComplexityConfiguration(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+	config := &PasswordComplexityConfiguration{
+		MinLen:                    10,
+		Uppercase:                 2,
+		Number:                    2,
+		SpecialChars:              1,
+		BlockUsernameOccurrence:   true,
+		PolicyConfigurationLocked: false,
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = client.SetPasswordComplexityConfiguration(ctx, config)
+	}
+}
+
+func BenchmarkGetPasswordHistoryConfiguration(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = client.GetPasswordHistoryConfiguration(ctx)
+	}
+}
+
+func BenchmarkSetPasswordHistoryConfiguration(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+	config := &PasswordHistoryConfiguration{
+		Enabled: true,
+		Length:  10,
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = client.SetPasswordHistoryConfiguration(ctx, config)
+	}
+}
+
+func BenchmarkGetAuthFailureWarningConfiguration(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = client.GetAuthFailureWarningConfiguration(ctx)
+	}
+}
+
+func BenchmarkSetAuthFailureWarningConfiguration(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+	config := &AuthFailureWarningConfiguration{
+		Enabled:         true,
+		MonitorPeriod:   120,
+		MaxAuthFailures: 3,
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = client.SetAuthFailureWarningConfiguration(ctx, config)
+	}
+}
+
+// BenchmarkIPAddressFilterWithManyAddresses tests performance with larger address lists.
+func BenchmarkIPAddressFilterWithManyAddresses(b *testing.B) {
+	server := newMockDeviceSecurityServer()
+	defer server.Close()
+
+	client, _ := NewClient(server.URL)
+	ctx := context.Background()
+
+	// Create filter with many addresses to test pre-allocation efficiency
+	filter := &IPAddressFilter{
+		Type:        IPAddressFilterAllow,
+		IPv4Address: make([]PrefixedIPv4Address, 100),
+		IPv6Address: make([]PrefixedIPv6Address, 50),
+	}
+
+	for i := 0; i < 100; i++ {
+		filter.IPv4Address[i] = PrefixedIPv4Address{
+			Address:      "192.168.1.0",
+			PrefixLength: 24,
+		}
+	}
+
+	for i := 0; i < 50; i++ {
+		filter.IPv6Address[i] = PrefixedIPv6Address{
+			Address:      "fe80::",
+			PrefixLength: 64,
+		}
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = client.SetIPAddressFilter(ctx, filter)
+	}
+}
