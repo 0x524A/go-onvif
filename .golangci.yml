@@ -14,7 +14,6 @@ linters:
     - gosimple
     - ineffassign
     - gofmt
-    - goimports
     - misspell
     - unconvert
     - unparam
@@ -71,19 +70,11 @@ linters:
         - whyNoLint
         - wrapperFunc
     
-    gosec:
-      severity: medium
-      confidence: medium
-    
     godot:
       scope: declarations
       exclude:
         - "^TODO:"
         - "^FIXME:"
-    
-    goimports:
-      local-prefixes:
-        - github.com/0x524a/onvif-go
     
     misspell:
       locale: US
@@ -94,7 +85,6 @@ linters:
       - comments
       - std-error-handling
     rules:
-      # Exclude some linters from test files
       - path: _test\.go
         linters:
           - errcheck
@@ -104,18 +94,13 @@ linters:
           - gocognit
           - dupl
       
-      # Exclude dupl from ONVIF API files - similar patterns are expected
       - path: (media|device|ptz|imaging|device_security|device_additional)\.go
         linters:
           - dupl
       
-      # Exclude dupl from cmd directories
       - path: cmd/
         linters:
           - dupl
-    
-    max-issues-per-linter: 50
-    max-same-issues: 10
 
 output:
   formats:
