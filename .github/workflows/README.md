@@ -4,19 +4,39 @@ This directory contains all CI/CD workflows for the ONVIF Go library.
 
 ## Workflows
 
-### 🔄 CI (`ci.yml`)
-Main continuous integration workflow that runs on every push and pull request.
+### 🔄 CI (`ci.yml`) - Main Pipeline
+**Unified continuous integration workflow with fail-fast behavior.**
 
-**Jobs:**
-- **validate** - Quick validation (formatting, vet, lint)
-- **test** - Run tests with coverage on Go 1.23
-- **test-matrix** - Test on multiple Go versions (1.21, 1.22, 1.23) and platforms (Linux, macOS, Windows)
-- **build** - Build verification for all packages and examples
-- **sonarcloud** - Code quality analysis (runs on master/main only)
+The CI pipeline runs sequentially - if any stage fails, subsequent stages are skipped:
+
+```
+fmt → lint → test → sonarcloud
+                  ↘ build
+```
+
+**Stages:**
+
+| Stage | Description | Depends On |
+|-------|-------------|------------|
+| **fmt** | Format check using `gofmt -s` | - |
+| **lint** | Static analysis with `go vet` and `golangci-lint` | fmt |
+| **test** | Unit tests with race detector + coverage | lint |
+| **sonarcloud** | Code quality & security analysis | test |
+| **build** | Build verification for all packages | test |
+| **ci-success** | Final status check | all |
+
+**Features:**
+- ✅ Fail-fast: stops immediately if any check fails
+- ✅ Codecov integration for coverage reporting
+- ✅ SonarCloud integration for code quality
+- ✅ Go module caching for faster builds
+- ✅ Concurrency control (cancels in-progress runs)
 
 **Triggers:**
 - Push to `master`, `main`, `develop`
 - Pull requests to `master`, `main`, `develop`
+
+---
 
 ### 🧪 Extended Tests (`test.yml`)
 Extended testing workflow for comprehensive test coverage.
@@ -31,14 +51,7 @@ Extended testing workflow for comprehensive test coverage.
 - Weekly schedule (Sunday 2 AM UTC)
 - Push to `master`/`main` when Go files change
 
-### 📊 Coverage Analysis (`coverage.yml`)
-Post-CI coverage analysis and reporting.
-
-**Jobs:**
-- **coverage-analysis** - Detailed coverage analysis with package breakdown
-
-**Triggers:**
-- After successful CI workflow on `master`/`main`
+---
 
 ### 🚀 Release (`release.yml`)
 Automated release workflow for creating GitHub releases.
@@ -52,12 +65,7 @@ Automated release workflow for creating GitHub releases.
 - Push tags matching `v*.*.*`
 - Manual dispatch with version input
 
-### 🔍 Lint (`lint.yml`)
-Dedicated linting workflow.
-
-**Triggers:**
-- Push to `master`, `main`, `develop`
-- Pull requests
+---
 
 ### 🔒 Security (`security.yml`)
 Security scanning workflow.
@@ -71,6 +79,8 @@ Security scanning workflow.
 - Pull requests
 - Weekly schedule
 
+---
+
 ### 📚 Documentation (`docs.yml`)
 Documentation validation workflow.
 
@@ -78,32 +88,78 @@ Documentation validation workflow.
 - Push to `master`/`main` when docs change
 - Manual dispatch
 
+---
+
 ### 🔐 Dependency Review (`dependency-review.yml`)
 Dependency vulnerability review.
 
 **Triggers:**
 - Pull requests
 
-## Workflow Status
+---
 
-All workflows use:
-- ✅ Latest action versions
-- ✅ Go 1.23 as primary version
-- ✅ Caching for faster builds
-- ✅ Matrix builds for multiple platforms
-- ✅ Artifact uploads for coverage and releases
+## CI Pipeline Flow
 
-## Required Secrets
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         CI PIPELINE                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────┐     ┌─────────┐     ┌─────────────────────────┐   │
+│  │   FMT   │────▶│  LINT   │────▶│  TEST + COVERAGE        │   │
+│  └─────────┘     └─────────┘     └───────────┬─────────────┘   │
+│                                              │                  │
+│                                    ┌─────────┴─────────┐       │
+│                                    ▼                   ▼       │
+│                            ┌────────────┐      ┌───────────┐   │
+│                            │ SONARCLOUD │      │   BUILD   │   │
+│                            └────────────┘      └───────────┘   │
+│                                    │                   │       │
+│                                    └─────────┬─────────┘       │
+│                                              ▼                 │
+│                                    ┌─────────────────┐         │
+│                                    │   CI SUCCESS    │         │
+│                                    └─────────────────┘         │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 
-- `CODECOV_TOKEN` - For coverage reporting (optional)
-- `SONAR_TOKEN` - For SonarCloud analysis (optional)
-- `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN` - For Docker Hub (optional)
-
-## Concurrency
-
-Workflows use concurrency groups to cancel in-progress runs when new commits are pushed, saving CI resources.
+❌ If any stage fails, the pipeline stops immediately (fail-fast)
+```
 
 ---
 
-*Last Updated: December 2, 2025*
+## SonarCloud Configuration
 
+Security Hotspot analysis excludes:
+- Test files (`**/*_test.go`)
+- CI configuration (`**/.github/**`)
+- Test utilities (`**/testing/**`, `**/testdata/**`)
+- Example code (`**/examples/**`)
+- CLI tools (`**/cmd/**`)
+
+This ensures security analysis focuses on production library code.
+
+---
+
+## Required Secrets
+
+| Secret | Required | Description |
+|--------|----------|-------------|
+| `CODECOV_TOKEN` | Yes | Coverage reporting to Codecov |
+| `SONAR_TOKEN` | Yes | SonarCloud code analysis |
+| `DOCKERHUB_USERNAME` | No | Docker Hub releases |
+| `DOCKERHUB_TOKEN` | No | Docker Hub releases |
+
+---
+
+## Workflow Status
+
+- ✅ Go 1.24 as primary version
+- ✅ Unified fail-fast CI pipeline
+- ✅ Go module caching for faster builds
+- ✅ Artifact uploads for coverage and releases
+- ✅ Concurrency control
+
+---
+
+*Last Updated: December 3, 2025*

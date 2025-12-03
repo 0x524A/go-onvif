@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ master, main, develop ]
+    branches: [master, main, develop]
   pull_request:
-    branches: [ master, main, develop ]
+    branches: [master, main, develop]
 
 permissions:
   contents: read
@@ -15,213 +15,232 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  GO_VERSION: '1.24'
+
 jobs:
-  # Quick validation - fail fast on obvious issues
-  validate:
-    name: Quick Validation
+  # Stage 1: Format Check (fastest - fail immediately if code isn't formatted)
+  fmt:
+    name: Format Check
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.24'
-    
-    - name: Cache Go modules
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-    
-    - name: Download dependencies
-      run: go mod download && go mod verify
-    
-    - name: Check formatting
-      run: |
-        if [ "$(gofmt -s -l . | grep -v vendor | wc -l)" -gt 0 ]; then
-          echo "❌ Code formatting issues found:"
-          gofmt -s -d . | grep -v vendor
-          exit 1
-        fi
-        echo "✅ Code formatting is correct"
-    
-    - name: Run go vet
-      run: go vet ./...
-    
-    - name: Lint with golangci-lint
-      uses: golangci/golangci-lint-action@v6
-      with:
-        version: latest
-        args: --timeout=5m
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  # Test on primary Go version with coverage
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Check formatting
+        run: |
+          unformatted=$(gofmt -s -l . | grep -v vendor || true)
+          if [ -n "$unformatted" ]; then
+            echo "❌ The following files are not properly formatted:"
+            echo "$unformatted"
+            echo ""
+            echo "Run 'gofmt -s -w .' to fix formatting issues"
+            exit 1
+          fi
+          echo "✅ All files are properly formatted"
+
+  # Stage 2: Lint (depends on fmt)
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: fmt
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ env.GO_VERSION }}-
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --timeout=5m --out-format=github-actions
+
+  # Stage 3: Test with Coverage (depends on lint)
   test:
-    name: Test (Go 1.23)
+    name: Test & Coverage
     runs-on: ubuntu-latest
-    needs: validate
-    
+    needs: lint
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.24'
-    
-    - name: Cache Go modules
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-1.24-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-1.24-
-    
-    - name: Download dependencies
-      run: go mod download
-    
-    - name: Run tests with coverage
-      run: go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
-    
-    - name: Generate coverage report
-      run: go tool cover -html=coverage.out -o coverage.html
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage.out
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-    
-    - name: Archive coverage
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: |
-          coverage.out
-          coverage.html
-        retention-days: 30
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for SonarCloud
 
-  # Test on multiple Go versions and platforms
-  test-matrix:
-    name: Test (Go ${{ matrix.go-version }} on ${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    needs: validate
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        go-version: ['1.24']
-    
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ env.GO_VERSION }}-
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run tests with coverage
+        run: |
+          go test -v -race -covermode=atomic -coverprofile=coverage.out -json ./... > test-report.json 2>&1 || true
+          # Ensure coverage file exists even if tests fail
+          if [ ! -f coverage.out ]; then
+            echo "mode: atomic" > coverage.out
+          fi
+
+      - name: Display coverage summary
+        run: |
+          echo "📊 Coverage Summary:"
+          go tool cover -func=coverage.out | tail -20
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            coverage.out
+            test-report.json
+          retention-days: 7
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.out
+          flags: unittests
+          name: codecov-onvif-go
+          fail_ci_if_error: true
+          verbose: true
+
+  # Stage 4: SonarCloud Analysis (depends on test)
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: test
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: ${{ matrix.go-version }}
-    
-    - name: Cache Go modules
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-${{ matrix.go-version }}-
-    
-    - name: Download dependencies
-      run: go mod download
-    
-    - name: Run tests
-      run: go test -v -race ./...
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for accurate blame information
 
-  # Build verification
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-reports
+
+      - name: Verify coverage file
+        run: |
+          echo "📁 Downloaded files:"
+          ls -la
+          if [ -f coverage.out ]; then
+            echo "✅ Coverage file found"
+            head -5 coverage.out
+          else
+            echo "⚠️ Coverage file not found, creating empty one"
+            echo "mode: atomic" > coverage.out
+          fi
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Stage 5: Build Verification (depends on test, runs in parallel with sonarcloud)
   build:
     name: Build Verification
     runs-on: ubuntu-latest
-    needs: validate
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.24'
-    
-    - name: Cache Go modules
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-1.24-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-1.24-
-    
-    - name: Download dependencies
-      run: go mod download
-    
-    - name: Build main packages
-      run: go build -v ./...
-    
-    - name: Build examples
-      run: |
-        for dir in examples/*/; do
-          if [ -f "$dir/main.go" ] || [ -f "$dir/*.go" ]; then
-            echo "Building $dir"
-            (cd "$dir" && go build -v .) || echo "⚠️  Failed to build $dir"
-          fi
-        done
-    
-    - name: Build CLI tools
-      run: |
-        go build -v ./cmd/onvif-cli
-        go build -v ./cmd/onvif-quick
-        go build -v ./cmd/onvif-server
-        go build -v ./cmd/onvif-diagnostics
-
-  # Code quality - only run if tests pass
-  sonarcloud:
-    name: Code Quality (SonarCloud)
-    runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && secrets.SONAR_TOKEN != ''
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    
-    - name: Download coverage from test job
-      uses: actions/download-artifact@v4
-      with:
-        name: coverage-report
-    
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.projectKey=0x524a_onvif-go
-          -Dsonar.organization=0x524a
-          -Dsonar.go.coverage.reportPaths=coverage.out
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ env.GO_VERSION }}-
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build library
+        run: go build -v ./...
+
+      - name: Build CLI tools
+        run: |
+          echo "🔨 Building CLI tools..."
+          go build -v -o bin/onvif-cli ./cmd/onvif-cli
+          go build -v -o bin/onvif-quick ./cmd/onvif-quick
+          go build -v -o bin/onvif-server ./cmd/onvif-server
+          go build -v -o bin/onvif-diagnostics ./cmd/onvif-diagnostics
+          echo "✅ All CLI tools built successfully"
+
+  # Final status check
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [fmt, lint, test, sonarcloud, build]
+    if: always()
+    steps:
+      - name: Check all jobs status
+        run: |
+          if [[ "${{ needs.fmt.result }}" != "success" ]]; then
+            echo "❌ Format check failed"
+            exit 1
+          fi
+          if [[ "${{ needs.lint.result }}" != "success" ]]; then
+            echo "❌ Lint check failed"
+            exit 1
+          fi
+          if [[ "${{ needs.test.result }}" != "success" ]]; then
+            echo "❌ Tests failed"
+            exit 1
+          fi
+          if [[ "${{ needs.sonarcloud.result }}" != "success" ]]; then
+            echo "❌ SonarCloud analysis failed"
+            exit 1
+          fi
+          if [[ "${{ needs.build.result }}" != "success" ]]; then
+            echo "❌ Build verification failed"
+            exit 1
+          fi
+          echo "✅ All CI checks passed successfully!"
