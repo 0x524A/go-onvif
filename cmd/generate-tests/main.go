@@ -220,12 +220,10 @@ func main() {
 		log.Fatalf("Failed to create output file: %v", err)
 	}
 	defer func() {
-		//nolint:errcheck // Close error is not critical, file is already written
 		_ = f.Close()
 	}()
 
 	if err := tmpl.Execute(f, testData); err != nil {
-		//nolint:errcheck // Close error is not critical before fatal exit
 		_ = f.Close()
 		//nolint:gocritic // Fatalf exits, defer won't run - this is acceptable
 		log.Fatalf("Failed to execute template: %v", err)

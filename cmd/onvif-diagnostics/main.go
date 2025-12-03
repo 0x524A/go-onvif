@@ -1102,21 +1102,18 @@ func createTarGz(sourceDir, archivePath string) error {
 		return fmt.Errorf("failed to create archive file: %w", err)
 	}
 	defer func() {
-		//nolint:errcheck // Close error is not critical for cleanup
 		_ = archiveFile.Close()
 	}()
 
 	// Create gzip writer
 	gzWriter := gzip.NewWriter(archiveFile)
 	defer func() {
-		//nolint:errcheck // Close error is not critical for cleanup
 		_ = gzWriter.Close()
 	}()
 
 	// Create tar writer
 	tarWriter := tar.NewWriter(gzWriter)
 	defer func() {
-		//nolint:errcheck // Close error is not critical for cleanup
 		_ = tarWriter.Close()
 	}()
 
@@ -1156,7 +1153,6 @@ func createTarGz(sourceDir, archivePath string) error {
 				return fmt.Errorf("failed to open file: %w", err)
 			}
 			defer func() {
-				//nolint:errcheck // Close error is not critical for cleanup
 				_ = file.Close()
 			}()
 

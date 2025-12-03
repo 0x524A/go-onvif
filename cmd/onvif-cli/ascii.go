@@ -220,17 +220,17 @@ type ImageInfo struct {
 }
 
 // formatBytes converts bytes to human-readable format.
-func formatBytes(bytes int64) string {
-	if bytes < bufferSize1024 {
-		return fmt.Sprintf("%d B", bytes)
+func formatBytes(byteCount int64) string {
+	if byteCount < bufferSize1024 {
+		return fmt.Sprintf("%d B", byteCount)
 	}
 	const kbSize = 1024
 	const mbSize = 1024 * 1024
-	if bytes < mbSize {
-		return fmt.Sprintf("%.1f KB", float64(bytes)/kbSize)
+	if byteCount < mbSize {
+		return fmt.Sprintf("%.1f KB", float64(byteCount)/kbSize)
 	}
 
-	return fmt.Sprintf("%.1f MB", float64(bytes)/mbSize)
+	return fmt.Sprintf("%.1f MB", float64(byteCount)/mbSize)
 }
 
 // CreateASCIIHighQuality creates a high-quality ASCII representation.

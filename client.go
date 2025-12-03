@@ -286,12 +286,10 @@ func (c *Client) downloadWithBasicAuth(ctx context.Context, downloadURL string) 
 	if err != nil {
 		return nil, fmt.Errorf("download request failed: %w", err)
 	}
-	//nolint:errcheck // Close error in defer is intentionally ignored
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		//nolint:errcheck // Error response body preview - ignore read errors
-		bodyPreview, _ := io.ReadAll(resp.Body)
+		bodyPreview, _ := io.ReadAll(resp.Body) //nolint:errcheck // Error preview - ignore read errors
 		bodyStr := string(bodyPreview)
 		const maxBodyPreview = 200
 		if len(bodyStr) > maxBodyPreview {
@@ -365,12 +363,10 @@ func (c *Client) downloadWithDigestAuth(ctx context.Context, downloadURL string)
 	if err != nil {
 		return nil, fmt.Errorf("digest auth request failed: %w", err)
 	}
-	//nolint:errcheck // Close error in defer is intentionally ignored
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		//nolint:errcheck // Error response body preview - ignore read errors
-		bodyPreview, _ := io.ReadAll(resp.Body)
+		bodyPreview, _ := io.ReadAll(resp.Body) //nolint:errcheck // Error preview - ignore read errors
 		bodyStr := string(bodyPreview)
 		const maxBodyPreview = 200
 		if len(bodyStr) > maxBodyPreview {

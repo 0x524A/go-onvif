@@ -147,7 +147,6 @@ func (c *Client) Call(ctx context.Context, endpoint, action string, request, res
 		return fmt.Errorf("failed to send HTTP request: %w", err)
 	}
 	defer func() {
-		//nolint:errcheck // Close error is not critical for cleanup
 		_ = resp.Body.Close()
 	}()
 

@@ -55,7 +55,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	//nolint:errcheck // Close error is not critical for cleanup
 	_ = r.Body.Close()
 
 	// Extract action from raw XML first (before parsing)

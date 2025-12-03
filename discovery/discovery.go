@@ -121,7 +121,6 @@ func DiscoverWithOptions(ctx context.Context, timeout time.Duration, opts *Disco
 		return nil, fmt.Errorf("failed to listen on multicast address: %w", err)
 	}
 	defer func() {
-		//nolint:errcheck // Close error is not critical for cleanup
 		_ = conn.Close()
 	}()
 

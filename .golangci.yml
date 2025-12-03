@@ -98,8 +98,24 @@ linters:
       - path: cmd/
         linters:
           - dupl
+      
+      - path: examples/
+        linters:
+          - errcheck
+          - err113
+          - funlen
+          - gocognit
+          - gocritic
+          - gocyclo
+          - godot
+          - gosec
+          - mnd
+          - nlreturn
+          - noctx
+          - unused
+          - wrapcheck
 
 output:
   formats:
     text:
-      print-linter-name: true
+      path: stdout

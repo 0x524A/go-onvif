@@ -690,7 +690,6 @@ func (c *CLI) tryRTSPConnection(streamURI string) map[string]interface{} {
 	// Try to connect
 	conn, err := net.DialTimeout("tcp", hostPort, maxRetries*time.Second)
 	if err == nil {
-		//nolint:errcheck // Close error is not critical for connectivity check
 		_ = conn.Close()
 		details["reachable"] = true
 		details["port"] = strings.Split(hostPort, ":")[1]

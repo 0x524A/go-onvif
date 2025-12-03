@@ -40,7 +40,6 @@ func LoadCaptureFromArchive(archivePath string) (*CameraCapture, error) {
 		return nil, fmt.Errorf("failed to open archive: %w", err)
 	}
 	defer func() {
-		//nolint:errcheck // Close error is not critical for cleanup
 		_ = file.Close()
 	}()
 
@@ -49,7 +48,6 @@ func LoadCaptureFromArchive(archivePath string) (*CameraCapture, error) {
 		return nil, fmt.Errorf("failed to create gzip reader: %w", err)
 	}
 	defer func() {
-		//nolint:errcheck // Close error is not critical for cleanup
 		_ = gzr.Close()
 	}()
 
