@@ -250,14 +250,12 @@ type WDRSettings struct {
 }
 
 // DefaultConfig returns a default server configuration with a multi-lens camera setup.
-//
-//nolint:funlen // DefaultConfig has many statements due to comprehensive default configuration
-func DefaultConfig() *Config {
+func DefaultConfig() *Config { //nolint:funlen // DefaultConfig has many statements due to comprehensive default configuration
 	return &Config{
 		Host:     "0.0.0.0",
 		Port:     8080, //nolint:mnd // Default HTTP port
 		BasePath: "/onvif",
-		Timeout:  defaultTimeoutSec * time.Second, //nolint:mnd // Default timeout
+		Timeout:  defaultTimeoutSec * time.Second,
 		DeviceInfo: DeviceInfo{
 			Manufacturer:    "onvif-go",
 			Model:           "Virtual Multi-Lens Camera",
@@ -277,25 +275,25 @@ func DefaultConfig() *Config {
 				VideoSource: VideoSourceConfig{
 					Token:      "video_source_0",
 					Name:       "Main Camera",
-					Resolution: Resolution{Width: defaultWidth, Height: defaultHeight},         //nolint:mnd // Default resolution
-					Framerate:  defaultFramerate,                                               //nolint:mnd // Default framerate
-					Bounds:     Bounds{X: 0, Y: 0, Width: defaultWidth, Height: defaultHeight}, //nolint:mnd // Default bounds
+					Resolution: Resolution{Width: defaultWidth, Height: defaultHeight},
+					Framerate:  defaultFramerate,
+					Bounds:     Bounds{X: 0, Y: 0, Width: defaultWidth, Height: defaultHeight},
 				},
 				VideoEncoder: VideoEncoderConfig{
 					Encoding:   "H264",
-					Resolution: Resolution{Width: defaultWidth, Height: defaultHeight}, //nolint:mnd // Default resolution
-					Quality:    defaultQuality,                                         //nolint:mnd // Default quality
-					Framerate:  defaultFramerate,                                       //nolint:mnd // Default framerate
-					Bitrate:    defaultBitrate,                                         //nolint:mnd // Default bitrate
-					GovLength:  defaultFramerate,                                       //nolint:mnd // Default gov length
+					Resolution: Resolution{Width: defaultWidth, Height: defaultHeight},
+					Quality:    defaultQuality,
+					Framerate:  defaultFramerate,
+					Bitrate:    defaultBitrate,
+					GovLength:  defaultFramerate,
 				},
 				PTZ: &PTZConfig{
 					NodeToken: "ptz_node_0",
-					PanRange:  Range{Min: -maxPan, Max: maxPan},   //nolint:mnd // PTZ pan range
-					TiltRange: Range{Min: -maxTilt, Max: maxTilt}, //nolint:mnd // PTZ tilt range
+					PanRange:  Range{Min: -maxPan, Max: maxPan},
+					TiltRange: Range{Min: -maxTilt, Max: maxTilt},
 					ZoomRange: Range{Min: 0, Max: 1},
 					DefaultSpeed: PTZSpeed{
-						Pan: defaultPTZSpeed, Tilt: defaultPTZSpeed, Zoom: defaultPTZSpeed, //nolint:mnd // Default PTZ speed
+						Pan: defaultPTZSpeed, Tilt: defaultPTZSpeed, Zoom: defaultPTZSpeed,
 					},
 					SupportsContinuous: true,
 					SupportsAbsolute:   true,
@@ -357,10 +355,10 @@ func DefaultConfig() *Config {
 					GovLength:  lowFramerate,                                           //nolint:mnd // Low framerate
 				},
 				PTZ: &PTZConfig{
-					NodeToken:          "ptz_node_2",
-					PanRange:           Range{Min: -maxPan, Max: maxPan},                                 //nolint:mnd // PTZ pan range
-					TiltRange:          Range{Min: -maxTilt, Max: maxTilt},                               //nolint:mnd // PTZ tilt range
-					ZoomRange:          Range{Min: 0, Max: maxZoom},                                      //nolint:mnd // Max zoom
+					NodeToken: "ptz_node_2",
+					PanRange:  Range{Min: -maxPan, Max: maxPan},
+					TiltRange: Range{Min: -maxTilt, Max: maxTilt},
+					ZoomRange: Range{Min: 0, Max: maxZoom}, //nolint:mnd // Max zoom
 					DefaultSpeed: PTZSpeed{
 						Pan: lowPTZSpeed, Tilt: lowPTZSpeed, Zoom: lowPTZSpeed, //nolint:mnd // Low PTZ speed
 					},
@@ -369,7 +367,10 @@ func DefaultConfig() *Config {
 					SupportsRelative:   true,
 					Presets: []Preset{
 						{Token: "preset_2_0", Name: "Home", Position: PTZPosition{Pan: 0, Tilt: 0, Zoom: 0}},
-						{Token: "preset_2_1", Name: "Zoom In", Position: PTZPosition{Pan: 0, Tilt: 0, Zoom: presetZoom}}, //nolint:mnd // Preset zoom
+						{
+							Token: "preset_2_1", Name: "Zoom In",
+							Position: PTZPosition{Pan: 0, Tilt: 0, Zoom: presetZoom}, //nolint:mnd // Preset zoom
+						},
 					},
 				},
 				Snapshot: SnapshotConfig{

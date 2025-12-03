@@ -280,6 +280,7 @@ func (c *CLI) performDiscoveryOnInterface(interfaceName string) ([]*discovery.De
 	if err != nil {
 		return nil, fmt.Errorf("discovery failed: %w", err)
 	}
+
 	return devices, nil
 }
 
@@ -614,11 +615,13 @@ func (c *CLI) inspectRTSPStream(streamURI string) map[string]interface{} {
 	// Use rtspeek library for detailed stream inspection
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
-		defaultRetryDelay*time.Second, //nolint:mnd // Stream inspection timeout
+		defaultRetryDelay*time.Second,
 	)
 	defer cancel()
 
-	streamInfo, err := sd.DescribeStream(ctx, streamURI, defaultRetryDelay*time.Second) //nolint:mnd // Stream description timeout
+	streamInfo, err := sd.DescribeStream(
+		ctx, streamURI, defaultRetryDelay*time.Second,
+	)
 	if err == nil && streamInfo != nil {
 		details["reachable"] = streamInfo.IsReachable()
 
@@ -685,7 +688,7 @@ func (c *CLI) tryRTSPConnection(streamURI string) map[string]interface{} {
 	}
 
 	// Try to connect
-	conn, err := net.DialTimeout("tcp", hostPort, maxRetries*time.Second) //nolint:mnd // Connection timeout
+	conn, err := net.DialTimeout("tcp", hostPort, maxRetries*time.Second)
 	if err == nil {
 		//nolint:errcheck // Close error is not critical for connectivity check
 		_ = conn.Close()
@@ -1615,7 +1618,7 @@ func (c *CLI) captureAndDisplaySnapshot(ctx context.Context) { //nolint:funlen /
 			filename = "snapshot.jpg"
 		}
 		if err := os.WriteFile(
-			filename, snapshotData, 0600, //nolint:gosec,mnd // 0600 appropriate for CLI output files
+			filename, snapshotData, 0600, //nolint:mnd // 0600 appropriate for CLI output files
 		); err != nil {
 			fmt.Printf("❌ Failed to save file: %v\n", err)
 		} else {

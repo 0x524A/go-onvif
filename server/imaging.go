@@ -347,8 +347,8 @@ func (s *Server) HandleSetImagingSettings(body interface{}) (interface{}, error)
 // HandleGetOptions handles GetOptions request.
 func (s *Server) HandleGetOptions(body interface{}) (interface{}, error) {
 	// Return available imaging options/capabilities
-	const maxImagingValue = 100   //nolint:mnd // Maximum imaging parameter value
-	const maxExposureTime = 10000 //nolint:mnd // Maximum exposure time in microseconds
+	const maxImagingValue = 100   // Maximum imaging parameter value
+	const maxExposureTime = 10000 // Maximum exposure time in microseconds
 	options := &ImagingOptions{
 		Brightness:       &FloatRange{Min: 0, Max: maxImagingValue},
 		ColorSaturation:  &FloatRange{Min: 0, Max: maxImagingValue},

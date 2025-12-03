@@ -306,8 +306,8 @@ func (s *Server) HandleRelativeMove(body interface{}) (interface{}, error) {
 	}
 
 	// Clamp values to valid ranges (simplified)
-	const maxPan = 180 //nolint:mnd // PTZ pan range
-	const maxTilt = 90 //nolint:mnd // PTZ tilt range
+	const maxPan = 180 // PTZ pan range
+	const maxTilt = 90 // PTZ tilt range
 	state.Position.Pan = clamp(state.Position.Pan, -maxPan, maxPan)
 	state.Position.Tilt = clamp(state.Position.Tilt, -maxTilt, maxTilt)
 	state.Position.Zoom = clamp(state.Position.Zoom, 0, 1)

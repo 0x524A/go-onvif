@@ -11,7 +11,7 @@ const (
 )
 
 func TestHandleGetImagingSettings(t *testing.T) {
-	config := createTestConfig(t)
+	config := createTestConfig()
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -47,7 +47,7 @@ func TestHandleGetImagingSettings(t *testing.T) {
 }
 
 func TestHandleSetImagingSettings(t *testing.T) {
-	config := createTestConfig(t)
+	config := createTestConfig()
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -90,7 +90,7 @@ func TestHandleSetImagingSettings(t *testing.T) {
 }
 
 func TestHandleGetOptions(t *testing.T) {
-	config := createTestConfig(t)
+	config := createTestConfig()
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -128,9 +128,10 @@ func TestHandleGetOptions(t *testing.T) {
 
 // TestHandleMove - DISABLED due to SOAP namespace requirements.
 //
-//nolint:unused // Disabled test function kept for reference
+//nolint:unused,thelper // Disabled test function kept for reference
 func _DisabledTestHandleMove(t *testing.T) {
-	config := createTestConfig(t)
+	t.Helper()
+	config := createTestConfig()
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -470,7 +471,7 @@ func TestGetImagingSettingsResponseXML(t *testing.T) {
 }
 
 func TestHandleGetOptionsDetails(t *testing.T) {
-	config := createTestConfig(t)
+	config := createTestConfig()
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -506,7 +507,7 @@ func TestImagingSettingsEdgeCases(t *testing.T) {
 }
 
 func TestSetImagingSettingsEdgeCases(t *testing.T) {
-	config := createTestConfig(t)
+	config := createTestConfig()
 	server, _ := New(config)
 	videoSourceToken := config.Profiles[0].VideoSource.Token
 
@@ -525,7 +526,7 @@ func TestSetImagingSettingsEdgeCases(t *testing.T) {
 }
 
 func TestGetImagingSettingsEdgeCases(t *testing.T) {
-	config := createTestConfig(t)
+	config := createTestConfig()
 	server, _ := New(config)
 
 	// Test with invalid token

@@ -160,7 +160,7 @@ func (s *Server) Start(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		fmt.Println("\n🛑 Shutting down server...")
-		const shutdownTimeout = 5 //nolint:mnd // Server shutdown timeout in seconds
+		const shutdownTimeout = 5 // Server shutdown timeout in seconds
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout*time.Second)
 		defer cancel()
 

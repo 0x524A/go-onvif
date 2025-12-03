@@ -42,14 +42,14 @@ type Fault struct {
 
 // Security represents WS-Security header.
 type Security struct {
-	XMLName        xml.Name       `xml:"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd Security"`
+	XMLName        xml.Name       `xml:"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd Security"` //nolint:lll // Long XML namespace
 	MustUnderstand string         `xml:"http://www.w3.org/2003/05/soap-envelope mustUnderstand,attr,omitempty"`
 	UsernameToken  *UsernameToken `xml:"UsernameToken,omitempty"`
 }
 
 // UsernameToken represents a WS-Security username token.
 type UsernameToken struct {
-	XMLName  xml.Name `xml:"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd UsernameToken"`
+	XMLName  xml.Name `xml:"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd UsernameToken"` //nolint:lll // Long XML namespace
 	Username string   `xml:"Username"`
 	Password Password `xml:"Password"`
 	Nonce    Nonce    `xml:"Nonce"`

@@ -12,6 +12,7 @@ import (
 	"testing"
 )
 
+const testXMLHeader = `<?xml version="1.0"?>`
 
 func TestNewHandler(t *testing.T) {
 	handler := NewHandler("admin", "password")
@@ -68,7 +69,7 @@ func TestServeHTTPValidSOAPRequest(t *testing.T) {
 	})
 
 	// Create SOAP request
-	soapBody := `<?xml version="1.0"?>
+	soapBody := testXMLHeader + `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <TestAction/>
@@ -323,7 +324,7 @@ func TestAuthenticateFailsWithWrongPassword(t *testing.T) {
 func TestHandlerWithoutAuthentication(t *testing.T) {
 	handler := NewHandler("", "") // No authentication
 
-	soapBody := `<?xml version="1.0"?>
+	soapBody := testXMLHeader + `
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <TestAction/>

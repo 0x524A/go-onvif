@@ -38,7 +38,9 @@ func main() {
 	model := flag.String("model", "Virtual Multi-Lens Camera", "Device model")
 	firmware := flag.String("firmware", "1.0.0", "Firmware version")
 	serial := flag.String("serial", "SN-12345678", "Serial number")
-	profiles := flag.Int("profiles", maxWorkers, "Number of camera profiles (1-10)") //nolint:mnd // Default profile count
+	profiles := flag.Int(
+		"profiles", maxWorkers, "Number of camera profiles (1-10)", //nolint:mnd // Default profile count is reasonable
+	)
 	ptz := flag.Bool("ptz", true, "Enable PTZ support")
 	imaging := flag.Bool("imaging", true, "Enable Imaging support")
 	events := flag.Bool("events", false, "Enable Events support")

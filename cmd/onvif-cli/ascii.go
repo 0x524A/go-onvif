@@ -70,7 +70,7 @@ func ImageToASCII(imageData []byte, config ASCIIConfig) (string, error) {
 
 // imageToASCIIFromImage is the core conversion function.
 //
-//nolint:gocyclo // Image to ASCII conversion has high complexity due to multiple pixel processing paths
+//nolint:gocyclo,lll // Image to ASCII conversion has high complexity due to multiple pixel processing paths
 func imageToASCIIFromImage(img image.Image, config ASCIIConfig, format string) (string, error) { //nolint:unparam // format reserved for future use
 	// Validate configuration
 	if config.Width <= 0 {
