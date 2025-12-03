@@ -5,6 +5,7 @@ run:
   tests: true
 
 linters:
+  default: none
   enable:
     - errcheck
     - govet
@@ -44,78 +45,79 @@ linters:
     - tparallel
     - wastedassign
 
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-  
-  gocyclo:
-    min-complexity: 15
-  
-  funlen:
-    lines: 120
-    statements: 60
-  
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
-      - wrapperFunc
-  
-  gosec:
-    severity: medium
-    confidence: medium
-  
-  godot:
-    scope: declarations
-    exclude:
-      - "^TODO:"
-      - "^FIXME:"
-  
-  goimports:
-    local-prefixes: github.com/0x524a/onvif-go
-  
-  misspell:
-    locale: US
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    
+    gocyclo:
+      min-complexity: 15
+    
+    funlen:
+      lines: 120
+      statements: 60
+    
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+        - wrapperFunc
+    
+    gosec:
+      severity: medium
+      confidence: medium
+    
+    godot:
+      scope: declarations
+      exclude:
+        - "^TODO:"
+        - "^FIXME:"
+    
+    goimports:
+      local-prefixes:
+        - github.com/0x524a/onvif-go
+    
+    misspell:
+      locale: US
 
-issues:
-  exclude-rules:
-    # Exclude some linters from test files
-    - path: _test\.go
-      linters:
-        - errcheck
-        - gosec
-        - funlen
-        - gocyclo
-        - gocognit
-        - dupl
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - std-error-handling
+    rules:
+      # Exclude some linters from test files
+      - path: _test\.go
+        linters:
+          - errcheck
+          - gosec
+          - funlen
+          - gocyclo
+          - gocognit
+          - dupl
+      
+      # Exclude dupl from ONVIF API files - similar patterns are expected
+      - path: (media|device|ptz|imaging|device_security|device_additional)\.go
+        linters:
+          - dupl
+      
+      # Exclude dupl from cmd directories
+      - path: cmd/
+        linters:
+          - dupl
     
-    # Exclude known false positives
-    - text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|.*Write|.*Read|.*Printf?|.*Fprintf?) is not checked"
-      linters:
-        - errcheck
-    
-    # Exclude dupl from ONVIF API files - similar patterns are expected
-    - path: (media|device|ptz|imaging|device_security|device_additional)\.go
-      linters:
-        - dupl
-    
-    # Exclude dupl from cmd directories
-    - path: cmd/
-      linters:
-        - dupl
-  
-  max-issues-per-linter: 50
-  max-same-issues: 10
+    max-issues-per-linter: 50
+    max-same-issues: 10
 
 output:
-  print-issued-lines: true
-  print-linter-name: true
+  formats:
+    text:
+      print-linter-name: true
